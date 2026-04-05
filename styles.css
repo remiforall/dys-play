@@ -196,6 +196,11 @@ body {
   outline: none;
 }
 
+/* Utilitaire : masquer visuellement */
+.hidden {
+  display: none !important;
+}
+
 /* Cibles tactiles - Minimum 44x44px */
 button,
 input[type="range"],
