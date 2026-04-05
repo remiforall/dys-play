@@ -1393,7 +1393,8 @@ function applyOCRResults() {
     });
     updatePlayButton();
     closeOCRResultsModal();
-    showToast(i18n[state.currentLang]["msg.ocr.complete"], "success");
+    // Sauvegarder automatiquement en bibliothèque
+    libraryManager.saveCurrentDocument();
   }
 }
 
@@ -1837,31 +1838,35 @@ function initEventListeners() {
 
       if (file.type.startsWith("image/")) {
         // Image : afficher l'aperçu avec sélection de zone
-        const img = new Image();
-        img.onload = () => {
+        const tempImg = document.createElement("img");
+        tempImg.onload = () => {
           const zoneContent = document.getElementById("zone-selector-content");
           zoneContent.innerHTML = "";
-
-          const tempImg = document.createElement("img");
-          tempImg.src = URL.createObjectURL(file);
-          tempImg.style.maxWidth = "100%";
           tempImg.style.display = "none";
           zoneContent.appendChild(tempImg);
 
-          // Attendre que l'image soit chargée dans le DOM
-          tempImg.onload = () => {
-            initZoneSelector(tempImg);
+          initZoneSelector(tempImg);
 
-            // Bouton analyser
-            document.getElementById("analyze-zone-btn").onclick = async () => {
-              closeZoneSelectorModal();
+          // Bouton analyser : utilise la zone sélectionnée
+          document.getElementById("analyze-zone-btn").onclick = async () => {
+            closeZoneSelectorModal();
+            // Extraire la zone si une sélection existe
+            if (state.ocrState.zoneSelector) {
+              const zoneDataUrl =
+                state.ocrState.zoneSelector.extractZoneImage();
+              const blob = await (await fetch(zoneDataUrl)).blob();
+              const zoneFile = new File([blob], "zone.png", {
+                type: "image/png",
+              });
+              await handleFile(zoneFile);
+            } else {
               await handleFile(file);
-            };
-
-            openZoneSelectorModal(tempImg);
+            }
           };
+
+          openZoneSelectorModal(tempImg);
         };
-        img.src = URL.createObjectURL(file);
+        tempImg.src = URL.createObjectURL(file);
       } else {
         // PDF, txt : traitement direct
         await handleFile(file);
@@ -2324,7 +2329,8 @@ async function handleFile(file, useZoneSelection = false) {
         syllables: state.settings.syllableColor,
       });
       updatePlayButton();
-      showToast(i18n[state.currentLang]["msg.ocr.complete"], "success");
+      // Sauvegarder automatiquement en bibliothèque
+      libraryManager.saveCurrentDocument();
     }
   } catch (error) {
     console.error("Erreur traitement fichier:", error);

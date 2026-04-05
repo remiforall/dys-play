@@ -655,6 +655,7 @@ button {
 }
 
 .text-content {
+  font-family: var(--font-family);
   font-size: var(--font-size);
   line-height: var(--line-height);
   letter-spacing: var(--letter-spacing);
