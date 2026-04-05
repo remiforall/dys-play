@@ -14,13 +14,22 @@ jobs:
       - name: Checkout du code
         uses: actions/checkout@v4
 
-      - name: Déploiement via rsync over SSH
-        uses: burnett01/rsync-deployments@7.0.1
+      - name: Déploiement via SFTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          switches: -avz --delete --exclude='.git' --exclude='.github' --exclude='.gitignore' --exclude='libs/README.md' --exclude='fonts/README.md' --exclude='README.md'
-          path: ./
-          remote_path: ${{ secrets.INFOMANIAK_REMOTE_PATH }}
-          remote_host: ${{ secrets.INFOMANIAK_HOST }}
-          remote_port: ${{ secrets.INFOMANIAK_PORT }}
-          remote_user: ${{ secrets.INFOMANIAK_USER }}
-          remote_key: ${{ secrets.INFOMANIAK_SSH_KEY }}
+          server: ${{ secrets.INFOMANIAK_HOST }}
+          port: 22
+          protocol: sftp
+          username: ${{ secrets.INFOMANIAK_USER }}
+          password: ${{ secrets.INFOMANIAK_PASSWORD }}
+          local-dir: ./
+          server-dir: ${{ secrets.INFOMANIAK_REMOTE_PATH }}
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github*
+            **/.github*/**
+            .gitignore
+            README.md
+            libs/README.md
+            fonts/README.md
