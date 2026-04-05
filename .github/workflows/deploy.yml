@@ -36,7 +36,6 @@ jobs:
               --exclude ^README\.md$ \
               --exclude ^libs/README\.md$ \
               --exclude ^fonts/README\.md$ \
-              --exclude ^\.htaccess$ \
               --exclude ^\.user\.ini$ \
               --exclude ^\.infomaniak \
               ./ $REMOTE;
