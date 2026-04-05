@@ -1272,51 +1272,17 @@
           </button>
         </div>
         <div class="modal-body">
-          <div
-            class="zone-helper"
+          <p
             style="
-              padding: var(--space-md);
-              background: var(--color-bg-tertiary);
-              border-radius: var(--radius-md);
-              margin-bottom: var(--space-lg);
+              margin: 0 0 var(--space-md) 0;
+              font-size: 0.9rem;
+              color: var(--color-text-secondary);
             "
           >
-            <p
-              style="
-                margin: 0 0 var(--space-md) 0;
-                font-weight: 600;
-                font-size: 1.05rem;
-              "
-            >
-              📍 Délimiter la zone à analyser
-            </p>
-            <ol
-              style="margin: 0; padding-left: var(--space-lg); line-height: 1.6"
-            >
-              <li style="margin-bottom: var(--space-sm)">
-                <strong>Appuyez</strong> au coin supérieur gauche de la zone
-              </li>
-              <li style="margin-bottom: var(--space-sm)">
-                <strong>Glissez</strong> jusqu'au coin inférieur droit
-              </li>
-              <li style="margin-bottom: 0">
-                <strong>Relâchez</strong> pour valider
-              </li>
-            </ol>
-            <p
-              style="
-                margin: var(--space-md) 0 0 0;
-                font-size: 0.9rem;
-                color: var(--color-text-secondary);
-              "
-            >
-              💡 Vous pouvez aussi utiliser les boutons
-              <strong>Présélection</strong> ci-dessous
-            </p>
-          </div>
-          <div id="zone-selector-content" class="zone-selector-container"></div>
+            Choisissez la zone à analyser ou dessinez un rectangle sur l'image.
+          </p>
 
-          <div id="zone-controls" class="zone-controls" hidden>
+          <div id="zone-controls" class="zone-controls">
             <div class="preset-buttons">
               <button
                 id="preset-full"
@@ -1380,6 +1346,11 @@
               </button>
             </div>
           </div>
+          <div
+            id="zone-selector-content"
+            class="zone-selector-container"
+            style="max-height: 50vh; overflow: auto"
+          ></div>
         </div>
         <div
           class="modal-footer"

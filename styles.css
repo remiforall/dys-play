@@ -1415,25 +1415,20 @@ input[type="range"]:focus::-webkit-slider-thumb {
 }
 
 .zone-controls {
-  margin-top: var(--space-lg);
-  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+  padding: var(--space-sm);
   background: var(--color-bg-secondary);
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);
 }
 
-.zone-helper {
-  text-align: center;
-  color: var(--color-text-secondary);
-  margin-bottom: var(--space-md);
-  font-size: 0.9rem;
-}
-
 .preset-buttons {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: var(--space-xs);
-  justify-content: center;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: var(--space-xs);
 }
 
 .btn-small {

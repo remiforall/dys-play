@@ -1347,12 +1347,6 @@ function initZoneSelector(imageElement) {
   // Créer le sélecteur de zone
   state.ocrState.zoneSelector = new ZoneSelector(imageElement, container);
 
-  // Afficher les contrôles
-  const zoneControls = document.getElementById("zone-controls");
-  if (zoneControls) {
-    zoneControls.hidden = false;
-  }
-
   // Configurer les preset buttons
   document.getElementById("preset-full")?.addEventListener("click", () => {
     state.ocrState.zoneSelector.applyPreset("full");
