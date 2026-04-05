@@ -1347,18 +1347,9 @@ function initZoneSelector(imageElement) {
   // Créer le sélecteur de zone
   state.ocrState.zoneSelector = new ZoneSelector(imageElement, container);
 
-  // Configurer les preset buttons
+  // Bouton "Image entière" (reset la sélection)
   document.getElementById("preset-full")?.addEventListener("click", () => {
-    state.ocrState.zoneSelector.applyPreset("full");
-  });
-  document.getElementById("preset-a4")?.addEventListener("click", () => {
-    state.ocrState.zoneSelector.applyPreset("a4");
-  });
-  document.getElementById("preset-half")?.addEventListener("click", () => {
-    state.ocrState.zoneSelector.applyPreset("half");
-  });
-  document.getElementById("preset-third")?.addEventListener("click", () => {
-    state.ocrState.zoneSelector.applyPreset("third");
+    state.ocrState.zoneSelector.reset();
   });
 }
 
@@ -1833,100 +1824,46 @@ function initEventListeners() {
       });
     });
 
-    // Scan button - directly open camera
-    safeAddEventListener("scan-btn", "click", () => {
-      const cameraInput = document.getElementById("camera-input");
-      if (cameraInput) {
-        cameraInput.click();
-      }
+    // Bouton unifié "Scanner ou importer"
+    safeAddEventListener("acquire-btn", "click", () => {
+      const fileInput = document.getElementById("file-input-unified");
+      if (fileInput) fileInput.click();
     });
 
-    // Camera input (hidden, triggered by scan button)
-    safeAddEventListener("camera-input", "change", async (e) => {
+    // Handler unifié : images → aperçu + zone selector, PDF/txt → traitement direct
+    safeAddEventListener("file-input-unified", "change", async (e) => {
       const file = e.target.files[0];
-      if (file) {
-        // Afficher modal sélection zone
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext("2d");
+      if (!file) return;
+
+      if (file.type.startsWith("image/")) {
+        // Image : afficher l'aperçu avec sélection de zone
         const img = new Image();
         img.onload = () => {
-          canvas.width = img.width;
-          canvas.height = img.height;
-          ctx.drawImage(img, 0, 0);
-
-          // Créer un élément temporaire pour la sélection
-          const tempImg = document.createElement("img");
-          tempImg.src = canvas.toDataURL();
-          tempImg.style.maxWidth = "100%";
-
-          const zoneModal = document.getElementById("zone-selector-modal");
           const zoneContent = document.getElementById("zone-selector-content");
           zoneContent.innerHTML = "";
+
+          const tempImg = document.createElement("img");
+          tempImg.src = URL.createObjectURL(file);
+          tempImg.style.maxWidth = "100%";
+          tempImg.style.display = "none";
           zoneContent.appendChild(tempImg);
 
-          initZoneSelector(tempImg);
+          // Attendre que l'image soit chargée dans le DOM
+          tempImg.onload = () => {
+            initZoneSelector(tempImg);
 
-          // Configurer le bouton d'analyse
-          document.getElementById("analyze-zone-btn").onclick = async () => {
-            await handleFile(file, true);
-            closeZoneSelectorModal();
+            // Bouton analyser
+            document.getElementById("analyze-zone-btn").onclick = async () => {
+              closeZoneSelectorModal();
+              await handleFile(file);
+            };
+
+            openZoneSelectorModal(tempImg);
           };
-
-          openZoneSelectorModal(tempImg);
         };
         img.src = URL.createObjectURL(file);
-      }
-      e.target.value = "";
-    });
-
-    // Import button - open modal
-    safeAddEventListener("import-btn", "click", () => {
-      openImportModal();
-    });
-
-    // Import modal handlers
-    const importModal = document.getElementById("import-modal");
-    const importModalBackdrop = document.getElementById(
-      "import-modal-backdrop",
-    );
-    const closeImportModal = document.getElementById("close-import-modal");
-
-    if (importModal) {
-      importModalBackdrop.addEventListener("click", closeImportModalFn);
-      closeImportModal.addEventListener("click", closeImportModalFn);
-
-      // Modal file input
-      safeAddEventListener("modal-file-input", "change", async (e) => {
-        const file = e.target.files[0];
-        if (file) {
-          await handleFile(file);
-          closeImportModalFn();
-        }
-        e.target.value = "";
-      });
-    }
-
-    function openImportModal() {
-      if (importModal) {
-        importModal.hidden = false;
-        importModal.setAttribute("aria-modal", "true");
-        importModal.setAttribute("role", "dialog");
-        document.body.style.overflow = "hidden";
-      }
-    }
-
-    function closeImportModalFn() {
-      if (importModal) {
-        importModal.hidden = true;
-        importModal.removeAttribute("aria-modal");
-        document.body.style.overflow = "";
-      }
-    }
-
-    // Legacy file inputs (kept for compatibility)
-    safeAddEventListener("file-input", "change", async (e) => {
-      const file = e.target.files[0];
-      if (file) {
+      } else {
+        // PDF, txt : traitement direct
         await handleFile(file);
       }
       e.target.value = "";
