@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2563eb"/>
+      <stop offset="100%" style="stop-color:#7c3aed"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="512" height="512" rx="100" fill="url(#grad)"/>
+  
+  <!-- Book icon -->
+  <g fill="white" transform="translate(100, 120)">
+    <path d="M40 0C17.9 0 0 17.9 0 40v232c0 22.1 17.9 40 40 40h272c22.1 0 40-17.9 40-40V40c0-22.1-17.9-40-40-40H40z"/>
+    
+    <!-- Book pages -->
+    <rect x="30" y="50" width="200" height="180" rx="5" fill="white"/>
+    <rect x="130" y="50" width="200" height="180" rx="5" fill="white"/>
+    
+    <!-- Center binding -->
+    <rect x="155" y="50" width="50" height="180" fill="url(#grad)"/>
+    
+    <!-- Text lines on left page -->
+    <rect x="45" y="70" width="90" height="8" rx="2" fill="#2563eb"/>
+    <rect x="45" y="90" width="80" height="8" rx="2" fill="#7c3aed"/>
+    <rect x="45" y="110" width="95" height="8" rx="2" fill="#2563eb"/>
+    <rect x="45" y="130" width="70" height="8" rx="2" fill="#7c3aed"/>
+    <rect x="45" y="150" width="85" height="8" rx="2" fill="#2563eb"/>
+    <rect x="45" y="170" width="75" height="8" rx="2" fill="#7c3aed"/>
+    <rect x="45" y="190" width="60" height="8" rx="2" fill="#2563eb"/>
+    
+    <!-- Text lines on right page -->
+    <rect x="225" y="70" width="90" height="8" rx="2" fill="#2563eb"/>
+    <rect x="225" y="90" width="80" height="8" rx="2" fill="#7c3aed"/>
+    <rect x="225" y="110" width="95" height="8" rx="2" fill="#2563eb"/>
+    <rect x="225" y="130" width="70" height="8" rx="2" fill="#7c3aed"/>
+    <rect x="225" y="150" width="85" height="8" rx="2" fill="#2563eb"/>
+    <rect x="225" y="170" width="75" height="8" rx="2" fill="#7c3aed"/>
+    <rect x="225" y="190" width="60" height="8" rx="2" fill="#2563eb"/>
+    
+    <!-- Focus mask highlight -->
+    <rect x="30" y="130" width="200" height="40" fill="rgba(255,255,255,0.3)"/>
+  </g>
+</svg>

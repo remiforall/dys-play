@@ -1,0 +1,38 @@
+# Dys-Play
+
+> Application web progressive gratuite d'aide a la lecture pour les personnes dyslexiques, dysorthographiques et TDA/H. Fonctionne 100% en local dans le navigateur. Zero collecte de donnees.
+
+## Application
+
+- [Dys-Play](https://dys-play.posthack.com/): Outil de lecture adaptee — OCR, synthese vocale, personnalisation visuelle
+
+## Fonctionnalites
+
+- Reconnaissance de texte par photo (OCR Tesseract.js, traitement local)
+- Import de fichiers PDF et texte
+- Police OpenDyslexic et Comic Neue (optimisees dyslexie)
+- Syllabation coloree pour faciliter le decodage
+- Mode zebre (lignes alternees)
+- Regle de lecture (focus mask)
+- Synthese vocale avec suivi mot par mot
+- Espacement des lettres, mots et interlignes reglable
+- 4 themes de couleurs (clair, creme, sepia, sombre)
+- Internationalisation FR, EN, AR (avec support RTL)
+- Bibliotheque locale (IndexedDB)
+- Fonctionne hors-ligne (PWA)
+- Zero cookie, zero tracker, zero CDN externe
+
+## Public cible
+
+- Personnes dyslexiques
+- Personnes dysorthographiques
+- Personnes avec TDA/H
+- Accompagnants : enseignants, orthophonistes, parents
+
+## Technique
+
+- HTML/CSS/JS vanilla, zero framework, zero dependance npm
+- Tesseract.js v5 (OCR local)
+- PDF.js v3 (extraction texte)
+- Service Worker pour fonctionnement hors-ligne
+- Donnees 100% locales (localStorage + IndexedDB)

@@ -1,0 +1,1889 @@
+<!doctype html>
+<html lang="fr" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=5.0"
+    />
+    <meta
+      name="description"
+      content="Dys-Play : outil gratuit d'aide à la lecture pour personnes dyslexiques. Police adaptée, espacement, syllabation colorée, lecture vocale. Fonctionne hors-ligne, sans inscription, zéro collecte de données."
+    />
+    <meta name="theme-color" content="#2563eb" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Dys-Play" />
+    <title>Dys-Play - Lecture Augmentée</title>
+    <!-- Open Graph -->
+    <meta
+      property="og:title"
+      content="Dys-Play - Lecture augmentée pour dyslexiques"
+    />
+    <meta
+      property="og:description"
+      content="Outil gratuit d'aide à la lecture pour personnes dyslexiques. Police adaptée, espacement, syllabation, lecture vocale. Fonctionne hors-ligne, sans inscription."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="icons/icon-512.png" />
+    <meta property="og:locale" content="fr_FR" />
+    <meta name="twitter:card" content="summary" />
+    <!-- Données structurées -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Dys-Play",
+        "description": "Application web progressive d'aide à la lecture pour les personnes dyslexiques, dysorthographiques et TDA/H.",
+        "applicationCategory": ["EducationalApplication", "HealthApplication"],
+        "operatingSystem": "All",
+        "browserRequirements": "Requires JavaScript",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+        "featureList": [
+          "OCR local",
+          "Synthèse vocale",
+          "Police OpenDyslexic",
+          "Syllabation colorée",
+          "Mode focus",
+          "Fonctionne hors-ligne"
+        ],
+        "inLanguage": ["fr", "en", "ar"],
+        "isAccessibleForFree": true
+      }
+    </script>
+    <link rel="manifest" href="manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    <!-- Local Fonts: OpenDyslexic & Comic Neue -->
+    <link rel="stylesheet" href="fonts/fonts.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- Skip Links pour Accessibilité -->
+    <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+    <a href="#settings-panel" class="skip-link">Aller aux réglages</a>
+
+    <!-- Header -->
+    <header role="banner" class="header">
+      <div class="header-left">
+        <button id="menu-btn" aria-label="Ouvrir le menu" aria-expanded="false">
+          <svg
+            class="icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <h1 class="app-title">
+          <span class="title-main">Dys-Play</span>
+          <span class="title-sub">Pro</span>
+        </h1>
+      </div>
+
+      <div class="header-right">
+        <div
+          id="connection-status"
+          class="connection-status online"
+          role="status"
+          aria-live="polite"
+        >
+          <span class="status-dot"></span>
+          <span class="status-text">En ligne</span>
+        </div>
+        <button
+          id="library-btn"
+          aria-label="Ouvrir ma bibliothèque"
+          aria-expanded="false"
+        >
+          <svg
+            class="icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path
+              d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
+            ></path>
+          </svg>
+          <span id="library-count" class="badge">0</span>
+        </button>
+        <button
+          id="settings-btn"
+          aria-label="Ouvrir les réglages"
+          aria-expanded="false"
+        >
+          <svg
+            class="icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="3"></circle>
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+            ></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Onboarding Pages (First Time Setup - Mobile First) -->
+    <div
+      id="onboarding-container"
+      class="onboarding-container"
+      hidden
+      role="main"
+    >
+      <!-- Page 1: Language Selection -->
+      <section
+        id="onboarding-page-1"
+        class="onboarding-page"
+        role="region"
+        aria-labelledby="onboarding-page-1-title"
+      >
+        <div class="onboarding-header">
+          <div class="onboarding-progress">
+            <div class="progress-step active" data-step="1"></div>
+            <div class="progress-step" data-step="2"></div>
+            <div class="progress-step" data-step="3"></div>
+          </div>
+        </div>
+        <div class="onboarding-content">
+          <div style="text-align: center; padding: var(--space-xl)">
+            <div style="font-size: 3.5rem; margin-bottom: var(--space-lg)">
+              🌍
+            </div>
+            <h1
+              id="onboarding-page-1-title"
+              style="margin-bottom: var(--space-md); font-size: 1.8rem"
+            >
+              Bienvenue dans Dys-Play
+            </h1>
+            <p
+              id="onboarding-page-1-subtitle"
+              style="
+                color: var(--color-text-secondary);
+                margin-bottom: var(--space-xl);
+                font-size: 1rem;
+              "
+            >
+              Conçu pour les personnes dyslexiques, dysorthographiques et TDA/H.
+              Choisissez votre langue préférée.
+            </p>
+
+            <div
+              style="
+                display: flex;
+                flex-direction: column;
+                gap: var(--space-lg);
+                margin-bottom: var(--space-xl);
+              "
+            >
+              <button
+                class="onboarding-lang-btn"
+                data-lang="fr"
+                style="
+                  padding: var(--space-lg);
+                  border: 2px solid var(--color-border);
+                  border-radius: var(--radius-md);
+                  background: var(--color-bg);
+                  cursor: pointer;
+                  font-size: 1.3rem;
+                  font-weight: 600;
+                  transition: all 0.2s;
+                "
+              >
+                🇫🇷 Français
+              </button>
+              <button
+                class="onboarding-lang-btn"
+                data-lang="en"
+                style="
+                  padding: var(--space-lg);
+                  border: 2px solid var(--color-border);
+                  border-radius: var(--radius-md);
+                  background: var(--color-bg);
+                  cursor: pointer;
+                  font-size: 1.3rem;
+                  font-weight: 600;
+                  transition: all 0.2s;
+                "
+              >
+                🇬🇧 English
+              </button>
+              <button
+                class="onboarding-lang-btn"
+                data-lang="ar"
+                style="
+                  padding: var(--space-lg);
+                  border: 2px solid var(--color-border);
+                  border-radius: var(--radius-md);
+                  background: var(--color-bg);
+                  cursor: pointer;
+                  font-size: 1.3rem;
+                  font-weight: 600;
+                  transition: all 0.2s;
+                "
+              >
+                🇸🇦 العربية
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="onboarding-footer">
+          <button
+            id="onboarding-page-1-next"
+            class="btn btn-primary"
+            style="width: 100%"
+          >
+            Suivant →
+          </button>
+        </div>
+      </section>
+
+      <!-- Page 2: Typography + Theme Selection -->
+      <section
+        id="onboarding-page-2"
+        class="onboarding-page"
+        hidden
+        role="region"
+        aria-labelledby="onboarding-page-2-title"
+      >
+        <div class="onboarding-header">
+          <div class="onboarding-progress">
+            <div class="progress-step" data-step="1"></div>
+            <div class="progress-step active" data-step="2"></div>
+            <div class="progress-step" data-step="3"></div>
+          </div>
+        </div>
+        <div class="onboarding-content">
+          <div style="text-align: center; padding: var(--space-xl)">
+            <div style="font-size: 3.5rem; margin-bottom: var(--space-lg)">
+              ✨
+            </div>
+            <h1
+              id="onboarding-page-2-title"
+              style="margin-bottom: var(--space-md); font-size: 1.8rem"
+            >
+              Personnalisation
+            </h1>
+            <p
+              id="onboarding-page-2-subtitle"
+              style="
+                color: var(--color-text-secondary);
+                margin-bottom: var(--space-xl);
+                font-size: 1rem;
+              "
+            >
+              Choisissez votre police et votre thème
+            </p>
+
+            <!-- Font Selection -->
+            <div style="margin-bottom: var(--space-xl); text-align: left">
+              <label
+                id="onboarding-page-2-font-label"
+                style="
+                  display: block;
+                  margin-bottom: var(--space-md);
+                  font-weight: 600;
+                  font-size: 1.1rem;
+                "
+                >Police d'écriture</label
+              >
+              <select
+                id="onboarding-page-2-font"
+                style="
+                  width: 100%;
+                  padding: var(--space-md);
+                  border: 2px solid var(--color-border);
+                  border-radius: var(--radius-md);
+                  font-size: 1rem;
+                  background: var(--color-bg);
+                  cursor: pointer;
+                "
+              >
+                <option value="system-ui">Système (défaut)</option>
+                <option value="OpenDyslexic">
+                  OpenDyslexic (optimisée dyslexie)
+                </option>
+                <option value="Comic Neue">Comic Neue (claire et aérée)</option>
+                <option value="Arial">Arial (épurée)</option>
+                <option value="Georgia">Georgia (serif lisible)</option>
+              </select>
+            </div>
+
+            <!-- Theme Selection -->
+            <div style="text-align: center">
+              <label
+                id="onboarding-page-2-theme-label"
+                style="
+                  display: block;
+                  margin-bottom: var(--space-md);
+                  font-weight: 600;
+                  font-size: 1.1rem;
+                "
+                >Thème</label
+              >
+              <div
+                style="
+                  display: flex;
+                  gap: var(--space-md);
+                  margin-bottom: var(--space-xl);
+                "
+              >
+                <button
+                  class="onboarding-theme-btn"
+                  data-theme="light"
+                  style="
+                    flex: 1;
+                    padding: var(--space-lg);
+                    border: 2px solid var(--color-border);
+                    border-radius: var(--radius-md);
+                    background: white;
+                    color: black;
+                    cursor: pointer;
+                    font-weight: 600;
+                    font-size: 1.2rem;
+                    transition: all 0.2s;
+                  "
+                >
+                  ☀️ Clair
+                </button>
+                <button
+                  class="onboarding-theme-btn"
+                  data-theme="dark"
+                  style="
+                    flex: 1;
+                    padding: var(--space-lg);
+                    border: 2px solid var(--color-border);
+                    border-radius: var(--radius-md);
+                    background: #1e293b;
+                    color: white;
+                    cursor: pointer;
+                    font-weight: 600;
+                    font-size: 1.2rem;
+                    transition: all 0.2s;
+                  "
+                >
+                  🌙 Sombre
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="onboarding-footer">
+          <button
+            id="onboarding-page-2-prev"
+            class="btn btn-secondary"
+            style="flex: 1"
+          >
+            ← Retour
+          </button>
+          <button
+            id="onboarding-page-2-next"
+            class="btn btn-primary"
+            style="flex: 1"
+          >
+            Suivant →
+          </button>
+        </div>
+      </section>
+
+      <!-- Page 3: Advanced Settings -->
+      <section
+        id="onboarding-page-3"
+        class="onboarding-page"
+        hidden
+        role="region"
+        aria-labelledby="onboarding-page-3-title"
+      >
+        <div class="onboarding-header">
+          <div class="onboarding-progress">
+            <div class="progress-step" data-step="1"></div>
+            <div class="progress-step" data-step="2"></div>
+            <div class="progress-step active" data-step="3"></div>
+          </div>
+        </div>
+        <div class="onboarding-content">
+          <div style="text-align: center; padding: var(--space-xl)">
+            <div style="font-size: 3.5rem; margin-bottom: var(--space-lg)">
+              ⚙️
+            </div>
+            <h1
+              id="onboarding-page-3-title"
+              style="margin-bottom: var(--space-md); font-size: 1.8rem"
+            >
+              Paramètres avancés
+            </h1>
+            <p
+              id="onboarding-page-3-subtitle"
+              style="
+                color: var(--color-text-secondary);
+                margin-bottom: var(--space-xl);
+                font-size: 1rem;
+              "
+            >
+              Ajustez selon vos préférences
+            </p>
+
+            <p
+              style="
+                margin-bottom: var(--space-lg);
+                font-weight: 600;
+                font-size: 1.05rem;
+              "
+            >
+              Quel texte est le plus facile à lire pour toi ?
+            </p>
+            <div
+              style="
+                display: flex;
+                flex-direction: column;
+                gap: var(--space-md);
+                margin-bottom: var(--space-xl);
+              "
+              role="radiogroup"
+              aria-label="Choisir un confort de lecture"
+            >
+              <button
+                class="onboarding-preset-btn"
+                data-preset="compact"
+                style="
+                  padding: var(--space-lg);
+                  border: 2px solid var(--color-border);
+                  border-radius: var(--radius-md);
+                  background: var(--color-bg);
+                  cursor: pointer;
+                  text-align: start;
+                  transition: all 0.2s;
+                "
+              >
+                <span
+                  style="
+                    font-size: 16px;
+                    line-height: 1.5;
+                    letter-spacing: 0.05em;
+                    display: block;
+                    margin-bottom: var(--space-sm);
+                  "
+                  >Le chat dort sur le canapé. Il rêve de poissons.</span
+                >
+                <strong style="color: var(--color-primary); font-size: 0.875rem"
+                  >Compact</strong
+                >
+              </button>
+              <button
+                class="onboarding-preset-btn"
+                data-preset="aere"
+                style="
+                  padding: var(--space-lg);
+                  border: 2px solid var(--color-border);
+                  border-radius: var(--radius-md);
+                  background: var(--color-bg);
+                  cursor: pointer;
+                  text-align: start;
+                  transition: all 0.2s;
+                "
+              >
+                <span
+                  style="
+                    font-size: 20px;
+                    line-height: 1.8;
+                    letter-spacing: 0.12em;
+                    display: block;
+                    margin-bottom: var(--space-sm);
+                  "
+                  >Le chat dort sur le canapé. Il rêve de poissons.</span
+                >
+                <strong style="color: var(--color-primary); font-size: 0.875rem"
+                  >Aéré (recommandé)</strong
+                >
+              </button>
+              <button
+                class="onboarding-preset-btn"
+                data-preset="tres-aere"
+                style="
+                  padding: var(--space-lg);
+                  border: 2px solid var(--color-border);
+                  border-radius: var(--radius-md);
+                  background: var(--color-bg);
+                  cursor: pointer;
+                  text-align: start;
+                  transition: all 0.2s;
+                "
+              >
+                <span
+                  style="
+                    font-size: 24px;
+                    line-height: 2.2;
+                    letter-spacing: 0.2em;
+                    display: block;
+                    margin-bottom: var(--space-sm);
+                  "
+                  >Le chat dort sur le canapé.</span
+                >
+                <strong style="color: var(--color-primary); font-size: 0.875rem"
+                  >Très aéré</strong
+                >
+              </button>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--color-text-muted)">
+              Tu pourras ajuster finement dans les réglages.
+            </p>
+          </div>
+        </div>
+        <div class="onboarding-footer">
+          <button
+            id="onboarding-page-3-prev"
+            class="btn btn-secondary"
+            style="flex: 1"
+          >
+            ← Retour
+          </button>
+          <button
+            id="onboarding-page-3-complete"
+            class="btn btn-primary"
+            style="flex: 1"
+          >
+            C'est parti! 🚀
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Main Content -->
+    <main id="main-content" role="main">
+      <!-- Dashboard -->
+      <section class="dashboard" aria-label="Tableau de bord">
+        <!-- Capture Card -->
+        <div class="card" role="region" aria-labelledby="capture-title">
+          <h2 id="capture-title" class="card-title">
+            <svg
+              class="icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
+              ></path>
+              <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+            Acquisition
+          </h2>
+          <div class="card-actions">
+            <button
+              id="scan-btn"
+              class="btn btn-primary"
+              aria-label="Scanner un document"
+            >
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
+                ></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+              Scanner
+            </button>
+
+            <button
+              id="import-btn"
+              class="btn btn-secondary"
+              aria-label="Importer un fichier"
+            >
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              Importer
+            </button>
+
+            <!-- Hidden inputs for file handling -->
+            <input
+              type="file"
+              id="camera-input"
+              accept="image/*"
+              capture="environment"
+              class="hidden"
+              aria-label="Scanner avec la caméra"
+            />
+          </div>
+        </div>
+
+        <!-- Voice Card -->
+        <div class="card" role="region" aria-labelledby="voice-title">
+          <h2 id="voice-title" class="card-title">
+            <svg
+              class="icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"
+              ></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="23"></line>
+              <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+            Audio
+          </h2>
+          <div class="voice-controls">
+            <button
+              id="play-pause-btn"
+              class="btn-play"
+              aria-label="Lecture/Pause"
+              disabled
+            >
+              <svg
+                id="play-icon"
+                class="icon-large"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              <svg
+                id="pause-icon"
+                class="icon-large hidden"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+              >
+                <rect x="6" y="4" width="4" height="16"></rect>
+                <rect x="14" y="4" width="4" height="16"></rect>
+              </svg>
+            </button>
+            <div class="rate-control">
+              <label for="voice-rate"
+                >Vitesse: <span id="rate-value">1.0x</span></label
+              >
+              <input
+                type="range"
+                id="voice-rate"
+                min="0.5"
+                max="2"
+                step="0.1"
+                value="1"
+                aria-valuemin="0.5"
+                aria-valuemax="2"
+                aria-valuenow="1"
+                aria-label="Vitesse de lecture"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Focus Card -->
+        <div class="card" role="region" aria-labelledby="focus-title">
+          <h2 id="focus-title" class="card-title">
+            <svg
+              class="icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+            Aide Visuelle
+          </h2>
+          <button
+            id="focus-toggle"
+            class="btn-toggle"
+            aria-pressed="false"
+            aria-label="Activer le mode Focus"
+          >
+            <span class="toggle-text">Mode Focus</span>
+            <span class="toggle-status"></span>
+          </button>
+          <div id="opacity-control" class="opacity-control hidden">
+            <label for="mask-opacity">Opacité:</label>
+            <input
+              type="range"
+              id="mask-opacity"
+              min="0.3"
+              max="0.9"
+              step="0.1"
+              value="0.7"
+              aria-valuemin="0.3"
+              aria-valuemax="0.9"
+              aria-valuenow="0.7"
+              aria-label="Opacité du masque"
+            />
+          </div>
+        </div>
+      </section>
+
+      <!-- Loader -->
+      <div id="loader" class="loader hidden" role="status" aria-live="polite">
+        <div class="spinner"></div>
+        <span id="loader-text">Analyse en cours...</span>
+        <div class="loader-progress-wrapper" aria-hidden="true">
+          <div
+            id="loader-progress"
+            class="loader-progress"
+            role="progressbar"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+            style="width: 0%"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Reader Area -->
+      <article
+        class="reader-container"
+        role="article"
+        aria-label="Zone de lecture"
+      >
+        <div id="reader-area" class="reader-area" aria-live="polite">
+          <div id="focus-mask" class="focus-mask" hidden></div>
+          <div id="ruler-guide" class="ruler-guide" hidden></div>
+          <div id="text-content" class="text-content">
+            <div id="empty-state" class="empty-state">
+              <svg
+                class="icon-huge"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1"
+              >
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path
+                  d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
+                ></path>
+              </svg>
+              <p>Importer, scanner ou saisir du texte pour commencer</p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Text Input Area -->
+      <section class="input-section" aria-label="Saisie de texte">
+        <label for="text-input" class="sr-only">Saisir du texte à lire</label>
+        <textarea
+          id="text-input"
+          placeholder="Ou saisissez votre texte ici..."
+          rows="3"
+          aria-label="Zone de saisie de texte"
+        ></textarea>
+        <button id="apply-text-btn" class="btn btn-primary">
+          <svg
+            class="icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <polyline points="9 11 12 14 22 4"></polyline>
+            <path
+              d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"
+            ></path>
+          </svg>
+          Lire avec mes réglages
+        </button>
+      </section>
+    </main>
+
+    <!-- Menu Drawer -->
+    <aside
+      id="menu-drawer"
+      class="drawer drawer-left"
+      role="navigation"
+      aria-label="Menu principal"
+      hidden
+    >
+      <div class="drawer-header">
+        <h2>Menu</h2>
+        <button id="close-menu" class="btn-close" aria-label="Fermer le menu">
+          <svg
+            class="icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <nav class="drawer-content">
+        <ul class="nav-list">
+          <li>
+            <a href="#" id="nav-home" class="nav-link">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                <polyline points="9 22 9 12 15 12 15 22"></polyline>
+              </svg>
+              Accueil
+            </a>
+          </li>
+          <li>
+            <a href="#" id="nav-library" class="nav-link">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path
+                  d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
+                ></path>
+              </svg>
+              Ma Bibliothèque
+            </a>
+          </li>
+          <li>
+            <a href="#" id="nav-setup" class="nav-link">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="1"></circle>
+                <path d="M12 1v6m0 6v6"></path>
+                <path d="M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24"></path>
+                <path d="M1 12h6m6 0h6"></path>
+                <path d="M4.22 19.78l4.24-4.24m5.08-5.08l4.24-4.24"></path>
+              </svg>
+              Configuration initiale
+            </a>
+          </li>
+          <li>
+            <a href="#" id="nav-help" class="nav-link">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+              Aide
+            </a>
+          </li>
+          <li>
+            <a href="#" id="nav-legal" class="nav-link">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                ></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              Mentions Légales
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Library Drawer -->
+    <aside
+      id="library-drawer"
+      class="drawer drawer-right"
+      role="dialog"
+      aria-label="Ma bibliothèque"
+      hidden
+    >
+      <div class="drawer-header">
+        <h2>Ma Bibliothèque</h2>
+        <button
+          id="close-library"
+          class="btn-close"
+          aria-label="Fermer la bibliothèque"
+        >
+          <svg
+            class="icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="drawer-content">
+        <div
+          id="library-list"
+          class="library-list"
+          role="list"
+          aria-label="Documents sauvegardés"
+        >
+          <!-- Documents will be inserted here -->
+        </div>
+        <div id="library-empty" class="library-empty">
+          <p>Aucun document sauvegardé</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Settings Drawer -->
+    <aside
+      id="settings-drawer"
+      class="drawer drawer-right"
+      role="dialog"
+      aria-label="Réglages"
+      hidden
+    >
+      <div class="drawer-header">
+        <h2>Réglages</h2>
+        <button
+          id="close-settings"
+          class="btn-close"
+          aria-label="Fermer les réglages"
+        >
+          <svg
+            class="icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="drawer-content">
+        <!-- Language -->
+        <section class="settings-section">
+          <h3>Langue</h3>
+          <select id="lang-select" aria-label="Langue de l'interface">
+            <option value="fr">Français</option>
+            <option value="en">English</option>
+            <option value="ar">العربية (Arabe)</option>
+          </select>
+        </section>
+
+        <!-- Theme -->
+        <section class="settings-section">
+          <h3>Thème</h3>
+          <div class="theme-options">
+            <button
+              class="theme-btn"
+              data-theme="light"
+              aria-label="Thème clair"
+            >
+              <span class="theme-preview light"></span>
+              <span>Clair</span>
+            </button>
+            <button
+              class="theme-btn"
+              data-theme="cream"
+              aria-label="Thème crème"
+            >
+              <span class="theme-preview cream"></span>
+              <span>Crème</span>
+            </button>
+            <button
+              class="theme-btn"
+              data-theme="sepia"
+              aria-label="Thème sépia"
+            >
+              <span class="theme-preview sepia"></span>
+              <span>Sépia</span>
+            </button>
+            <button
+              class="theme-btn"
+              data-theme="dark"
+              aria-label="Thème sombre"
+            >
+              <span class="theme-preview dark"></span>
+              <span>Sombre</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Typography -->
+        <section class="settings-section">
+          <h3>Typographie</h3>
+          <div class="setting-row">
+            <label for="font-select">Police</label>
+            <select id="font-select" aria-label="Police de caractères">
+              <option value="system-ui">Système</option>
+              <option value="OpenDyslexic">OpenDyslexic</option>
+              <option value="Comic Neue">Comic Neue</option>
+              <option value="Arial">Arial</option>
+              <option value="Georgia">Georgia</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <label for="font-size"
+              >Taille: <span id="font-size-value">20</span>px</label
+            >
+            <input
+              type="range"
+              id="font-size"
+              min="14"
+              max="40"
+              value="20"
+              aria-valuemin="14"
+              aria-valuemax="40"
+              aria-valuenow="20"
+            />
+          </div>
+          <div class="setting-row">
+            <label for="letter-spacing"
+              >Espacement lettres:
+              <span id="letter-spacing-value">0.12</span>em</label
+            >
+            <input
+              type="range"
+              id="letter-spacing"
+              min="0"
+              max="0.5"
+              step="0.02"
+              value="0.12"
+              aria-valuemin="0"
+              aria-valuemax="0.5"
+              aria-valuenow="0.12"
+            />
+          </div>
+          <div class="setting-row">
+            <label for="line-height"
+              >Interlignage: <span id="line-height-value">1.7</span></label
+            >
+            <input
+              type="range"
+              id="line-height"
+              min="1.2"
+              max="2.5"
+              step="0.1"
+              value="1.7"
+              aria-valuemin="1.2"
+              aria-valuemax="2.5"
+              aria-valuenow="1.7"
+            />
+          </div>
+        </section>
+
+        <!-- Advanced -->
+        <section class="settings-section">
+          <h3>Options Avancées</h3>
+          <div class="toggle-row">
+            <label for="zebra-mode">Mode Zèbre</label>
+            <input type="checkbox" id="zebra-mode" role="switch" />
+          </div>
+          <div class="toggle-row">
+            <label for="syllable-color">Coloration syllabique</label>
+            <input type="checkbox" id="syllable-color" role="switch" />
+          </div>
+        </section>
+
+        <!-- Data Management -->
+        <section class="settings-section">
+          <h3>Données</h3>
+          <button id="save-library-btn" class="btn btn-secondary">
+            <svg
+              class="icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"
+              ></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+            Sauvegarder ce document
+          </button>
+          <button id="reset-btn" class="btn btn-danger">
+            <svg
+              class="icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <polyline points="1 4 1 10 7 10"></polyline>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+            </svg>
+            Revenir aux réglages par défaut
+          </button>
+        </section>
+      </div>
+    </aside>
+
+    <!-- Import Modal -->
+    <div
+      id="import-modal"
+      class="modal"
+      hidden
+      role="dialog"
+      aria-labelledby="import-modal-title"
+      aria-modal="true"
+    >
+      <div class="modal-backdrop" id="import-modal-backdrop"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="import-modal-title">Importer un fichier</h2>
+          <button class="btn-close" id="close-import-modal" aria-label="Fermer">
+            <svg
+              class="icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="import-options">
+            <label class="import-option" for="modal-file-input">
+              <svg
+                class="icon-large"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                ></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="12" y1="18" x2="12" y2="12"></line>
+                <polyline points="9 15 12 12 15 15"></polyline>
+              </svg>
+              <span>Depuis fichiers</span>
+              <span class="import-option-desc">Images, PDF, documents</span>
+            </label>
+            <input
+              type="file"
+              id="modal-file-input"
+              accept="image/*,.pdf,.txt,.docx"
+              class="hidden"
+              aria-label="Sélectionner un fichier"
+            />
+
+            <label class="import-option" for="modal-text-input">
+              <svg
+                class="icon-large"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="4 7 4 4 20 4 20 7"></polyline>
+                <line x1="9" y1="20" x2="15" y2="20"></line>
+                <line x1="12" y1="4" x2="12" y2="20"></line>
+              </svg>
+              <span>Presse-papiers</span>
+              <span class="import-option-desc">Coller du texte</span>
+            </label>
+            <input
+              type="text"
+              id="modal-text-input"
+              class="hidden"
+              aria-label="Texte depuis presse-papiers"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zone Selector Modal -->
+    <div
+      id="zone-selector-modal"
+      class="modal"
+      hidden
+      role="dialog"
+      aria-labelledby="zone-selector-title"
+      aria-modal="true"
+    >
+      <div class="modal-backdrop" id="zone-selector-backdrop"></div>
+      <div class="modal-content modal-large">
+        <div class="modal-header">
+          <h2 id="zone-selector-title">Sélectionner la zone</h2>
+          <button
+            class="btn-close"
+            aria-label="Fermer"
+            onclick="closeZoneSelectorModal()"
+          >
+            <svg
+              class="icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div
+            class="zone-helper"
+            style="
+              padding: var(--space-md);
+              background: var(--color-bg-tertiary);
+              border-radius: var(--radius-md);
+              margin-bottom: var(--space-lg);
+            "
+          >
+            <p
+              style="
+                margin: 0 0 var(--space-md) 0;
+                font-weight: 600;
+                font-size: 1.05rem;
+              "
+            >
+              📍 Délimiter la zone à analyser
+            </p>
+            <ol
+              style="margin: 0; padding-left: var(--space-lg); line-height: 1.6"
+            >
+              <li style="margin-bottom: var(--space-sm)">
+                <strong>Appuyez</strong> au coin supérieur gauche de la zone
+              </li>
+              <li style="margin-bottom: var(--space-sm)">
+                <strong>Glissez</strong> jusqu'au coin inférieur droit
+              </li>
+              <li style="margin-bottom: 0">
+                <strong>Relâchez</strong> pour valider
+              </li>
+            </ol>
+            <p
+              style="
+                margin: var(--space-md) 0 0 0;
+                font-size: 0.9rem;
+                color: var(--color-text-secondary);
+              "
+            >
+              💡 Vous pouvez aussi utiliser les boutons
+              <strong>Présélection</strong> ci-dessous
+            </p>
+          </div>
+          <div id="zone-selector-content" class="zone-selector-container"></div>
+
+          <div id="zone-controls" class="zone-controls" hidden>
+            <div class="preset-buttons">
+              <button
+                id="preset-full"
+                class="btn btn-small"
+                title="Analyser l'image entière"
+              >
+                <svg
+                  class="icon-small"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="3" y="3" width="18" height="18"></rect>
+                </svg>
+                Image entière
+              </button>
+              <button id="preset-a4" class="btn btn-small" title="Format A4">
+                <svg
+                  class="icon-small"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="4" y="2" width="16" height="20"></rect>
+                </svg>
+                A4
+              </button>
+              <button
+                id="preset-half"
+                class="btn btn-small"
+                title="Moitié supérieure"
+              >
+                <svg
+                  class="icon-small"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="3" y="3" width="18" height="9"></rect>
+                </svg>
+                Moitié sup.
+              </button>
+              <button
+                id="preset-third"
+                class="btn btn-small"
+                title="Tiers supérieur"
+              >
+                <svg
+                  class="icon-small"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="3" y="3" width="18" height="6"></rect>
+                </svg>
+                Tiers sup.
+              </button>
+            </div>
+          </div>
+        </div>
+        <div
+          class="modal-footer"
+          style="
+            flex-direction: column;
+            align-items: stretch;
+            gap: var(--space-lg);
+          "
+        >
+          <div style="display: flex; gap: var(--space-md)">
+            <button
+              id="analyze-zone-btn"
+              class="btn btn-primary"
+              style="flex: 1"
+            >
+              Analyser cette zone
+            </button>
+            <button
+              id="close-zone-selector-btn"
+              class="btn btn-secondary"
+              onclick="closeZoneSelectorModal()"
+              style="flex: 1"
+            >
+              Annuler
+            </button>
+          </div>
+
+          <!-- Audio Preview for Zone Selection -->
+          <div
+            class="zone-audio-section"
+            id="zone-audio-section"
+            style="
+              width: 100%;
+              padding: var(--space-md);
+              background: var(--color-bg-secondary);
+              border-radius: var(--radius-md);
+              display: none;
+              border: 1px solid var(--color-border);
+            "
+          >
+            <p
+              style="
+                margin: 0 0 var(--space-md) 0;
+                font-weight: 600;
+                margin-top: 0;
+              "
+            >
+              🔊 Aperçu du texte
+            </p>
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                gap: var(--space-md);
+                flex-wrap: wrap;
+              "
+            >
+              <button
+                id="zone-play-btn"
+                class="btn btn-primary"
+                style="
+                  padding: 0.5rem;
+                  border-radius: 50%;
+                  width: 44px;
+                  height: 44px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  flex-shrink: 0;
+                "
+                aria-label="Écouter"
+              >
+                <svg class="icon-small" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+              </button>
+              <div style="flex: 1; min-width: 150px">
+                <label
+                  for="zone-voice-rate"
+                  style="
+                    display: block;
+                    margin-bottom: 0.5rem;
+                    font-size: 0.875rem;
+                  "
+                  >Vitesse de lecture:</label
+                >
+                <input
+                  type="range"
+                  id="zone-voice-rate"
+                  min="0.5"
+                  max="2"
+                  step="0.1"
+                  value="1"
+                  style="width: 100%"
+                  aria-valuemin="0.5"
+                  aria-valuemax="2"
+                  aria-valuenow="1"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OCR Results Modal -->
+    <div
+      id="ocr-results-modal"
+      class="modal"
+      hidden
+      role="dialog"
+      aria-labelledby="ocr-results-title"
+      aria-modal="true"
+    >
+      <div class="modal-backdrop" id="ocr-results-backdrop"></div>
+      <div class="modal-content modal-large">
+        <div class="modal-header">
+          <h2 id="ocr-results-title">Résultats OCR</h2>
+          <button
+            class="btn-close"
+            aria-label="Fermer"
+            onclick="closeOCRResultsModal()"
+          >
+            <svg
+              class="icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <!-- Confidence Score -->
+          <div class="ocr-confidence-section">
+            <div class="confidence-header">
+              <h3>Confiance de la reconnaissance</h3>
+              <span id="ocr-confidence-text" class="confidence-percentage"
+                >0%</span
+              >
+            </div>
+            <div class="confidence-bar-wrapper">
+              <div id="ocr-confidence-bar" class="ocr-confidence-bar"></div>
+            </div>
+          </div>
+
+          <!-- Text Result -->
+          <div class="ocr-text-section">
+            <h3>Texte reconnu</h3>
+            <textarea
+              id="ocr-result-text"
+              class="ocr-result-text"
+              placeholder="Texte reconnu..."
+              readonly
+            ></textarea>
+          </div>
+
+          <!-- Issues -->
+          <div id="ocr-issues" class="ocr-issues" hidden>
+            <!-- Issues will be inserted here -->
+          </div>
+
+          <!-- Audio Preview -->
+          <div
+            class="ocr-audio-section"
+            style="
+              margin: var(--space-lg) 0;
+              padding: var(--space-md);
+              background: var(--color-bg-secondary);
+              border-radius: var(--radius-md);
+            "
+          >
+            <h3 style="margin-top: 0">Écouter le texte</h3>
+            <div
+              class="ocr-voice-controls"
+              style="display: flex; align-items: center; gap: var(--space-md)"
+            >
+              <button
+                id="ocr-play-btn"
+                style="
+                  padding: 0.5rem;
+                  border-radius: 50%;
+                  background: var(--color-primary);
+                  color: white;
+                  border: none;
+                  cursor: pointer;
+                  width: 44px;
+                  height: 44px;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                "
+                aria-label="Écouter"
+              >
+                <svg class="icon-small" viewBox="0 0 24 24" fill="currentColor">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                </svg>
+              </button>
+              <div style="flex: 1">
+                <label
+                  for="ocr-voice-rate"
+                  style="
+                    display: block;
+                    margin-bottom: 0.5rem;
+                    font-size: 0.875rem;
+                  "
+                  >Vitesse:</label
+                >
+                <input
+                  type="range"
+                  id="ocr-voice-rate"
+                  min="0.5"
+                  max="2"
+                  step="0.1"
+                  value="1"
+                  style="width: 100%"
+                  aria-valuemin="0.5"
+                  aria-valuemax="2"
+                  aria-valuenow="1"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Options -->
+          <div class="ocr-options">
+            <button
+              id="open-ocr-settings-btn"
+              class="btn btn-small"
+              title="Paramètres OCR avancés"
+            >
+              <svg
+                class="icon-small"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle cx="12" cy="12" r="3"></circle>
+                <path
+                  d="M12 1v6m0 6v6M4.22 4.22l4.24 4.24m5.08 5.08l4.24 4.24M1 12h6m6 0h6M4.22 19.78l4.24-4.24m5.08-5.08l4.24-4.24"
+                ></path>
+              </svg>
+              Paramètres avancés
+            </button>
+          </div>
+        </div>
+        <div class="modal-footer" style="flex-wrap: wrap; gap: var(--space-md)">
+          <button
+            id="apply-ocr-btn"
+            class="btn btn-primary"
+            style="flex: 1; min-width: 150px"
+          >
+            💾 Sauvegarder en bibliothèque
+          </button>
+          <button
+            id="export-pdf-btn"
+            class="btn btn-secondary"
+            style="flex: 0.5; min-width: 120px"
+            title="Exporter en PDF"
+          >
+            📄 PDF
+          </button>
+          <button
+            id="share-results-btn"
+            class="btn btn-secondary"
+            style="flex: 0.5; min-width: 120px"
+            title="Partager le texte"
+          >
+            🔗 Partager
+          </button>
+          <button
+            id="close-ocr-results"
+            class="btn btn-secondary"
+            style="flex: 0.5; min-width: 100px"
+          >
+            Annuler
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- OCR Settings Modal -->
+    <div
+      id="ocr-settings-modal"
+      class="modal"
+      hidden
+      role="dialog"
+      aria-labelledby="ocr-settings-title"
+      aria-modal="true"
+    >
+      <div class="modal-backdrop" id="ocr-settings-backdrop"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="ocr-settings-title">Paramètres avancés</h2>
+          <button
+            class="btn-close"
+            aria-label="Fermer"
+            onclick="closeOCRSettingsModal()"
+          >
+            <svg
+              class="icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body">
+          <!-- Preprocessing -->
+          <section class="settings-section">
+            <h3>Pré-traitement Image</h3>
+            <div class="toggle-row">
+              <label for="ocr-contrast-toggle">Amélioration du contraste</label>
+              <input
+                type="checkbox"
+                id="ocr-contrast-toggle"
+                role="switch"
+                checked
+              />
+            </div>
+            <div class="toggle-row">
+              <label for="ocr-denoise-toggle">Débruitage</label>
+              <input type="checkbox" id="ocr-denoise-toggle" role="switch" />
+            </div>
+            <div class="toggle-row">
+              <label for="ocr-binarize-toggle"
+                >Binarisation (Noir & Blanc)</label
+              >
+              <input type="checkbox" id="ocr-binarize-toggle" role="switch" />
+            </div>
+            <div class="toggle-row">
+              <label for="ocr-orientation-toggle"
+                >Détection d'orientation</label
+              >
+              <input
+                type="checkbox"
+                id="ocr-orientation-toggle"
+                role="switch"
+                checked
+              />
+            </div>
+          </section>
+
+          <!-- Validation & Correction -->
+          <section class="settings-section">
+            <h3>Validation & Correction</h3>
+            <div class="toggle-row">
+              <label for="ocr-validation-toggle">Valider le texte</label>
+              <input
+                type="checkbox"
+                id="ocr-validation-toggle"
+                role="switch"
+                checked
+              />
+            </div>
+            <div class="toggle-row">
+              <label for="ocr-auto-correct-toggle"
+                >Correction automatique</label
+              >
+              <input
+                type="checkbox"
+                id="ocr-auto-correct-toggle"
+                role="switch"
+                checked
+              />
+            </div>
+            <div class="setting-row">
+              <label for="ocr-confidence-threshold"
+                >Seuil de confiance:
+                <span id="ocr-confidence-threshold-value">65</span>%</label
+              >
+              <input
+                type="range"
+                id="ocr-confidence-threshold"
+                min="0"
+                max="100"
+                step="5"
+                value="65"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="65"
+              />
+            </div>
+          </section>
+        </div>
+        <div class="modal-footer">
+          <button id="save-ocr-settings-btn" class="btn btn-primary">
+            Sauvegarder les paramètres
+          </button>
+          <button
+            id="close-ocr-settings-btn"
+            class="btn btn-secondary"
+            onclick="closeOCRSettingsModal()"
+          >
+            Annuler
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modale Mentions Légales -->
+    <div
+      id="legal-modal"
+      class="modal"
+      hidden
+      role="dialog"
+      aria-labelledby="legal-title"
+      aria-modal="true"
+    >
+      <div class="modal-backdrop" id="legal-backdrop"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="legal-title">Mentions légales</h2>
+          <button class="btn-close" id="close-legal" aria-label="Fermer">
+            <svg
+              class="icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body" style="max-height: 70vh; overflow-y: auto">
+          <h3>Éditeur</h3>
+          <p>Dys-Play est un projet open-source édité par PostHack.</p>
+
+          <h3>Hébergement</h3>
+          <p>
+            Application web progressive fonctionnant entièrement dans le
+            navigateur. Aucun serveur distant ne traite les données.
+          </p>
+
+          <h3>Données personnelles et RGPD</h3>
+          <p>
+            Dys-Play ne collecte <strong>aucune donnée personnelle</strong>.
+            Conformément au RGPD :
+          </p>
+          <ul>
+            <li>Aucun cookie tiers, aucun traceur, aucune publicité</li>
+            <li>
+              Tous les textes sont traités localement dans votre navigateur
+            </li>
+            <li>
+              Vos réglages sont sauvegardés dans le stockage local de votre
+              navigateur (localStorage)
+            </li>
+            <li>
+              La reconnaissance de texte (OCR) fonctionne intégralement sur
+              votre appareil
+            </li>
+            <li>Aucune donnée ne quitte votre appareil</li>
+          </ul>
+
+          <h3>Droit à l'effacement</h3>
+          <p>
+            Vous pouvez supprimer toutes vos données locales depuis les réglages
+            de l'application (bouton "Revenir aux réglages par défaut") ou en
+            effaçant les données du site dans votre navigateur.
+          </p>
+
+          <h3>Accessibilité</h3>
+          <p>
+            Dys-Play vise la conformité WCAG 2.2 niveau AAA. Si vous rencontrez
+            un obstacle d'accessibilité, contactez-nous.
+          </p>
+
+          <h3>Licence</h3>
+          <p>Code source disponible sous licence open-source.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overlay -->
+    <div id="drawer-overlay" class="overlay" hidden aria-hidden="true"></div>
+
+    <!-- Toast Notifications -->
+    <div
+      id="toast-container"
+      class="toast-container"
+      role="alert"
+      aria-live="polite"
+    ></div>
+
+    <!-- Scripts - Tesseract.js local pour OCR -->
+    <script src="libs/tesseract.min.js" defer></script>
+    <script src="libs/pdf.min.js" defer></script>
+    <!-- OCR Configuration et Modules -->
+    <script src="ocr-config.js" defer></script>
+    <script src="ocr-zone-selector.js" defer></script>
+    <script src="ocr-preprocessor.js" defer></script>
+    <script src="ocr-validator.js" defer></script>
+    <!-- Application principale -->
+    <script src="app.js" defer></script>
+  </body>
+</html>

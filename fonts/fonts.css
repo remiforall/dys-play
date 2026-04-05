@@ -1,0 +1,37 @@
+/* OpenDyslexic Font - Optimized for dyslexic readers */
+@font-face {
+    font-family: 'OpenDyslexic';
+    src: url('./OpenDyslexic-Regular.woff2') format('woff2'),
+         url('./OpenDyslexic-Regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'OpenDyslexic';
+    src: url('./OpenDyslexic-Bold.woff2') format('woff2'),
+         url('./OpenDyslexic-Bold.woff') format('woff');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Comic Neue Font - Friendly and clear */
+@font-face {
+    font-family: 'Comic Neue';
+    src: url('./ComicNeue-Regular.woff2') format('woff2'),
+         url('./ComicNeue-Regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Comic Neue';
+    src: url('./ComicNeue-Bold.woff2') format('woff2'),
+         url('./ComicNeue-Bold.woff') format('woff');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
