@@ -3,7 +3,7 @@ name: Déploiement Dys-Play sur Infomaniak
 on:
   push:
     branches: [main]
-  workflow_dispatch: # Permet le déclenchement manuel
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -14,22 +14,29 @@ jobs:
       - name: Checkout du code
         uses: actions/checkout@v4
 
-      - name: Déploiement via SFTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.INFOMANIAK_HOST }}
-          port: 22
-          protocol: sftp
-          username: ${{ secrets.INFOMANIAK_USER }}
-          password: ${{ secrets.INFOMANIAK_PASSWORD }}
-          local-dir: ./
-          server-dir: ${{ secrets.INFOMANIAK_REMOTE_PATH }}
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/.github*
-            **/.github*/**
-            .gitignore
-            README.md
-            libs/README.md
-            fonts/README.md
+      - name: Installer lftp
+        run: sudo apt-get update && sudo apt-get install -y lftp
+
+      - name: Déploiement via SFTP (lftp mirror)
+        env:
+          HOST: ${{ secrets.INFOMANIAK_HOST }}
+          USER: ${{ secrets.INFOMANIAK_USER }}
+          PASS: ${{ secrets.INFOMANIAK_PASSWORD }}
+          REMOTE: ${{ secrets.INFOMANIAK_REMOTE_PATH }}
+        run: |
+          lftp -c "
+            set sftp:auto-confirm yes;
+            set net:max-retries 3;
+            set net:timeout 30;
+            open -u $USER,$PASS sftp://$HOST;
+            mirror --reverse --delete --verbose \
+              --exclude ^\.git/ \
+              --exclude ^\.github/ \
+              --exclude ^\.gitignore$ \
+              --exclude ^README\.md$ \
+              --exclude ^libs/README\.md$ \
+              --exclude ^fonts/README\.md$ \
+              ./ $REMOTE;
+            quit;
+          "
+          echo "Déploiement terminé"
