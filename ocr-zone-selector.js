@@ -1,6 +1,7 @@
 /**
  * Zone Selector Module - Sélection de zone sur image
- * Permet au utilisateur de dessiner un rectangle personnalisable
+ * Mode 2 taps : tap coin 1, tap coin 2 → zone sélectionnée
+ * Presets : image entière, A4, moitié sup, tiers sup
  */
 
 class ZoneSelector {
@@ -10,224 +11,209 @@ class ZoneSelector {
     this.canvas = document.createElement("canvas");
     this.ctx = this.canvas.getContext("2d");
 
-    // État du rectangle
-    this.rect = {
-      x: 0,
-      y: 0,
-      width: 0,
-      height: 0,
-      startX: 0,
-      startY: 0,
-      isDrawing: false,
-    };
+    // Zone sélectionnée (coordonnées image originale)
+    this.rect = { x: 0, y: 0, width: 0, height: 0 };
 
-    // Presets configuration
-    this.presets = {
-      full: { name: "Image entière", ratio: null },
-      a4: { name: "Format A4", ratio: 1.414 },
-      half: { name: "Moitié supérieure", ratio: null },
-      third: { name: "Tiers supérieur", ratio: null },
-    };
+    // État du mode 2 taps
+    this.tap1 = null; // Premier tap (coin)
+    this.tap2 = null; // Deuxième tap (coin opposé)
 
-    this.selectedPreset = "full";
-    this.zoomLevel = 1;
-    this.panX = 0;
-    this.panY = 0;
-    this.minWidth = 50;
-    this.minHeight = 50;
+    // Ratio d'affichage
+    this.displayScale = 1;
 
     this.init();
   }
 
   init() {
-    // Adapter la taille du canvas au conteneur (responsive mobile)
-    const containerWidth = this.container.clientWidth || 300;
+    // Dimensions de l'image originale
     const natW = this.image.naturalWidth || this.image.width;
     const natH = this.image.naturalHeight || this.image.height;
-    const scale = Math.min(containerWidth / natW, 1);
-    this.displayScale = scale;
 
-    this.canvas.width = Math.round(natW * scale);
-    this.canvas.height = Math.round(natH * scale);
+    // Adapter au conteneur
+    const containerWidth = this.container.clientWidth || 300;
+    this.displayScale = Math.min(containerWidth / natW, 1);
+
+    this.canvas.width = Math.round(natW * this.displayScale);
+    this.canvas.height = Math.round(natH * this.displayScale);
     this.canvas.className = "zone-canvas";
-    this.canvas.style.touchAction = "none";
-    this.canvas.style.userSelect = "none";
-    this.canvas.style.WebkitUserSelect = "none";
     this.canvas.style.display = "block";
     this.canvas.style.maxWidth = "100%";
+    this.canvas.style.borderRadius = "8px";
+    this.canvas.style.cursor = "crosshair";
 
-    // Insérer après l'image
+    // Insérer après l'image (l'image sera cachée)
+    this.image.style.display = "none";
     this.image.parentElement.insertBefore(this.canvas, this.image.nextSibling);
 
-    // Event listeners — souris
-    this.canvas.addEventListener("mousedown", (e) => this.startDraw(e));
-    this.canvas.addEventListener("mousemove", (e) => this.draw(e));
-    this.canvas.addEventListener("mouseup", (e) => this.stopDraw(e));
-    this.canvas.addEventListener("mouseleave", (e) => this.stopDraw(e));
-
-    // Event listeners — tactile (passive: false pour pouvoir preventDefault)
-    this.canvas.addEventListener(
-      "touchstart",
-      (e) => {
-        e.preventDefault();
-        this.startDraw(e);
-      },
-      { passive: false },
-    );
-    this.canvas.addEventListener(
-      "touchmove",
-      (e) => {
-        e.preventDefault();
-        this.draw(e);
-      },
-      { passive: false },
-    );
+    // Clic / tap → sélection par 2 points
+    this.canvas.addEventListener("click", (e) => this._handleTap(e));
     this.canvas.addEventListener(
       "touchend",
       (e) => {
         e.preventDefault();
-        this.stopDraw(e);
-      },
-      { passive: false },
-    );
-    this.canvas.addEventListener(
-      "touchcancel",
-      (e) => {
-        e.preventDefault();
-        this.stopDraw(e);
+        // Convertir le touch en coordonnées
+        const touch = e.changedTouches[0];
+        this._handleTapAt(touch.clientX, touch.clientY);
       },
       { passive: false },
     );
 
-    // Wheel zoom
-    this.canvas.addEventListener("wheel", (e) => this.handleZoom(e));
+    // Empêcher le pull-to-refresh et le scroll sur le canvas
+    this.canvas.addEventListener("touchmove", (e) => e.preventDefault(), {
+      passive: false,
+    });
 
-    // Initialiser avec preset 'full'
+    // Sélection par défaut : image entière
     this.applyPreset("full");
   }
 
-  getCanvasPos(e) {
+  _handleTap(e) {
+    this._handleTapAt(e.clientX, e.clientY);
+  }
+
+  _handleTapAt(clientX, clientY) {
     const rect = this.canvas.getBoundingClientRect();
-    const x = (e.clientX || e.touches[0].clientX) - rect.left;
-    const y = (e.clientY || e.touches[0].clientY) - rect.top;
+    const canvasX = clientX - rect.left;
+    const canvasY = clientY - rect.top;
 
-    // Appliquer zoom et pan
-    return {
-      x: (x - this.panX) / this.zoomLevel,
-      y: (y - this.panY) / this.zoomLevel,
-    };
-  }
+    // Convertir en coordonnées image originale
+    const imgX = Math.round(canvasX / this.displayScale);
+    const imgY = Math.round(canvasY / this.displayScale);
 
-  startDraw(e) {
-    e.preventDefault();
-    const pos = this.getCanvasPos(e);
+    if (!this.tap1) {
+      // Premier tap
+      this.tap1 = { x: imgX, y: imgY };
+      this.tap2 = null;
+      this._renderWithMarker();
+    } else {
+      // Deuxième tap → créer le rectangle
+      this.tap2 = { x: imgX, y: imgY };
+      const x = Math.min(this.tap1.x, this.tap2.x);
+      const y = Math.min(this.tap1.y, this.tap2.y);
+      const w = Math.abs(this.tap2.x - this.tap1.x);
+      const h = Math.abs(this.tap2.y - this.tap1.y);
 
-    this.rect.startX = pos.x;
-    this.rect.startY = pos.y;
-    this.rect.isDrawing = true;
-  }
+      // Taille minimale
+      if (w < 30 || h < 30) {
+        this.tap1 = null;
+        this.tap2 = null;
+        this.applyPreset("full");
+        return;
+      }
 
-  draw(e) {
-    if (!this.rect.isDrawing) return;
-    e.preventDefault();
-
-    const pos = this.getCanvasPos(e);
-
-    this.rect.x = Math.min(this.rect.startX, pos.x);
-    this.rect.y = Math.min(this.rect.startY, pos.y);
-    this.rect.width = Math.abs(pos.x - this.rect.startX);
-    this.rect.height = Math.abs(pos.y - this.rect.startY);
-
-    this.render();
-  }
-
-  stopDraw(e) {
-    e.preventDefault();
-    this.rect.isDrawing = false;
-
-    // Validation taille minimum
-    if (this.rect.width < this.minWidth || this.rect.height < this.minHeight) {
-      this.applyPreset("full");
+      this.rect = { x, y, width: w, height: h };
+      this.tap1 = null;
+      this.tap2 = null;
+      this.render();
     }
-
-    this.render();
   }
 
-  handleZoom(e) {
-    e.preventDefault();
-    const oldZoom = this.zoomLevel;
-    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  _renderWithMarker() {
+    // Dessiner l'image + marqueur du premier tap
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.save();
+    this.ctx.scale(this.displayScale, this.displayScale);
+    this.ctx.drawImage(this.image, 0, 0);
+    this.ctx.restore();
 
-    this.zoomLevel = Math.max(0.5, Math.min(3, this.zoomLevel * delta));
+    // Marqueur du premier point
+    if (this.tap1) {
+      const sx = this.tap1.x * this.displayScale;
+      const sy = this.tap1.y * this.displayScale;
+      this.ctx.fillStyle = "#2563eb";
+      this.ctx.beginPath();
+      this.ctx.arc(sx, sy, 8, 0, Math.PI * 2);
+      this.ctx.fill();
+      this.ctx.strokeStyle = "white";
+      this.ctx.lineWidth = 2;
+      this.ctx.beginPath();
+      this.ctx.arc(sx, sy, 8, 0, Math.PI * 2);
+      this.ctx.stroke();
 
-    // Zoom vers le curseur
-    const pos = this.getCanvasPos(e);
-    this.panX -= pos.x * (this.zoomLevel - oldZoom);
-    this.panY -= pos.y * (this.zoomLevel - oldZoom);
-
-    this.render();
+      // Texte d'aide
+      this.ctx.fillStyle = "rgba(37, 99, 235, 0.9)";
+      this.ctx.font = "bold 14px system-ui";
+      this.ctx.fillText("Touchez le coin opposé", sx + 14, sy + 5);
+    }
   }
 
   applyPreset(presetName) {
-    const preset = this.presets[presetName];
-    if (!preset) return;
+    const natW = this.image.naturalWidth || this.image.width;
+    const natH = this.image.naturalHeight || this.image.height;
 
-    this.selectedPreset = presetName;
-    const w = this.image.naturalWidth;
-    const h = this.image.naturalHeight;
+    this.tap1 = null;
+    this.tap2 = null;
 
     switch (presetName) {
       case "full":
-        this.rect = { x: 0, y: 0, width: w, height: h, isDrawing: false };
+        this.rect = { x: 0, y: 0, width: natW, height: natH };
         break;
       case "a4":
-        const a4Height = w * preset.ratio;
         this.rect = {
           x: 0,
           y: 0,
-          width: w,
-          height: Math.min(a4Height, h),
-          isDrawing: false,
+          width: natW,
+          height: Math.min(Math.round(natW * 1.414), natH),
         };
         break;
       case "half":
-        this.rect = { x: 0, y: 0, width: w, height: h / 2, isDrawing: false };
+        this.rect = {
+          x: 0,
+          y: 0,
+          width: natW,
+          height: Math.round(natH / 2),
+        };
         break;
       case "third":
-        this.rect = { x: 0, y: 0, width: w, height: h / 3, isDrawing: false };
+        this.rect = {
+          x: 0,
+          y: 0,
+          width: natW,
+          height: Math.round(natH / 3),
+        };
         break;
+      default:
+        this.rect = { x: 0, y: 0, width: natW, height: natH };
     }
 
     this.render();
   }
 
   render() {
-    // Effacer
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-    // Appliquer transformations
     this.ctx.save();
-    this.ctx.translate(this.panX, this.panY);
-    this.ctx.scale(this.zoomLevel, this.zoomLevel);
+    this.ctx.scale(this.displayScale, this.displayScale);
 
-    // Dessiner l'image
+    // Image complète
     this.ctx.drawImage(this.image, 0, 0);
 
-    // Overlay sombre
-    this.ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-    this.ctx.fillRect(0, 0, this.image.naturalWidth, this.image.naturalHeight);
+    const natW = this.image.naturalWidth || this.image.width;
+    const natH = this.image.naturalHeight || this.image.height;
 
-    // Zone claire (sélectionnée)
-    this.ctx.clearRect(
-      this.rect.x,
+    // Overlay sombre sur la zone NON sélectionnée
+    this.ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
+    // Haut
+    this.ctx.fillRect(0, 0, natW, this.rect.y);
+    // Bas
+    this.ctx.fillRect(
+      0,
+      this.rect.y + this.rect.height,
+      natW,
+      natH - this.rect.y - this.rect.height,
+    );
+    // Gauche
+    this.ctx.fillRect(0, this.rect.y, this.rect.x, this.rect.height);
+    // Droite
+    this.ctx.fillRect(
+      this.rect.x + this.rect.width,
       this.rect.y,
-      this.rect.width,
+      natW - this.rect.x - this.rect.width,
       this.rect.height,
     );
 
-    // Border du rectangle
+    // Bordure du rectangle sélectionné
     this.ctx.strokeStyle = "#2563eb";
-    this.ctx.lineWidth = 3;
+    this.ctx.lineWidth = 3 / this.displayScale;
     this.ctx.strokeRect(
       this.rect.x,
       this.rect.y,
@@ -235,39 +221,29 @@ class ZoneSelector {
       this.rect.height,
     );
 
-    // Poignées de redimensionnement
-    const handleSize = 8;
+    // Poignées aux coins
+    const hs = 6 / this.displayScale;
     this.ctx.fillStyle = "#2563eb";
-    const corners = [
-      { x: this.rect.x, y: this.rect.y },
-      { x: this.rect.x + this.rect.width, y: this.rect.y },
-      { x: this.rect.x, y: this.rect.y + this.rect.height },
-      { x: this.rect.x + this.rect.width, y: this.rect.y + this.rect.height },
-    ];
-
-    corners.forEach((corner) => {
-      this.ctx.fillRect(
-        corner.x - handleSize / 2,
-        corner.y - handleSize / 2,
-        handleSize,
-        handleSize,
-      );
+    [
+      [this.rect.x, this.rect.y],
+      [this.rect.x + this.rect.width, this.rect.y],
+      [this.rect.x, this.rect.y + this.rect.height],
+      [this.rect.x + this.rect.width, this.rect.y + this.rect.height],
+    ].forEach(([cx, cy]) => {
+      this.ctx.fillRect(cx - hs, cy - hs, hs * 2, hs * 2);
     });
 
     this.ctx.restore();
   }
 
   getSelectedZone() {
-    // Retourner les coordonnées normalisées (0-1)
-    const w = this.image.naturalWidth;
-    const h = this.image.naturalHeight;
-
+    const natW = this.image.naturalWidth || this.image.width;
+    const natH = this.image.naturalHeight || this.image.height;
     return {
-      x: this.rect.x / w,
-      y: this.rect.y / h,
-      width: this.rect.width / w,
-      height: this.rect.height / h,
-      // Aussi retourner les coordonnées pixels
+      x: this.rect.x / natW,
+      y: this.rect.y / natH,
+      width: this.rect.width / natW,
+      height: this.rect.height / natH,
       pixelX: this.rect.x,
       pixelY: this.rect.y,
       pixelWidth: this.rect.width,
@@ -276,11 +252,9 @@ class ZoneSelector {
   }
 
   extractZoneImage() {
-    // Créer une nouvelle canvas avec la zone sélectionnée
     const canvas = document.createElement("canvas");
     canvas.width = this.rect.width;
     canvas.height = this.rect.height;
-
     const ctx = canvas.getContext("2d");
     ctx.drawImage(
       this.image,
@@ -293,11 +267,12 @@ class ZoneSelector {
       this.rect.width,
       this.rect.height,
     );
-
     return canvas.toDataURL("image/png");
   }
 
   reset() {
+    this.tap1 = null;
+    this.tap2 = null;
     this.applyPreset("full");
   }
 }

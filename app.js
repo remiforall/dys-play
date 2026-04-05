@@ -1625,8 +1625,12 @@ const drawers = new DrawerManager();
 
 class LibraryManager {
   async refresh() {
-    const documents = await db.getAllDocuments();
-    state.library = documents.reverse(); // Plus récents en premier
+    try {
+      const documents = await db.getAllDocuments();
+      state.library = Array.isArray(documents) ? documents.reverse() : [];
+    } catch (e) {
+      state.library = [];
+    }
     updateLibraryCount();
     renderLibrary();
   }
