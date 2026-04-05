@@ -16,3 +16,16 @@ node_modules/
 .claude/
 claude.md
 memory.md
+
+# Rapports d'audit (internes)
+*-AUDIT.md
+ARCHITECTURE-DECISIONS.md
+CONTENT-STRATEGY.md
+ECODESIGN-AUDIT.md
+
+# Documentation interne
+developpement-pwa-dys-play.md
+
+# Polices woff legacy (woff2 suffisent)
+fonts/*.woff
+fonts/download-fonts.sh
