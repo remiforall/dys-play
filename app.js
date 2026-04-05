@@ -489,9 +489,18 @@ class OCREngine {
   constructor() {
     this.worker = null;
     this.isInitialized = false;
-    this.preprocessor = new ImagePreprocessor();
-    this.validator = new OCRValidator();
+    this.preprocessor = null;
+    this.validator = null;
     this.retryCount = 0;
+  }
+
+  _ensureModules() {
+    if (!this.preprocessor && typeof ImagePreprocessor !== "undefined") {
+      this.preprocessor = new ImagePreprocessor();
+    }
+    if (!this.validator && typeof OCRValidator !== "undefined") {
+      this.validator = new OCRValidator();
+    }
   }
 
   async init(lang = "fra") {
@@ -527,6 +536,7 @@ class OCREngine {
    * Reconnaissance avec pré-traitement et validation
    */
   async recognize(imageFile, options = {}) {
+    this._ensureModules();
     if (!this.worker) {
       await this.init();
     }
@@ -629,6 +639,7 @@ class OCREngine {
    * Reconnaissance d'une zone sélectionnée
    */
   async recognizeZone(imageDataUrl) {
+    this._ensureModules();
     if (!this.worker) {
       await this.init();
     }
@@ -2790,7 +2801,8 @@ async function init() {
       navigateToPage("acquisition");
     }
   } catch (error) {
-    showToast("Erreur d'initialisation", "error");
+    console.error("Erreur initialisation Dys-Play:", error);
+    showToast("Erreur d'initialisation : " + error.message, "error");
   }
 }
 
