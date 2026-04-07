@@ -220,6 +220,7 @@ class ImagePreprocessor {
 
       img.onload = () => {
         try {
+          URL.revokeObjectURL(img.src);
           // Limiter la taille sur mobile pour économiser la RAM
           const maxDim =
             navigator.deviceMemory && navigator.deviceMemory < 4 ? 1200 : 2000;
@@ -272,9 +273,11 @@ class ImagePreprocessor {
         }
       };
 
-      img.onerror = () => reject(new Error("Impossible de charger l'image"));
-      const objectUrl = URL.createObjectURL(file);
-      img.src = objectUrl;
+      img.onerror = () => {
+        URL.revokeObjectURL(img.src);
+        reject(new Error("Impossible de charger l'image"));
+      };
+      img.src = URL.createObjectURL(file);
     });
   }
 

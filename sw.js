@@ -36,7 +36,14 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(STATIC_CACHE)
-      .then((cache) => cache.addAll(PRECACHE_URLS))
+      .then((cache) =>
+        cache.addAll(PRECACHE_URLS).catch((err) => {
+          console.error("Échec pré-cache, tentative individuelle:", err);
+          return Promise.allSettled(
+            PRECACHE_URLS.map((url) => cache.add(url).catch(() => {})),
+          );
+        }),
+      )
       .then(() => self.skipWaiting()),
   );
 });

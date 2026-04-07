@@ -482,6 +482,16 @@ const Storage = {
 };
 
 // ============================================
+// 5b. UTILITAIRES DE SÉCURITÉ
+// ============================================
+
+function escapeHtml(str) {
+  const div = document.createElement("div");
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// ============================================
 // 6. MOTEUR OCR (Tesseract.js) - AMÉLIORÉ
 // ============================================
 
@@ -1213,10 +1223,12 @@ function displayOCRResults(text, confidence, validation = null) {
       "<h4>⚠️ Mots détectés comme suspects:</h4>" +
       validation.issues
         .map((issue) => {
-          const suggestions = issue.suggestions.map((s) => s.word).join(", ");
+          const suggestions = issue.suggestions
+            .map((s) => escapeHtml(s.word))
+            .join(", ");
           return `
                     <div class="ocr-issue">
-                        <span class="ocr-issue-word">"${issue.original}"</span>
+                        <span class="ocr-issue-word">"${escapeHtml(issue.original)}"</span>
                         ${suggestions ? `<span class="ocr-suggestion">Suggestions: ${suggestions}</span>` : ""}
                     </div>
                 `;
@@ -1517,24 +1529,30 @@ function clearSpeakingHighlight() {
 
 function updateStatus() {
   const statusEl = document.getElementById("connection-status");
+  if (!statusEl) return;
   const statusText = statusEl.querySelector(".status-text");
   const statusDot = statusEl.querySelector(".status-dot");
 
   if (state.isOnline) {
     statusEl.classList.remove("offline");
     statusEl.classList.add("online");
-    statusText.textContent = i18n[state.currentLang]["status.online"];
+    if (statusText)
+      statusText.textContent = i18n[state.currentLang]["status.online"];
   } else {
     statusEl.classList.remove("online");
     statusEl.classList.add("offline");
-    statusText.textContent = i18n[state.currentLang]["status.offline"];
+    if (statusText)
+      statusText.textContent = i18n[state.currentLang]["status.offline"];
   }
 }
 
 function showToast(message, type = "info") {
   const container = document.getElementById("toast-container");
+  if (!container) return;
   const toast = document.createElement("div");
   toast.className = `toast ${type}`;
+  toast.setAttribute("role", "alert");
+  toast.setAttribute("aria-live", "assertive");
   toast.textContent = message;
   container.appendChild(toast);
 
@@ -1565,8 +1583,10 @@ class DrawerManager {
     drawer.hidden = false;
     drawer.setAttribute("aria-expanded", "true");
     this.activeDrawer = drawerId;
-    this.overlay.classList.add("visible");
-    this.overlay.hidden = false;
+    if (this.overlay) {
+      this.overlay.classList.add("visible");
+      this.overlay.hidden = false;
+    }
 
     // Focus dans le drawer
     const closeBtn = drawer.querySelector(".btn-close");
@@ -1578,7 +1598,10 @@ class DrawerManager {
   close() {
     if (!this.activeDrawer) return;
 
-    const drawer = document.getElementById(this.activeDrawer);
+    // Sauvegarder avant reset pour restaurer le focus
+    const closingDrawerId = this.activeDrawer;
+
+    const drawer = document.getElementById(closingDrawerId);
     if (drawer) {
       drawer.classList.remove("open");
       drawer.setAttribute("aria-expanded", "false");
@@ -1587,13 +1610,15 @@ class DrawerManager {
       }, 300);
     }
 
-    this.overlay.classList.remove("visible");
-    this.overlay.hidden = true;
+    if (this.overlay) {
+      this.overlay.classList.remove("visible");
+      this.overlay.hidden = true;
+    }
     this.activeDrawer = null;
 
-    // Retour du focus
+    // Retour du focus au déclencheur
     const trigger = document.querySelector(
-      `[aria-controls="${this.activeDrawer}"]`,
+      `[aria-controls="${closingDrawerId}"]`,
     );
     if (trigger) {
       trigger.focus();
@@ -1710,9 +1735,9 @@ function renderLibrary() {
   list.innerHTML = state.library
     .map(
       (doc) => `
-        <div class="library-item" tabindex="0" role="button" aria-label="Ouvrir ${doc.text.substring(0, 50)}..." data-id="${doc.id}">
-            <div class="library-item-title">${doc.text.substring(0, 100)}${doc.text.length > 100 ? "..." : ""}</div>
-            <div class="library-item-date">${new Date(doc.date).toLocaleDateString()} • ${doc.lang.toUpperCase()}</div>
+        <div class="library-item" tabindex="0" role="button" aria-label="Ouvrir ${escapeHtml(doc.text.substring(0, 50))}..." data-id="${escapeHtml(String(doc.id))}">
+            <div class="library-item-title">${escapeHtml(doc.text.substring(0, 100))}${doc.text.length > 100 ? "..." : ""}</div>
+            <div class="library-item-date">${new Date(doc.date).toLocaleDateString()} • ${escapeHtml(doc.lang.toUpperCase())}</div>
         </div>
     `,
     )
@@ -2371,9 +2396,7 @@ async function loadSettings() {
 
   // Vérifier si première visite
   const savedFirstTime = Storage.get("isFirstTime");
-  console.log(savedFirstTime, "type:", typeof savedFirstTime);
   state.isFirstTime = savedFirstTime === null ? true : savedFirstTime;
-  console.log();
 
   // Charger depuis localStorage
   const settings = {
@@ -2568,7 +2591,6 @@ async function registerServiceWorker() {
   if ("serviceWorker" in navigator) {
     try {
       const registration = await navigator.serviceWorker.register("./sw.js");
-      console.log("Service Worker enregistré:", registration.scope);
 
       // Vérifier les mises à jour
       registration.addEventListener("updatefound", () => {
@@ -2704,7 +2726,6 @@ async function init() {
 
     // Charger les paramètres
     await loadSettings();
-    console.log(JSON.stringify(state.settings, null, 2));
 
     // Enregistrer le Service Worker
     await registerServiceWorker();
@@ -2718,27 +2739,10 @@ async function init() {
     // Rafraîchir la bibliothèque
     await libraryManager.refresh();
 
-    console.log("Dys-Play initialisé avec succès");
-    console.log(
-      JSON.stringify(
-        {
-          theme: state.settings.theme,
-          font: state.settings.font,
-          fontSize: state.settings.fontSize,
-          isOnline: state.isOnline,
-          isFirstTime: state.isFirstTime,
-          libraryCount: state.library.length,
-        },
-        null,
-        2,
-      ),
-    );
-
     // Vérifier si première visite
     if (state.isFirstTime) {
       showOnboarding();
     } else {
-      console.log();
       navigateToPage("acquisition");
     }
   } catch (error) {
