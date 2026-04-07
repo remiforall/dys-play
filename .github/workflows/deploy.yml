@@ -9,6 +9,8 @@ jobs:
   deploy:
     name: Déployer sur dys-play.net
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
       - name: Checkout du code
