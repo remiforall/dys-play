@@ -54,11 +54,16 @@ const state = {
     font: "system-ui",
     fontSize: 20,
     letterSpacing: 0.12,
+    wordSpacing: 0.25,
     lineHeight: 1.7,
     zebraMode: false,
     syllableColor: false,
     maskOpacity: 0.7,
     voiceRate: 1.0,
+    reducedMotion: false,
+    overlayColor: null,
+    overlayOpacity: 0.15,
+    rulerMode: "window",
   },
   library: [],
   utterance: null,
@@ -126,10 +131,20 @@ const i18n = {
     "label.font": "Police",
     "label.fontSize": "Taille",
     "label.letterSpacing": "Espacement lettres",
+    "label.wordSpacing": "Espacement mots",
     "label.lineHeight": "Interlignage",
     "label.voiceRate": "Vitesse",
     "toggle.zebra": "Mode Zèbre",
     "toggle.syllable": "Coloration syllabique",
+    "toggle.reducedMotion": "Mode calme",
+    "section.overlay": "Overlay couleur",
+    "overlay.desc": "Filtre coloré pour le stress visuel (syndrome d'Irlen)",
+    "label.overlayOpacity": "Intensité",
+    "label.rulerMode": "Mode règle",
+    "ruler.line": "Ligne",
+    "ruler.window": "Fenêtre",
+    "ruler.top": "Masque haut",
+    "ruler.spotlight": "Spot",
     "msg.saving": "Sauvegarde...",
     "msg.saved": "Sauvegardé",
     "msg.error": "Erreur",
@@ -193,10 +208,20 @@ const i18n = {
     "label.font": "Font",
     "label.fontSize": "Size",
     "label.letterSpacing": "Letter Spacing",
+    "label.wordSpacing": "Word Spacing",
     "label.lineHeight": "Line Height",
     "label.voiceRate": "Speed",
     "toggle.zebra": "Zebra Mode",
     "toggle.syllable": "Syllable Color",
+    "toggle.reducedMotion": "Calm mode",
+    "section.overlay": "Color Overlay",
+    "overlay.desc": "Colored filter for visual stress (Irlen syndrome)",
+    "label.overlayOpacity": "Intensity",
+    "label.rulerMode": "Ruler Mode",
+    "ruler.line": "Line",
+    "ruler.window": "Window",
+    "ruler.top": "Top Mask",
+    "ruler.spotlight": "Spotlight",
     "msg.saving": "Saving...",
     "msg.saved": "Saved",
     "msg.error": "Error",
@@ -251,10 +276,20 @@ const i18n = {
     "label.font": "الخط",
     "label.fontSize": "الحجم",
     "label.letterSpacing": "تباعد الأحرف",
+    "label.wordSpacing": "تباعد الكلمات",
     "label.lineHeight": "ارتفاع السطر",
     "label.voiceRate": "السرعة",
     "toggle.zebra": "وضع الحمار الوحشي",
     "toggle.syllable": "تلوين المقاطع",
+    "toggle.reducedMotion": "الوضع الهادئ",
+    "section.overlay": "تراكب لوني",
+    "overlay.desc": "مرشح ملون للإجهاد البصري",
+    "label.overlayOpacity": "الكثافة",
+    "label.rulerMode": "وضع المسطرة",
+    "ruler.line": "خط",
+    "ruler.window": "نافذة",
+    "ruler.top": "قناع علوي",
+    "ruler.spotlight": "بقعة ضوء",
     "msg.saving": "جاري الحفظ...",
     "msg.saved": "تم الحفظ",
     "msg.error": "خطأ",
@@ -841,38 +876,95 @@ class FocusMaskEngine {
       "--mask-opacity",
       state.settings.maskOpacity,
     );
+    // En mode "line", le masque sombre est invisible
+    if (state.settings.rulerMode === "line") {
+      this.maskElement.style.opacity = "0";
+    }
   }
 
   disable() {
     state.isFocusMode = false;
     this.maskElement.hidden = true;
     this.guideElement.hidden = true;
+    // Réinitialiser le mask-image inline
+    this.maskElement.style.maskImage = "";
+    this.maskElement.style.webkitMaskImage = "";
   }
 
-  setPosition(y) {
+  setPosition(y, x) {
     if (!this.isActive) return;
 
     const rect = this.readerElement.getBoundingClientRect();
     const scrollTop = this.readerElement.scrollTop;
+    const mode = state.settings.rulerMode || "window";
 
     // Position relative dans le conteneur
     let relativeY = y - rect.top + scrollTop;
-
-    // Centrer la fenêtre
     const height = CONFIG.MASK_HEIGHT;
     const mid = height / 2;
 
     // Limiter aux bords
     const maxScroll = this.readerElement.scrollHeight - rect.height;
     relativeY = Math.max(mid, Math.min(relativeY + mid, maxScroll + mid));
-
-    // Appliquer les styles CSS
     const topPos = relativeY - mid;
+
+    // Position X relative (pour spotlight)
+    let relativeX = rect.width / 2;
+    if (x !== undefined) {
+      relativeX = x - rect.left;
+    }
+
+    // Appliquer les variables CSS pour la ruler-guide
     document.documentElement.style.setProperty("--mask-top", `${topPos}px`);
     document.documentElement.style.setProperty(
       "--mask-bottom",
       `${topPos + height}px`,
     );
+
+    // Appliquer le mode de masque
+    this._applyMaskMode(mode, topPos, height, relativeX, relativeY);
+  }
+
+  _applyMaskMode(mode, topPos, height, relativeX, relativeY) {
+    const el = this.maskElement;
+
+    switch (mode) {
+      case "line":
+        // Pas de masque sombre, seulement la ruler-guide
+        el.style.maskImage = "none";
+        el.style.webkitMaskImage = "none";
+        el.style.opacity = "0";
+        break;
+
+      case "window": {
+        // Fenêtre transparente, sombre au-dessus et en-dessous
+        el.style.opacity = state.settings.maskOpacity;
+        const wm = `linear-gradient(to bottom, black 0%, black ${topPos}px, transparent ${topPos}px, transparent ${topPos + height}px, black ${topPos + height}px, black 100%)`;
+        el.style.maskImage = wm;
+        el.style.webkitMaskImage = wm;
+        break;
+      }
+
+      case "top": {
+        // Masque uniquement au-dessus de la ligne de lecture
+        el.style.opacity = state.settings.maskOpacity;
+        const tm = `linear-gradient(to bottom, black 0%, black ${topPos}px, transparent ${topPos}px, transparent 100%)`;
+        el.style.maskImage = tm;
+        el.style.webkitMaskImage = tm;
+        break;
+      }
+
+      case "spotlight": {
+        // Ellipse transparente autour du curseur
+        el.style.opacity = state.settings.maskOpacity;
+        const rx = 200;
+        const ry = height;
+        const sm = `radial-gradient(ellipse ${rx}px ${ry}px at ${relativeX}px ${relativeY}px, transparent 0%, transparent 80%, black 100%)`;
+        el.style.maskImage = sm;
+        el.style.webkitMaskImage = sm;
+        break;
+      }
+    }
   }
 
   setOpacity(opacity) {
@@ -891,12 +983,22 @@ class FocusMaskEngine {
     // Position du mot au centre de la fenêtre
     const wordCenter = rect.top - readerRect.top + rect.height / 2 + scrollTop;
     const mid = CONFIG.MASK_HEIGHT / 2;
-
     const topPos = wordCenter - mid;
+
     document.documentElement.style.setProperty("--mask-top", `${topPos}px`);
     document.documentElement.style.setProperty(
       "--mask-bottom",
       `${topPos + CONFIG.MASK_HEIGHT}px`,
+    );
+
+    // Appliquer le mode pour le mot courant
+    const wordCenterX = rect.left + rect.width / 2 - readerRect.left;
+    this._applyMaskMode(
+      state.settings.rulerMode || "window",
+      topPos,
+      CONFIG.MASK_HEIGHT,
+      wordCenterX,
+      wordCenter,
     );
 
     // Scroll vers le mot si nécessaire
@@ -927,6 +1029,12 @@ class TypographyEngine {
       `${settings.letterSpacing}em`,
     );
     this.root.style.setProperty("--line-height", settings.lineHeight);
+    if (settings.wordSpacing !== undefined) {
+      this.root.style.setProperty(
+        "--word-spacing",
+        `${settings.wordSpacing}em`,
+      );
+    }
 
     // Police
     if (settings.font === "OpenDyslexic") {
@@ -963,6 +1071,12 @@ class TypographyEngine {
     Storage.set("lineHeight", height);
   }
 
+  setWordSpacing(spacing) {
+    state.settings.wordSpacing = spacing;
+    this.root.style.setProperty("--word-spacing", `${spacing}em`);
+    Storage.set("wordSpacing", spacing);
+  }
+
   setFont(font) {
     state.settings.font = font;
     // Les polices Google Fonts sont pré-chargées dans le head
@@ -984,6 +1098,32 @@ class TypographyEngine {
 }
 
 const typography = new TypographyEngine();
+
+// Gestion overlay couleur Irlen
+const colorOverlay = {
+  element: null,
+
+  init() {
+    this.element = document.getElementById("color-overlay");
+  },
+
+  setColor(color) {
+    state.settings.overlayColor = color;
+    Storage.set("overlayColor", color);
+    if (color) {
+      document.documentElement.style.setProperty("--overlay-color", color);
+      this.element.hidden = false;
+    } else {
+      this.element.hidden = true;
+    }
+  },
+
+  setOpacity(opacity) {
+    state.settings.overlayOpacity = opacity;
+    Storage.set("overlayOpacity", opacity);
+    document.documentElement.style.setProperty("--overlay-opacity", opacity);
+  },
+};
 
 // ============================================
 // 10. MOTEUR ZÈBRE & SYLLABES
@@ -1996,6 +2136,25 @@ function initEventListeners() {
       const isActive = focusMask.toggle();
       e.currentTarget.setAttribute("aria-pressed", isActive);
       e.currentTarget.classList.toggle("active", isActive);
+      // Afficher/masquer les contrôles de la règle
+      document
+        .getElementById("ruler-mode-selector")
+        .classList.toggle("hidden", !isActive);
+      document
+        .getElementById("opacity-control")
+        .classList.toggle("hidden", !isActive);
+    });
+
+    // Sélection du mode règle de lecture
+    document.querySelectorAll('input[name="ruler-mode"]').forEach((radio) => {
+      radio.addEventListener("change", (e) => {
+        state.settings.rulerMode = e.target.value;
+        Storage.set("rulerMode", e.target.value);
+        document.documentElement.dataset.rulerMode = e.target.value;
+        if (state.isFocusMode) {
+          focusMask.enable();
+        }
+      });
     });
 
     // Opacity control
@@ -2040,6 +2199,13 @@ function initEventListeners() {
       typography.setLetterSpacing(spacing);
     });
 
+    document.getElementById("word-spacing").addEventListener("input", (e) => {
+      const spacing = parseFloat(e.target.value);
+      document.getElementById("word-spacing-value").textContent =
+        spacing.toFixed(2);
+      typography.setWordSpacing(spacing);
+    });
+
     document.getElementById("line-height").addEventListener("input", (e) => {
       const height = parseFloat(e.target.value);
       document.getElementById("line-height-value").textContent =
@@ -2073,6 +2239,45 @@ function initEventListeners() {
         }
       });
 
+    // Mode calme (faible stimulation)
+    document
+      .getElementById("reduced-motion")
+      .addEventListener("change", (e) => {
+        state.settings.reducedMotion = e.target.checked;
+        Storage.set("reducedMotion", state.settings.reducedMotion);
+        if (e.target.checked) {
+          document.documentElement.dataset.reducedMotion = "";
+        } else {
+          delete document.documentElement.dataset.reducedMotion;
+        }
+      });
+
+    // Overlay couleur Irlen
+    document.querySelectorAll(".overlay-color-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document
+          .querySelectorAll(".overlay-color-btn")
+          .forEach((b) => b.classList.remove("active"));
+        const color = btn.dataset.color;
+        if (color) {
+          btn.classList.add("active");
+          colorOverlay.setColor(color);
+        } else {
+          btn.classList.add("active");
+          colorOverlay.setColor(null);
+        }
+      });
+    });
+
+    document
+      .getElementById("overlay-opacity")
+      .addEventListener("input", (e) => {
+        const opacity = parseFloat(e.target.value);
+        document.getElementById("overlay-opacity-value").textContent =
+          opacity.toFixed(2);
+        colorOverlay.setOpacity(opacity);
+      });
+
     // Save library
     document
       .getElementById("save-library-btn")
@@ -2103,7 +2308,7 @@ function initEventListeners() {
 
     readerArea.addEventListener("mousemove", (e) => {
       if (state.isFocusMode) {
-        focusMask.setPosition(e.clientY);
+        focusMask.setPosition(e.clientY, e.clientX);
       }
     });
 
@@ -2112,7 +2317,7 @@ function initEventListeners() {
       (e) => {
         if (state.isFocusMode && e.touches.length > 0) {
           e.preventDefault();
-          focusMask.setPosition(e.touches[0].clientY);
+          focusMask.setPosition(e.touches[0].clientY, e.touches[0].clientX);
         }
       },
       { passive: false },
@@ -2229,9 +2434,24 @@ function initEventListeners() {
 
     // Onboarding presets (page 3)
     const PRESETS = {
-      compact: { fontSize: 16, letterSpacing: 0.05, lineHeight: 1.5 },
-      aere: { fontSize: 20, letterSpacing: 0.12, lineHeight: 1.8 },
-      "tres-aere": { fontSize: 24, letterSpacing: 0.2, lineHeight: 2.2 },
+      compact: {
+        fontSize: 16,
+        letterSpacing: 0.05,
+        lineHeight: 1.5,
+        wordSpacing: 0.15,
+      },
+      aere: {
+        fontSize: 20,
+        letterSpacing: 0.12,
+        lineHeight: 1.8,
+        wordSpacing: 0.25,
+      },
+      "tres-aere": {
+        fontSize: 24,
+        letterSpacing: 0.2,
+        lineHeight: 2.2,
+        wordSpacing: 0.4,
+      },
     };
     document.querySelectorAll(".onboarding-preset-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -2246,9 +2466,11 @@ function initEventListeners() {
         if (preset) {
           state.settings.fontSize = preset.fontSize;
           state.settings.letterSpacing = preset.letterSpacing;
+          state.settings.wordSpacing = preset.wordSpacing;
           state.settings.lineHeight = preset.lineHeight;
           Storage.set("fontSize", preset.fontSize);
           Storage.set("letterSpacing", preset.letterSpacing);
+          Storage.set("wordSpacing", preset.wordSpacing);
           Storage.set("lineHeight", preset.lineHeight);
           typography.applySettings(state.settings);
         }
@@ -2404,11 +2626,16 @@ async function loadSettings() {
     font: Storage.get("font") || "system-ui",
     fontSize: Storage.get("fontSize") || 20,
     letterSpacing: Storage.get("letterSpacing") || 0.12,
+    wordSpacing: Storage.get("wordSpacing") || 0.25,
     lineHeight: Storage.get("lineHeight") || 1.7,
     zebraMode: Storage.get("zebraMode") || false,
     syllableColor: Storage.get("syllableColor") || false,
     maskOpacity: Storage.get("maskOpacity") || 0.7,
     voiceRate: Storage.get("voiceRate") || 1.0,
+    reducedMotion: Storage.get("reducedMotion") || false,
+    overlayColor: Storage.get("overlayColor") || null,
+    overlayOpacity: Storage.get("overlayOpacity") || 0.15,
+    rulerMode: Storage.get("rulerMode") || "window",
     lang: Storage.get("lang") || CONFIG.DEFAULT_LANGUAGE,
   };
 
@@ -2435,6 +2662,10 @@ async function loadSettings() {
     0,
     Math.min(0.5, Number(state.settings.letterSpacing) || 0.12),
   );
+  state.settings.wordSpacing = Math.max(
+    0,
+    Math.min(1.0, Number(state.settings.wordSpacing) || 0.25),
+  );
   state.settings.lineHeight = Math.max(
     1.2,
     Math.min(2.5, Number(state.settings.lineHeight) || 1.7),
@@ -2447,6 +2678,28 @@ async function loadSettings() {
     0.5,
     Math.min(2, Number(state.settings.voiceRate) || 1.0),
   );
+  state.settings.overlayOpacity = Math.max(
+    0.05,
+    Math.min(0.4, Number(state.settings.overlayOpacity) || 0.15),
+  );
+  const validOverlayColors = [
+    null,
+    "#fef9c3",
+    "#dbeafe",
+    "#fce7f3",
+    "#dcfce7",
+    "#fed7aa",
+  ];
+  if (
+    state.settings.overlayColor &&
+    !validOverlayColors.includes(state.settings.overlayColor)
+  ) {
+    state.settings.overlayColor = null;
+  }
+  const validRulerModes = ["line", "window", "top", "spotlight"];
+  if (!validRulerModes.includes(state.settings.rulerMode)) {
+    state.settings.rulerMode = "window";
+  }
   const validLangs = ["fr", "en", "ar"];
   if (!validLangs.includes(state.settings.lang))
     state.settings.lang = CONFIG.DEFAULT_LANGUAGE;
@@ -2482,6 +2735,9 @@ async function loadSettings() {
     state.settings.letterSpacing;
   document.getElementById("letter-spacing-value").textContent =
     state.settings.letterSpacing.toFixed(2);
+  document.getElementById("word-spacing").value = state.settings.wordSpacing;
+  document.getElementById("word-spacing-value").textContent =
+    state.settings.wordSpacing.toFixed(2);
   document.getElementById("line-height").value = state.settings.lineHeight;
   document.getElementById("line-height-value").textContent =
     state.settings.lineHeight.toFixed(1);
@@ -2493,6 +2749,49 @@ async function loadSettings() {
   document.getElementById("rate-value").textContent =
     state.settings.voiceRate.toFixed(1) + "x";
   document.getElementById("lang-select").value = state.settings.lang;
+
+  // Mode calme (faible stimulation)
+  document.getElementById("reduced-motion").checked =
+    state.settings.reducedMotion;
+  if (state.settings.reducedMotion) {
+    document.documentElement.dataset.reducedMotion = "";
+  }
+  // Respecter la préférence OS si pas de réglage explicite
+  if (Storage.get("reducedMotion") === null) {
+    const prefersReduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (prefersReduced) {
+      state.settings.reducedMotion = true;
+      document.documentElement.dataset.reducedMotion = "";
+      document.getElementById("reduced-motion").checked = true;
+    }
+  }
+
+  // Règle de lecture - mode
+  const rulerRadio = document.querySelector(
+    `input[name="ruler-mode"][value="${state.settings.rulerMode}"]`,
+  );
+  if (rulerRadio) rulerRadio.checked = true;
+  document.documentElement.dataset.rulerMode = state.settings.rulerMode;
+
+  // Overlay couleur
+  colorOverlay.init();
+  if (state.settings.overlayColor) {
+    colorOverlay.setColor(state.settings.overlayColor);
+    colorOverlay.setOpacity(state.settings.overlayOpacity);
+    document
+      .querySelectorAll(".overlay-color-btn")
+      .forEach((b) => b.classList.remove("active"));
+    const activeBtn = document.querySelector(
+      `.overlay-color-btn[data-color="${state.settings.overlayColor}"]`,
+    );
+    if (activeBtn) activeBtn.classList.add("active");
+  }
+  document.getElementById("overlay-opacity").value =
+    state.settings.overlayOpacity;
+  document.getElementById("overlay-opacity-value").textContent =
+    state.settings.overlayOpacity.toFixed(2);
 
   document.documentElement.lang = state.currentLang;
   document.body.dir = state.currentLang === "ar" ? "rtl" : "ltr";

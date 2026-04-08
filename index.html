@@ -705,6 +705,31 @@
             <span class="toggle-text">Mode Focus</span>
             <span class="toggle-status"></span>
           </button>
+          <fieldset
+            id="ruler-mode-selector"
+            class="ruler-mode-selector hidden"
+            aria-label="Mode de la règle de lecture"
+          >
+            <legend class="sr-only">Mode règle</legend>
+            <div class="ruler-mode-options">
+              <label class="ruler-mode-option">
+                <input type="radio" name="ruler-mode" value="line" />
+                <span class="ruler-mode-label">Ligne</span>
+              </label>
+              <label class="ruler-mode-option">
+                <input type="radio" name="ruler-mode" value="window" checked />
+                <span class="ruler-mode-label">Fenêtre</span>
+              </label>
+              <label class="ruler-mode-option">
+                <input type="radio" name="ruler-mode" value="top" />
+                <span class="ruler-mode-label">Masque haut</span>
+              </label>
+              <label class="ruler-mode-option">
+                <input type="radio" name="ruler-mode" value="spotlight" />
+                <span class="ruler-mode-label">Spot</span>
+              </label>
+            </div>
+          </fieldset>
           <div id="opacity-control" class="opacity-control hidden">
             <label for="mask-opacity">Opacité:</label>
             <input
@@ -749,6 +774,7 @@
         <div id="reader-area" class="reader-area" aria-live="polite">
           <div id="focus-mask" class="focus-mask" hidden></div>
           <div id="ruler-guide" class="ruler-guide" hidden></div>
+          <div id="color-overlay" class="color-overlay" hidden></div>
           <div id="text-content" class="text-content">
             <div id="empty-state" class="empty-state">
               <svg
@@ -1076,6 +1102,23 @@
             />
           </div>
           <div class="setting-row">
+            <label for="word-spacing"
+              >Espacement mots:
+              <span id="word-spacing-value">0.25</span>em</label
+            >
+            <input
+              type="range"
+              id="word-spacing"
+              min="0"
+              max="1.0"
+              step="0.05"
+              value="0.25"
+              aria-valuemin="0"
+              aria-valuemax="1.0"
+              aria-valuenow="0.25"
+            />
+          </div>
+          <div class="setting-row">
             <label for="line-height"
               >Interlignage: <span id="line-height-value">1.7</span></label
             >
@@ -1103,6 +1146,89 @@
           <div class="toggle-row">
             <label for="syllable-color">Coloration syllabique</label>
             <input type="checkbox" id="syllable-color" role="switch" />
+          </div>
+          <div class="toggle-row">
+            <label for="reduced-motion">Mode calme</label>
+            <input
+              type="checkbox"
+              id="reduced-motion"
+              role="switch"
+              aria-label="Mode calme - réduit les animations et stimulations visuelles"
+            />
+          </div>
+        </section>
+
+        <!-- Overlay couleur (Irlen) -->
+        <section class="settings-section">
+          <h3>Overlay couleur</h3>
+          <p class="setting-description">
+            Filtre coloré pour le stress visuel (syndrome d'Irlen)
+          </p>
+          <div class="overlay-color-options">
+            <button
+              class="overlay-color-btn active"
+              data-color=""
+              aria-label="Aucun overlay"
+              title="Aucun"
+            >
+              <span class="overlay-preview none">&#10005;</span>
+            </button>
+            <button
+              class="overlay-color-btn"
+              data-color="#fef9c3"
+              aria-label="Overlay jaune"
+              title="Jaune"
+            >
+              <span class="overlay-preview" style="background: #fef9c3"></span>
+            </button>
+            <button
+              class="overlay-color-btn"
+              data-color="#dbeafe"
+              aria-label="Overlay bleu"
+              title="Bleu"
+            >
+              <span class="overlay-preview" style="background: #dbeafe"></span>
+            </button>
+            <button
+              class="overlay-color-btn"
+              data-color="#fce7f3"
+              aria-label="Overlay rose"
+              title="Rose"
+            >
+              <span class="overlay-preview" style="background: #fce7f3"></span>
+            </button>
+            <button
+              class="overlay-color-btn"
+              data-color="#dcfce7"
+              aria-label="Overlay vert"
+              title="Vert"
+            >
+              <span class="overlay-preview" style="background: #dcfce7"></span>
+            </button>
+            <button
+              class="overlay-color-btn"
+              data-color="#fed7aa"
+              aria-label="Overlay pêche"
+              title="Pêche"
+            >
+              <span class="overlay-preview" style="background: #fed7aa"></span>
+            </button>
+          </div>
+          <div class="setting-row">
+            <label for="overlay-opacity"
+              >Intensité: <span id="overlay-opacity-value">0.15</span></label
+            >
+            <input
+              type="range"
+              id="overlay-opacity"
+              min="0.05"
+              max="0.4"
+              step="0.05"
+              value="0.15"
+              aria-valuemin="0.05"
+              aria-valuemax="0.4"
+              aria-valuenow="0.15"
+            />
           </div>
         </section>
 
