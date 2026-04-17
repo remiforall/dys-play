@@ -1038,7 +1038,15 @@ class TypographyEngine {
 
     // Police
     if (settings.font === "OpenDyslexic") {
-      this.loadOpenDyslexic();
+      this.root.style.setProperty(
+        "--font-family",
+        "'OpenDyslexic', 'Comic Neue', sans-serif",
+      );
+    } else if (settings.font === "Comic Neue") {
+      this.root.style.setProperty(
+        "--font-family",
+        "'Comic Neue', 'Comic Sans MS', cursive",
+      );
     } else {
       this.root.style.setProperty("--font-family", settings.font);
     }
@@ -3214,23 +3222,19 @@ function navigateToPage(pageName) {
 // ============================================
 
 async function init() {
+  // Les handlers doivent toujours être attachés, même si une étape en amont
+  // échoue — sans quoi tous les contrôles UI deviennent morts en cascade.
   try {
-    // Initialiser la base de données
-    await db.init();
-
-    // Charger les paramètres
-    await loadSettings();
-
-    // Enregistrer le Service Worker
-    await registerServiceWorker();
-
-    // Initialiser les événements
     initEventListeners();
+  } catch (error) {
+    console.error("Erreur initEventListeners:", error);
+  }
 
-    // Mettre à jour le status
+  try {
+    await db.init();
+    await loadSettings();
+    await registerServiceWorker();
     updateStatus();
-
-    // Rafraîchir la bibliothèque
     await libraryManager.refresh();
 
     // Vérifier si première visite
