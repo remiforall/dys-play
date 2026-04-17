@@ -69,7 +69,13 @@
     <!-- Header -->
     <header role="banner" class="header">
       <div class="header-left">
-        <button id="menu-btn" aria-label="Ouvrir le menu" aria-expanded="false">
+        <button
+          id="menu-btn"
+          aria-label="Ouvrir le menu"
+          aria-expanded="false"
+          aria-controls="menu-drawer"
+          aria-haspopup="dialog"
+        >
           <svg
             class="icon"
             viewBox="0 0 24 24"
@@ -102,6 +108,8 @@
           id="library-btn"
           aria-label="Ouvrir ma bibliothèque"
           aria-expanded="false"
+          aria-controls="library-drawer"
+          aria-haspopup="dialog"
         >
           <svg
             class="icon"
@@ -121,6 +129,8 @@
           id="settings-btn"
           aria-label="Ouvrir les réglages"
           aria-expanded="false"
+          aria-controls="settings-drawer"
+          aria-haspopup="dialog"
         >
           <svg
             class="icon"
@@ -826,7 +836,8 @@
     <aside
       id="menu-drawer"
       class="drawer drawer-left"
-      role="navigation"
+      role="dialog"
+      aria-modal="true"
       aria-label="Menu principal"
       hidden
     >
@@ -1295,8 +1306,50 @@
           </button>
         </div>
         <div class="modal-body">
+          <p class="import-intro">
+            Trois façons d'ajouter votre texte. Choisissez la plus simple pour
+            vous.
+          </p>
           <div class="import-options">
-            <label class="import-option" for="modal-file-input">
+            <button
+              type="button"
+              class="import-option"
+              id="modal-camera-btn"
+              data-recommended="true"
+              aria-label="Photographier un document avec l'appareil photo"
+            >
+              <svg
+                class="icon-large"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path
+                  d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
+                ></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+              <span>Photographier un texte</span>
+              <span class="import-option-desc">Scanner un document papier</span>
+            </button>
+            <input
+              type="file"
+              id="modal-camera-input"
+              accept="image/*"
+              capture="environment"
+              class="hidden"
+              aria-hidden="true"
+              tabindex="-1"
+            />
+
+            <button
+              type="button"
+              class="import-option"
+              id="modal-file-btn"
+              aria-label="Choisir un fichier depuis l'appareil"
+            >
               <svg
                 class="icon-large"
                 viewBox="0 0 24 24"
@@ -1312,41 +1365,16 @@
                 <line x1="12" y1="18" x2="12" y2="12"></line>
                 <polyline points="9 15 12 12 15 15"></polyline>
               </svg>
-              <span>Depuis fichiers</span>
-              <span class="import-option-desc">Images, PDF, documents</span>
-            </label>
+              <span>Choisir un fichier</span>
+              <span class="import-option-desc">Image, PDF ou texte</span>
+            </button>
             <input
               type="file"
               id="modal-file-input"
-              accept="image/*,.pdf,.txt,.docx"
+              accept="image/*,.pdf,.txt"
               class="hidden"
-              aria-label="Sélectionner un fichier"
-            />
-
-            <label class="import-option" for="modal-camera-input">
-              <svg
-                class="icon-large"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                aria-hidden="true"
-              >
-                <path
-                  d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
-                ></path>
-                <circle cx="12" cy="13" r="4"></circle>
-              </svg>
-              <span>Appareil photo</span>
-              <span class="import-option-desc">Scanner un document</span>
-            </label>
-            <input
-              type="file"
-              id="modal-camera-input"
-              accept="image/*"
-              capture="environment"
-              class="hidden"
-              aria-label="Prendre une photo"
+              aria-hidden="true"
+              tabindex="-1"
             />
 
             <button

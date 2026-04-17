@@ -1718,38 +1718,38 @@ class DrawerManager {
     const drawer = document.getElementById(drawerId);
     if (!drawer) return;
 
-    // Fermer le drawer actif
     this.close();
 
     drawer.classList.add("open");
     drawer.hidden = false;
-    drawer.setAttribute("aria-expanded", "true");
     this.activeDrawer = drawerId;
+
+    const trigger = document.querySelector(`[aria-controls="${drawerId}"]`);
+    if (trigger) trigger.setAttribute("aria-expanded", "true");
+
     if (this.overlay) {
       this.overlay.classList.add("visible");
       this.overlay.hidden = false;
     }
 
-    // Focus dans le drawer
+    trapFocus(drawer);
+    setInert(true, drawer);
+
     const closeBtn = drawer.querySelector(".btn-close");
-    if (closeBtn) {
-      closeBtn.focus();
-    }
+    if (closeBtn) closeBtn.focus();
   }
 
   close() {
     if (!this.activeDrawer) return;
 
-    // Sauvegarder avant reset pour restaurer le focus
     const closingDrawerId = this.activeDrawer;
-
     const drawer = document.getElementById(closingDrawerId);
     if (drawer) {
       drawer.classList.remove("open");
-      drawer.setAttribute("aria-expanded", "false");
       setTimeout(() => {
         drawer.hidden = true;
       }, 300);
+      releaseFocusTrap(drawer);
     }
 
     if (this.overlay) {
@@ -1757,12 +1757,13 @@ class DrawerManager {
       this.overlay.hidden = true;
     }
     this.activeDrawer = null;
+    setInert(false);
 
-    // Retour du focus au déclencheur
     const trigger = document.querySelector(
       `[aria-controls="${closingDrawerId}"]`,
     );
     if (trigger) {
+      trigger.setAttribute("aria-expanded", "false");
       trigger.focus();
     }
   }
@@ -1774,6 +1775,59 @@ class DrawerManager {
       this.open(drawerId);
     }
   }
+}
+
+// ============================================
+// 12b. A11Y — Piège de focus et inert background
+// ============================================
+
+const FOCUSABLE_SEL =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+function trapFocus(container) {
+  if (!container) return;
+  const handler = (e) => {
+    if (e.key !== "Tab") return;
+    const focusables = Array.from(
+      container.querySelectorAll(FOCUSABLE_SEL),
+    ).filter((el) => !el.hidden && el.offsetParent !== null);
+    if (focusables.length === 0) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  };
+  container.addEventListener("keydown", handler);
+  container.__focusTrapHandler = handler;
+}
+
+function releaseFocusTrap(container) {
+  if (!container || !container.__focusTrapHandler) return;
+  container.removeEventListener("keydown", container.__focusTrapHandler);
+  delete container.__focusTrapHandler;
+}
+
+function setInert(state, exceptNode) {
+  const root = document.body;
+  const directChildren = Array.from(root.children);
+  directChildren.forEach((node) => {
+    if (node === exceptNode) return;
+    if (node.id === "drawer-overlay") return;
+    if (state) {
+      if (!node.hasAttribute("inert")) {
+        node.setAttribute("inert", "");
+        node.dataset.inertSetByApp = "true";
+      }
+    } else if (node.dataset.inertSetByApp) {
+      node.removeAttribute("inert");
+      delete node.dataset.inertSetByApp;
+    }
+  });
 }
 
 const drawers = new DrawerManager();
@@ -1863,6 +1917,21 @@ function updateLibraryCount() {
   const count = state.library.length;
   badge.textContent = count;
   badge.hidden = count === 0;
+  badge.setAttribute(
+    "aria-label",
+    count === 0
+      ? "Bibliothèque vide"
+      : `${count} document${count > 1 ? "s" : ""} en bibliothèque`,
+  );
+  const libBtn = document.getElementById("library-btn");
+  if (libBtn) {
+    libBtn.setAttribute(
+      "aria-label",
+      count === 0
+        ? "Ouvrir ma bibliothèque (vide)"
+        : `Ouvrir ma bibliothèque (${count} document${count > 1 ? "s" : ""})`,
+    );
+  }
 }
 
 function renderLibrary() {
@@ -1898,6 +1967,8 @@ function openImportModal() {
   if (!modal) return;
   modal.hidden = false;
   modal.setAttribute("aria-modal", "true");
+  trapFocus(modal);
+  setInert(true, modal);
   const firstOption = modal.querySelector(".import-option");
   if (firstOption) firstOption.focus();
 }
@@ -1907,6 +1978,8 @@ function closeImportModal() {
   if (!modal) return;
   modal.hidden = true;
   modal.removeAttribute("aria-modal");
+  releaseFocusTrap(modal);
+  setInert(false);
   const trigger = document.getElementById("acquire-btn");
   if (trigger) trigger.focus();
 }
@@ -2102,16 +2175,24 @@ function initEventListeners() {
     safeAddEventListener("close-import-modal", "click", closeImportModal);
     safeAddEventListener("import-modal-backdrop", "click", closeImportModal);
 
-    // Option « Depuis fichiers »
-    safeAddEventListener("modal-file-input", "change", async (e) => {
+    // Option « Photographier un texte »
+    safeAddEventListener("modal-camera-btn", "click", () => {
+      const input = document.getElementById("modal-camera-input");
+      if (input) input.click();
+    });
+    safeAddEventListener("modal-camera-input", "change", async (e) => {
       const file = e.target.files[0];
       e.target.value = "";
       closeImportModal();
       if (file) await processAcquiredFile(file);
     });
 
-    // Option « Appareil photo »
-    safeAddEventListener("modal-camera-input", "change", async (e) => {
+    // Option « Choisir un fichier »
+    safeAddEventListener("modal-file-btn", "click", () => {
+      const input = document.getElementById("modal-file-input");
+      if (input) input.click();
+    });
+    safeAddEventListener("modal-file-input", "change", async (e) => {
       const file = e.target.files[0];
       e.target.value = "";
       closeImportModal();
@@ -2418,6 +2499,11 @@ function initEventListeners() {
     // Keyboard navigation (Echap pour fermer)
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
+        const importModal = document.getElementById("import-modal");
+        if (importModal && !importModal.hidden) {
+          closeImportModal();
+          return;
+        }
         drawers.close();
       }
 
