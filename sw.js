@@ -3,7 +3,7 @@
  * Mode offline complet, zéro dépendance CDN
  */
 
-const CACHE_VERSION = 3;
+const CACHE_VERSION = 4;
 const STATIC_CACHE = `dys-play-static-v${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `dys-play-dynamic-v${CACHE_VERSION}`;
 
@@ -14,9 +14,9 @@ const PRECACHE_URLS = [
   "./styles.css",
   "./app.js",
   "./manifest.json",
-  "./icons/icon.svg",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png",
+  "./img/icon.svg",
+  "./img/icon-192.png",
+  "./img/icon-512.png",
   // Polices locales
   "./fonts/fonts.css",
   "./fonts/OpenDyslexic-Regular.woff2",
