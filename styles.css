@@ -318,7 +318,7 @@ a {
   min-width: 20px;
   height: 20px;
   padding: 0 4px;
-  background: var(--color-danger);
+  background: var(--color-primary);
   color: white;
   font-size: 0.7rem;
   font-weight: bold;
@@ -326,6 +326,36 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Boutons icônes du header — affordance explicite (UX Architect) */
+.header-left > button,
+.header-right > button {
+  position: relative;
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.header-left > button:hover,
+.header-right > button:hover {
+  background: var(--color-bg-tertiary);
+  border-color: var(--color-primary);
+}
+
+.header-left > button:active,
+.header-right > button:active {
+  transform: scale(0.96);
+}
+
+.header-left > button[aria-expanded="true"],
+.header-right > button[aria-expanded="true"] {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 /* ============================================
@@ -360,6 +390,15 @@ button {
   gap: var(--space-sm);
   transition: all var(--transition-fast);
   flex-shrink: 0;
+}
+
+button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
 }
 
 .btn {
@@ -1488,6 +1527,12 @@ input[type="range"]:focus::-moz-range-thumb {
   }
 }
 
+.import-intro {
+  margin: 0 0 var(--space-md) 0;
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+}
+
 .import-options {
   display: flex;
   flex-direction: column;
@@ -1499,17 +1544,51 @@ input[type="range"]:focus::-moz-range-thumb {
   align-items: center;
   gap: var(--space-md);
   padding: var(--space-lg);
+  min-height: var(--touch-target);
+  width: 100%;
+  text-align: start;
   background: var(--color-bg-secondary);
   border: 2px solid var(--color-border);
   border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all var(--transition-fast);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: inherit;
 }
 
-.import-option:hover,
-.import-option:focus {
+.import-option:hover {
   background: var(--color-bg-tertiary);
   border-color: var(--color-primary);
+}
+
+.import-option:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.import-option[data-recommended="true"] {
+  border-color: var(--color-primary);
+  border-width: 3px;
+  background: var(--color-primary-light);
+}
+
+.import-option[data-recommended="true"]::after {
+  content: "Conseillé";
+  position: absolute;
+  inset-inline-end: var(--space-md);
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.import-option[data-recommended="true"] {
+  position: relative;
 }
 
 .import-option span:first-of-type {
