@@ -36,7 +36,7 @@ jobs:
             set sftp:auto-confirm yes;
             set net:max-retries 5;
             set net:timeout 60;
-            set mirror:parallel-transfer-count 3;
+            set mirror:parallel-transfer-count 1;
             open -u $USER,$PASS sftp://$HOST;
             mirror --reverse --delete --verbose \
               --allow-chown \
@@ -50,6 +50,15 @@ jobs:
               --exclude ^\.user\.ini$ \
               --exclude ^\.infomaniak \
               ./ $REMOTE;
+            echo '--- Contenu remote icons/ ---';
+            cls -la $REMOTE/icons/;
+            echo '--- Upload explicite par sécurité ---';
+            lcd icons;
+            cd $REMOTE/icons;
+            mput -O . *.png *.svg;
+            chmod 644 *.png *.svg;
+            echo '--- Contenu remote icons/ après chmod ---';
+            cls -la;
             quit;
           "
           echo "Déploiement terminé"
