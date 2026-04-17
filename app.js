@@ -1186,10 +1186,12 @@ class RenderEngine {
         const renderedWords = words
           .map((word, wIndex) => {
             if (/\S/.test(word)) {
-              const content = syllables ? this.syllabify(word) : word;
+              const content = syllables
+                ? this.syllabify(word)
+                : escapeHtml(word);
               return `<span id="w-${pIndex}-${wIndex}" class="word-span">${content}</span>`;
             }
-            return word;
+            return escapeHtml(word);
           })
           .join("");
         return `<p>${renderedWords}</p>`;
@@ -1256,7 +1258,7 @@ class RenderEngine {
     return syllables
       .map((syl, i) => {
         const className = i % 2 === 0 ? "syllable-s1" : "syllable-s2";
-        return `<span class="${className}">${syl}</span>`;
+        return `<span class="${className}">${escapeHtml(syl)}</span>`;
       })
       .join("");
   }
