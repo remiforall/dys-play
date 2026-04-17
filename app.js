@@ -2009,8 +2009,6 @@ async function processAcquiredFile(file) {
         zoneContent.appendChild(tempImg);
       }
 
-      initZoneSelector(tempImg);
-
       const analyzeBtn = document.getElementById("analyze-zone-btn");
       if (analyzeBtn) {
         analyzeBtn.onclick = async () => {
@@ -2028,6 +2026,8 @@ async function processAcquiredFile(file) {
         };
       }
 
+      // openZoneSelectorModal appelle initZoneSelector en interne :
+      // ne pas l'appeler ici sous peine de créer 2 canvas (image doublée).
       openZoneSelectorModal(tempImg);
     };
     tempImg.src = URL.createObjectURL(file);
