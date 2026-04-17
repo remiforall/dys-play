@@ -1857,7 +1857,10 @@ const libraryManager = new LibraryManager();
 
 function updateLibraryCount() {
   const badge = document.getElementById("library-count");
-  badge.textContent = state.library.length;
+  if (!badge) return;
+  const count = state.library.length;
+  badge.textContent = count;
+  badge.hidden = count === 0;
 }
 
 function renderLibrary() {
@@ -1882,6 +1885,104 @@ function renderLibrary() {
     `,
     )
     .join("");
+}
+
+// ============================================
+// 13b. MODALE D'ACQUISITION (Scanner / Importer)
+// ============================================
+
+function openImportModal() {
+  const modal = document.getElementById("import-modal");
+  if (!modal) return;
+  modal.hidden = false;
+  modal.setAttribute("aria-modal", "true");
+  const firstOption = modal.querySelector(".import-option");
+  if (firstOption) firstOption.focus();
+}
+
+function closeImportModal() {
+  const modal = document.getElementById("import-modal");
+  if (!modal) return;
+  modal.hidden = true;
+  modal.removeAttribute("aria-modal");
+  const trigger = document.getElementById("acquire-btn");
+  if (trigger) trigger.focus();
+}
+
+function emptyNode(node) {
+  while (node.firstChild) node.removeChild(node.firstChild);
+}
+
+async function processAcquiredFile(file) {
+  if (!file) return;
+
+  if (file.type.startsWith("image/")) {
+    const tempImg = document.createElement("img");
+    tempImg.onload = () => {
+      const zoneContent = document.getElementById("zone-selector-content");
+      if (zoneContent) {
+        emptyNode(zoneContent);
+        tempImg.style.display = "none";
+        zoneContent.appendChild(tempImg);
+      }
+
+      initZoneSelector(tempImg);
+
+      const analyzeBtn = document.getElementById("analyze-zone-btn");
+      if (analyzeBtn) {
+        analyzeBtn.onclick = async () => {
+          closeZoneSelectorModal();
+          if (state.ocrState.zoneSelector) {
+            const zoneDataUrl = state.ocrState.zoneSelector.extractZoneImage();
+            const blob = await (await fetch(zoneDataUrl)).blob();
+            const zoneFile = new File([blob], "zone.png", {
+              type: "image/png",
+            });
+            await handleFile(zoneFile);
+          } else {
+            await handleFile(file);
+          }
+        };
+      }
+
+      openZoneSelectorModal(tempImg);
+    };
+    tempImg.src = URL.createObjectURL(file);
+  } else {
+    await handleFile(file);
+  }
+}
+
+async function pasteTextFromClipboard() {
+  let text = "";
+  try {
+    if (navigator.clipboard && navigator.clipboard.readText) {
+      text = await navigator.clipboard.readText();
+    }
+  } catch (err) {
+    // Permission refusée ou API indisponible → fallback prompt
+  }
+
+  if (!text) {
+    text = window.prompt(
+      i18n[state.currentLang]?.["import.paste_prompt"] ||
+        "Collez votre texte ici (Ctrl+V ou \u2318+V)",
+    );
+  }
+
+  if (text && text.trim()) {
+    state.textContent = text;
+    renderEngine.render(text, {
+      zebra: state.settings.zebraMode,
+      syllables: state.settings.syllableColor,
+    });
+    updatePlayButton();
+    libraryManager.saveCurrentDocument();
+    showToast(
+      i18n[state.currentLang]?.["msg.text_imported"] || "Texte importé",
+      "success",
+    );
+  }
 }
 
 // ============================================
@@ -1990,53 +2091,42 @@ function initEventListeners() {
       });
     });
 
-    // Bouton unifié "Scanner ou importer"
+    // Bouton unifié "Scanner ou importer" → ouvre la modale d'acquisition
     safeAddEventListener("acquire-btn", "click", () => {
-      const fileInput = document.getElementById("file-input-unified");
-      if (fileInput) fileInput.click();
+      openImportModal();
     });
 
-    // Handler unifié : images → aperçu + zone selector, PDF/txt → traitement direct
+    // Fermeture de la modale d'import
+    safeAddEventListener("close-import-modal", "click", closeImportModal);
+    safeAddEventListener("import-modal-backdrop", "click", closeImportModal);
+
+    // Option « Depuis fichiers »
+    safeAddEventListener("modal-file-input", "change", async (e) => {
+      const file = e.target.files[0];
+      e.target.value = "";
+      closeImportModal();
+      if (file) await processAcquiredFile(file);
+    });
+
+    // Option « Appareil photo »
+    safeAddEventListener("modal-camera-input", "change", async (e) => {
+      const file = e.target.files[0];
+      e.target.value = "";
+      closeImportModal();
+      if (file) await processAcquiredFile(file);
+    });
+
+    // Option « Coller du texte »
+    safeAddEventListener("modal-paste-btn", "click", async () => {
+      closeImportModal();
+      await pasteTextFromClipboard();
+    });
+
+    // Compat : ancien input caché éventuellement déclenché ailleurs
     safeAddEventListener("file-input-unified", "change", async (e) => {
       const file = e.target.files[0];
-      if (!file) return;
-
-      if (file.type.startsWith("image/")) {
-        // Image : afficher l'aperçu avec sélection de zone
-        const tempImg = document.createElement("img");
-        tempImg.onload = () => {
-          const zoneContent = document.getElementById("zone-selector-content");
-          zoneContent.innerHTML = "";
-          tempImg.style.display = "none";
-          zoneContent.appendChild(tempImg);
-
-          initZoneSelector(tempImg);
-
-          // Bouton analyser : utilise la zone sélectionnée
-          document.getElementById("analyze-zone-btn").onclick = async () => {
-            closeZoneSelectorModal();
-            // Extraire la zone si une sélection existe
-            if (state.ocrState.zoneSelector) {
-              const zoneDataUrl =
-                state.ocrState.zoneSelector.extractZoneImage();
-              const blob = await (await fetch(zoneDataUrl)).blob();
-              const zoneFile = new File([blob], "zone.png", {
-                type: "image/png",
-              });
-              await handleFile(zoneFile);
-            } else {
-              await handleFile(file);
-            }
-          };
-
-          openZoneSelectorModal(tempImg);
-        };
-        tempImg.src = URL.createObjectURL(file);
-      } else {
-        // PDF, txt : traitement direct
-        await handleFile(file);
-      }
       e.target.value = "";
+      if (file) await processAcquiredFile(file);
     });
 
     // OCR Results Modal

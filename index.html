@@ -1303,6 +1303,7 @@
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
+                aria-hidden="true"
               >
                 <path
                   d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
@@ -1322,27 +1323,54 @@
               aria-label="Sélectionner un fichier"
             />
 
-            <label class="import-option" for="modal-text-input">
+            <label class="import-option" for="modal-camera-input">
               <svg
                 class="icon-large"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
+                aria-hidden="true"
               >
-                <polyline points="4 7 4 4 20 4 20 7"></polyline>
-                <line x1="9" y1="20" x2="15" y2="20"></line>
-                <line x1="12" y1="4" x2="12" y2="20"></line>
+                <path
+                  d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"
+                ></path>
+                <circle cx="12" cy="13" r="4"></circle>
               </svg>
-              <span>Presse-papiers</span>
-              <span class="import-option-desc">Coller du texte</span>
+              <span>Appareil photo</span>
+              <span class="import-option-desc">Scanner un document</span>
             </label>
             <input
-              type="text"
-              id="modal-text-input"
+              type="file"
+              id="modal-camera-input"
+              accept="image/*"
+              capture="environment"
               class="hidden"
-              aria-label="Texte depuis presse-papiers"
+              aria-label="Prendre une photo"
             />
+
+            <button
+              type="button"
+              class="import-option"
+              id="modal-paste-btn"
+              aria-label="Coller du texte depuis le presse-papiers"
+            >
+              <svg
+                class="icon-large"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path
+                  d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"
+                ></path>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+              </svg>
+              <span>Coller du texte</span>
+              <span class="import-option-desc">Depuis le presse-papiers</span>
+            </button>
           </div>
         </div>
       </div>
