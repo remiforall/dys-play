@@ -197,7 +197,8 @@ body {
 }
 
 /* Utilitaire : masquer visuellement */
-.hidden {
+.hidden,
+[hidden] {
   display: none !important;
 }
 
