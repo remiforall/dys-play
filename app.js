@@ -2633,6 +2633,23 @@ async function extractTextFromPDF(file) {
 // ============================================
 
 async function handleFile(file, useZoneSelection = false) {
+  const MAX_FILE_BYTES = 20 * 1024 * 1024;
+  if (file.size > MAX_FILE_BYTES) {
+    showToast(
+      "Fichier trop volumineux (maximum 20 Mo). Essayez avec un document plus petit.",
+      "error",
+    );
+    return;
+  }
+  const lowerName = (file.name || "").toLowerCase();
+  if (file.type === "image/svg+xml" || lowerName.endsWith(".svg")) {
+    showToast(
+      "Format SVG non supporté pour des raisons de sécurité. Utilisez JPG, PNG ou PDF.",
+      "warning",
+    );
+    return;
+  }
+
   showLoader(true, "Traitement du fichier...");
 
   try {

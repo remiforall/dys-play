@@ -19,6 +19,19 @@ ExpiresByType application/json "access plus 1 day"
 Header set X-Content-Type-Options "nosniff"
 Header set X-Frame-Options "DENY"
 Header set Referrer-Policy "no-referrer"
+Header set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+Header set Permissions-Policy "camera=(self), microphone=(), geolocation=(), interest-cohort=()"
+Header set Cross-Origin-Opener-Policy "same-origin"
+# wasm-unsafe-eval requis pour Tesseract.js, blob: pour les workers locaux
+Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' blob:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'"
+</IfModule>
+
+# Compression (Performance Sentinel)
+<IfModule mod_deflate.c>
+AddOutputFilterByType DEFLATE text/html text/css text/plain text/xml application/javascript application/json image/svg+xml
+</IfModule>
+<IfModule mod_brotli.c>
+AddOutputFilterByType BROTLI_COMPRESS text/html text/css text/plain text/xml application/javascript application/json image/svg+xml
 </IfModule>
 
 # Fichier par défaut
