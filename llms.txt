@@ -1,38 +1,60 @@
 # Dys-Play
 
-> Application web progressive gratuite d'aide a la lecture pour les personnes dyslexiques, dysorthographiques et TDA/H. Fonctionne 100% en local dans le navigateur. Zero collecte de donnees.
+> Application web progressive gratuite d'aide à la lecture pour personnes dyslexiques, dysorthographiques et TDA/H. Fonctionne 100 % en local dans le navigateur. Zéro collecte de données, zéro CDN externe, zéro tracker.
+
+Dys-Play est un outil d'assistance à la lecture open et souverain, édité par Posthack. Il s'appuie sur des recherches scientifiques sur la lecture adaptée (Labo Aix-Marseille sur l'espacement, CHI 2023 sur la règle de lecture numérique) et cible à la fois les personnes concernées et leurs accompagnants (orthophonistes, enseignants, parents).
 
 ## Application
 
-- [Dys-Play](https://dys-play.posthack.com/): Outil de lecture adaptee — OCR, synthese vocale, personnalisation visuelle
+- [Dys-Play (app)](https://dys-play.net/) : interface de lecture adaptée — OCR, synthèse vocale, personnalisation visuelle, bibliothèque locale
 
-## Fonctionnalites
+## Fonctionnalités
 
 - Reconnaissance de texte par photo (OCR Tesseract.js, traitement local)
-- Import de fichiers PDF et texte
-- Police OpenDyslexic et Comic Neue (optimisees dyslexie)
-- Syllabation coloree pour faciliter le decodage
-- Mode zebre (lignes alternees)
-- Regle de lecture (focus mask)
-- Synthese vocale avec suivi mot par mot
-- Espacement des lettres, mots et interlignes reglable
-- 4 themes de couleurs (clair, creme, sepia, sombre)
+- Import de fichiers PDF et texte (PDF.js)
+- Collage de texte depuis le presse-papiers
+- Police OpenDyslexic et Comic Neue (optimisées dyslexie)
+- Syllabation colorée pour faciliter le décodage
+- Mode zèbre (lignes alternées)
+- Règle de lecture (focus mask, 4 modes)
+- Overlay couleur (syndrome d'Irlen, stress visuel)
+- Synthèse vocale avec suivi mot par mot
+- Espacement des lettres, mots et interlignes réglable
+- 4 thèmes de couleurs (clair, crème, sépia, sombre)
 - Internationalisation FR, EN, AR (avec support RTL)
-- Bibliotheque locale (IndexedDB)
+- Bibliothèque locale (IndexedDB)
 - Fonctionne hors-ligne (PWA)
-- Zero cookie, zero tracker, zero CDN externe
+- Zéro cookie, zéro tracker, zéro CDN externe
 
 ## Public cible
 
-- Personnes dyslexiques
-- Personnes dysorthographiques
+- Personnes dyslexiques (4 types : phonologique, de surface, mixte, visuo-attentionnelle)
+- Personnes dysorthographiques, dysgraphiques, dyspraxiques
 - Personnes avec TDA/H
+- Personnes avec syndrome d'Irlen / stress visuel
 - Accompagnants : enseignants, orthophonistes, parents
 
 ## Technique
 
-- HTML/CSS/JS vanilla, zero framework, zero dependance npm
-- Tesseract.js v5 (OCR local)
+- HTML/CSS/JS vanilla, zéro framework, zéro dépendance npm
+- Tesseract.js v5 (OCR local, WASM)
 - PDF.js v3 (extraction texte)
 - Service Worker pour fonctionnement hors-ligne
-- Donnees 100% locales (localStorage + IndexedDB)
+- Données 100 % locales (localStorage + IndexedDB)
+- Hébergement Infomaniak (FR/CH), HTTPS forcé, CSP stricte
+
+## Docs
+
+- [README](https://github.com/remiforall/dys-play/blob/main/README.md) : documentation technique et guide de contribution
+- [Manifest PWA](https://dys-play.net/manifest.json) : capacités offline
+
+## Sources scientifiques
+
+- Zorzi et al. (2012), Aix-Marseille : l'espacement des lettres et des mots améliore la vitesse de lecture des enfants dyslexiques de ~20 %
+- CHI 2023 : la règle de lecture numérique apporte des gains majeurs pour la dyslexie et le TDAH
+- Méta-analyses : les polices « dyslexie » (OpenDyslexic, Dyslexie) apportent un bénéfice via l'espacement qu'elles imposent, pas la forme des lettres
+
+## Optional
+
+- [Code source](https://github.com/remiforall/dys-play) : licence libre
+- Licence et politique de confidentialité : voir la page « Mentions légales » dans l'application (aucune donnée ne quitte le navigateur)

@@ -31,25 +31,45 @@
     <meta property="og:image" content="icons/icon-512.png" />
     <meta property="og:locale" content="fr_FR" />
     <meta name="twitter:card" content="summary" />
+    <!-- Canonique et directives moteurs -->
+    <link rel="canonical" href="https://dys-play.net/" />
+    <meta name="author" content="Posthack" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
     <!-- Données structurées -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "WebApplication",
         "name": "Dys-Play",
-        "description": "Application web progressive d'aide à la lecture pour les personnes dyslexiques, dysorthographiques et TDA/H.",
+        "url": "https://dys-play.net/",
+        "description": "Application web progressive d'aide à la lecture pour les personnes dyslexiques, dysorthographiques et TDA/H. 100 % locale, gratuite, hors-ligne.",
         "applicationCategory": ["EducationalApplication", "HealthApplication"],
+        "applicationSubCategory": "Assistive Technology",
         "operatingSystem": "All",
         "browserRequirements": "Requires JavaScript",
-        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+        "softwareVersion": "1.0",
+        "datePublished": "2025-02-03",
+        "screenshot": "https://dys-play.net/icons/icon-512.png",
+        "creator": {
+          "@type": "Organization",
+          "name": "Posthack",
+          "url": "https://posthack.com/"
+        },
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "EUR"
+        },
         "featureList": [
           "OCR local",
           "Synthèse vocale",
           "Police OpenDyslexic",
           "Syllabation colorée",
-          "Mode focus",
+          "Règle de lecture",
+          "Overlay Irlen",
           "Fonctionne hors-ligne"
         ],
+        "keywords": "dyslexie, dysorthographie, TDAH, lecture adaptée, OCR, accessibilité, WCAG, RGPD, PWA hors-ligne",
         "inLanguage": ["fr", "en", "ar"],
         "isAccessibleForFree": true
       }
@@ -57,6 +77,16 @@
     <link rel="manifest" href="manifest.json" />
     <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
     <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    <!-- Preload critique (above-the-fold) -->
+    <link rel="preload" href="styles.css" as="style" />
+    <link rel="preload" href="app.js" as="script" />
+    <link
+      rel="preload"
+      href="fonts/OpenDyslexic-Regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <!-- Local Fonts: OpenDyslexic & Comic Neue -->
     <link rel="stylesheet" href="fonts/fonts.css" />
     <link rel="stylesheet" href="styles.css" />
