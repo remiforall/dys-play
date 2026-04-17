@@ -28,10 +28,13 @@ jobs:
         run: |
           lftp -c "
             set sftp:auto-confirm yes;
-            set net:max-retries 3;
-            set net:timeout 30;
+            set net:max-retries 5;
+            set net:timeout 60;
+            set mirror:parallel-transfer-count 3;
             open -u $USER,$PASS sftp://$HOST;
             mirror --reverse --delete --verbose \
+              --use-cache \
+              --no-perms \
               --exclude ^\.git/ \
               --exclude ^\.github/ \
               --exclude ^\.gitignore$ \
