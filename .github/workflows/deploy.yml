@@ -26,6 +26,12 @@ jobs:
           PASS: ${{ secrets.INFOMANIAK_PASSWORD }}
           REMOTE: ${{ secrets.INFOMANIAK_REMOTE_PATH }}
         run: |
+          # Force permissions 644 sur tous les fichiers avant upload pour
+          # qu'Apache (user différent du SFTP) puisse les lire côté prod.
+          chmod -R a+r .
+          find . -type f -not -path "./.git/*" -exec chmod 644 {} \;
+          find . -type d -not -path "./.git/*" -exec chmod 755 {} \;
+
           lftp -c "
             set sftp:auto-confirm yes;
             set net:max-retries 5;
@@ -33,8 +39,8 @@ jobs:
             set mirror:parallel-transfer-count 3;
             open -u $USER,$PASS sftp://$HOST;
             mirror --reverse --delete --verbose \
-              --use-cache \
-              --no-perms \
+              --allow-chown \
+              --allow-suid \
               --exclude ^\.git/ \
               --exclude ^\.github/ \
               --exclude ^\.gitignore$ \
