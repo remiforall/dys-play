@@ -50,15 +50,24 @@ jobs:
               --exclude ^\.user\.ini$ \
               --exclude ^\.infomaniak \
               ./ $REMOTE;
-            echo '--- Permissions des dossiers ---';
-            cls -la $REMOTE/;
-            echo '--- Force chmod 755 sur tous les dossiers ---';
+            echo '--- Listing complet icons/ (fichiers cachés inclus) ---';
+            cls -la $REMOTE/icons/;
+            echo '--- Recherche .htaccess ou fichiers cachés dans icons/ ---';
+            glob -- rm -f $REMOTE/icons/.htaccess;
+            glob -- rm -f $REMOTE/icons/.DS_Store;
+            glob -- rm -f $REMOTE/icons/.user.ini;
+            echo '--- Après nettoyage ---';
+            cls -la $REMOTE/icons/;
             chmod 755 $REMOTE/icons;
-            chmod 755 $REMOTE/fonts;
-            chmod 755 $REMOTE/libs;
-            chmod 755 $REMOTE;
-            echo '--- Permissions après chmod ---';
-            cls -la $REMOTE/;
+            chmod 644 $REMOTE/icons/icon-72.png;
+            chmod 644 $REMOTE/icons/icon-96.png;
+            chmod 644 $REMOTE/icons/icon-128.png;
+            chmod 644 $REMOTE/icons/icon-144.png;
+            chmod 644 $REMOTE/icons/icon-152.png;
+            chmod 644 $REMOTE/icons/icon-192.png;
+            chmod 644 $REMOTE/icons/icon-384.png;
+            chmod 644 $REMOTE/icons/icon-512.png;
+            chmod 644 $REMOTE/icons/icon.svg;
             quit;
           "
           echo "Déploiement terminé"
