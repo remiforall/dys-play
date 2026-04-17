@@ -38,6 +38,9 @@ jobs:
             set net:timeout 60;
             set mirror:parallel-transfer-count 1;
             open -u $USER,$PASS sftp://$HOST;
+            echo '--- Nuke complet du dossier icons/ (contenu corrompu côté remote) ---';
+            rm -rf $REMOTE/icons;
+            echo '--- Dossier icons/ supprimé, le mirror va le recréer ---';
             mirror --reverse --delete --verbose \
               --allow-chown \
               --allow-suid \
