@@ -50,15 +50,15 @@ jobs:
               --exclude ^\.user\.ini$ \
               --exclude ^\.infomaniak \
               ./ $REMOTE;
-            echo '--- Contenu remote icons/ ---';
-            cls -la $REMOTE/icons/;
-            echo '--- Upload explicite par sécurité ---';
-            lcd icons;
-            cd $REMOTE/icons;
-            mput -O . *.png *.svg;
-            chmod 644 *.png *.svg;
-            echo '--- Contenu remote icons/ après chmod ---';
-            cls -la;
+            echo '--- Permissions des dossiers ---';
+            cls -la $REMOTE/;
+            echo '--- Force chmod 755 sur tous les dossiers ---';
+            chmod 755 $REMOTE/icons;
+            chmod 755 $REMOTE/fonts;
+            chmod 755 $REMOTE/libs;
+            chmod 755 $REMOTE;
+            echo '--- Permissions après chmod ---';
+            cls -la $REMOTE/;
             quit;
           "
           echo "Déploiement terminé"
