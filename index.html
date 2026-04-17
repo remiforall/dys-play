@@ -2,6 +2,51 @@
 <html lang="fr" dir="ltr">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      // Migration one-shot : purge le SW et les caches périmés
+      // (ancien app.js buggé sur loadOpenDyslexic). Retirer après le
+      // 2026-05-01 quand tous les utilisateurs auront migré.
+      (function () {
+        var FLAG = "dysplay_sw_reset_v4";
+        try {
+          if (localStorage.getItem(FLAG) === "done") return;
+        } catch (e) {
+          return;
+        }
+        if (!("serviceWorker" in navigator)) {
+          try {
+            localStorage.setItem(FLAG, "done");
+          } catch (e) {}
+          return;
+        }
+        (async function () {
+          try {
+            if (window.caches) {
+              var names = await caches.keys();
+              await Promise.all(
+                names.map(function (n) {
+                  return caches.delete(n);
+                }),
+              );
+            }
+            var regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(
+              regs.map(function (r) {
+                return r.unregister();
+              }),
+            );
+            localStorage.setItem(FLAG, "done");
+            if (regs.length > 0 || (window.caches && names.length > 0)) {
+              location.reload();
+            }
+          } catch (e) {
+            try {
+              localStorage.setItem(FLAG, "done");
+            } catch (_) {}
+          }
+        })();
+      })();
+    </script>
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=5.0"
