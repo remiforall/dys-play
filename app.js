@@ -2088,6 +2088,148 @@ async function pasteTextFromClipboard() {
 }
 
 // ============================================
+// 13b. FEEDBACK (bandeau bêta → modale → mailto / GitHub)
+// ============================================
+
+const FEEDBACK = {
+  email: "remi@posthack.com",
+  repoUrl: "https://github.com/remiforall/dys-play",
+  categoryLabels: {
+    bug: "Bug",
+    idea: "Idée",
+    question: "Question",
+    other: "Autre",
+  },
+  categoryGithubLabels: {
+    bug: "bug",
+    idea: "enhancement",
+    question: "question",
+    other: "triage",
+  },
+  lastFocus: null,
+};
+
+function buildFeedbackBody() {
+  const description = document
+    .getElementById("feedback-description")
+    .value.trim();
+  const category = document.getElementById("feedback-category").value;
+  const url = window.location.href;
+  const ua = navigator.userAgent;
+  const lang = state.currentLang || "fr";
+  return {
+    category,
+    description,
+    url,
+    ua,
+    lang,
+    plainText:
+      `${description}\n\n---\n` +
+      `Type : ${FEEDBACK.categoryLabels[category] || category}\n` +
+      `Page : ${url}\n` +
+      `Navigateur : ${ua}\n` +
+      `Langue : ${lang}\n` +
+      `Date : ${new Date().toISOString()}`,
+    markdown:
+      `${description}\n\n---\n` +
+      `**Type** : ${FEEDBACK.categoryLabels[category] || category}\n` +
+      `**Page** : ${url}\n` +
+      `**Navigateur** : \`${ua}\`\n` +
+      `**Langue** : ${lang}\n` +
+      `**Date** : ${new Date().toISOString()}`,
+  };
+}
+
+function validateFeedback() {
+  const description = document.getElementById("feedback-description");
+  if (!description.value.trim() || description.value.trim().length < 10) {
+    description.focus();
+    showToast("Description trop courte — 10 caractères minimum", "info");
+    return false;
+  }
+  return true;
+}
+
+function submitFeedbackByEmail() {
+  if (!validateFeedback()) return;
+  const { category, plainText } = buildFeedbackBody();
+  const subject = `[Dys-Play ${FEEDBACK.categoryLabels[category] || category}] Signalement depuis dys-play.net`;
+  const href =
+    `mailto:${FEEDBACK.email}` +
+    `?subject=${encodeURIComponent(subject)}` +
+    `&body=${encodeURIComponent(plainText)}`;
+  window.location.href = href;
+  setTimeout(closeFeedbackModal, 300);
+}
+
+function submitFeedbackByGithub() {
+  if (!validateFeedback()) return;
+  const { category, description, markdown } = buildFeedbackBody();
+  const title = description.split("\n")[0].slice(0, 80);
+  const labels = FEEDBACK.categoryGithubLabels[category] || "triage";
+  const href =
+    `${FEEDBACK.repoUrl}/issues/new` +
+    `?title=${encodeURIComponent(title)}` +
+    `&body=${encodeURIComponent(markdown)}` +
+    `&labels=${encodeURIComponent(labels)}`;
+  window.open(href, "_blank", "noopener,noreferrer");
+  setTimeout(closeFeedbackModal, 300);
+}
+
+function openFeedbackModal() {
+  const modal = document.getElementById("feedback-modal");
+  if (!modal) return;
+  FEEDBACK.lastFocus = document.activeElement;
+  // Remplir les infos techniques
+  document.getElementById("feedback-page-url").textContent =
+    window.location.href;
+  document.getElementById("feedback-user-agent").textContent =
+    navigator.userAgent;
+  document.getElementById("feedback-lang").textContent =
+    state.currentLang || "fr";
+  modal.hidden = false;
+  document.getElementById("feedback-description")?.focus();
+  document.body.style.overflow = "hidden";
+}
+
+function closeFeedbackModal() {
+  const modal = document.getElementById("feedback-modal");
+  if (!modal) return;
+  modal.hidden = true;
+  document.body.style.overflow = "";
+  if (FEEDBACK.lastFocus && typeof FEEDBACK.lastFocus.focus === "function") {
+    FEEDBACK.lastFocus.focus();
+  }
+}
+
+function initFeedbackModal() {
+  document
+    .getElementById("beta-banner-btn")
+    ?.addEventListener("click", openFeedbackModal);
+  document
+    .getElementById("close-feedback-btn")
+    ?.addEventListener("click", closeFeedbackModal);
+  document
+    .getElementById("feedback-cancel-btn")
+    ?.addEventListener("click", closeFeedbackModal);
+  document
+    .getElementById("feedback-backdrop")
+    ?.addEventListener("click", closeFeedbackModal);
+  document
+    .getElementById("feedback-submit-email")
+    ?.addEventListener("click", submitFeedbackByEmail);
+  document
+    .getElementById("feedback-submit-github")
+    ?.addEventListener("click", submitFeedbackByGithub);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      const modal = document.getElementById("feedback-modal");
+      if (modal && !modal.hidden) closeFeedbackModal();
+    }
+  });
+}
+
+// ============================================
 // 14. GESTION DES ÉVÉNEMENTS
 // ============================================
 
@@ -2282,6 +2424,9 @@ function initEventListeners() {
         });
       }
     }
+
+    // Bandeau bêta + modale feedback
+    initFeedbackModal();
 
     // Zone Selector Modal
     const zoneSelectorModal = document.getElementById("zone-selector-modal");

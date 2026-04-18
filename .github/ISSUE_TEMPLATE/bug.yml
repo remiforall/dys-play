@@ -1,0 +1,62 @@
+name: 🐛 Bug / Dysfonctionnement
+description: Signaler un comportement inattendu, une erreur ou un obstacle d'accessibilité
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci de signaler ce bug. Ce projet est en préversion et chaque retour compte.
+        Les informations techniques (URL, navigateur, langue) ne sont utilisées que pour reproduire le problème.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description du bug
+      description: Que s'est-il passé ? Qu'attendiez-vous à la place ?
+      placeholder: |
+        Exemple :
+        J'ai cliqué sur le bouton « Sauvegarder ce document »,
+        un toast rouge « Erreur » est apparu mais rien n'a été sauvegardé.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Étapes pour reproduire
+      description: Si possible, décrivez la séquence d'actions qui déclenche le bug.
+      placeholder: |
+        1. Ouvrir https://dys-play.net
+        2. Coller un texte via le bouton « Coller »
+        3. Cliquer sur …
+
+  - type: dropdown
+    id: device
+    attributes:
+      label: Type d'appareil
+      options:
+        - Ordinateur (desktop / laptop)
+        - Tablette
+        - Smartphone
+        - Autre / Je ne sais pas
+
+  - type: input
+    id: browser
+    attributes:
+      label: Navigateur et version
+      placeholder: "Firefox 126, Safari iOS 17, Chrome Android 124…"
+
+  - type: checkboxes
+    id: a11y
+    attributes:
+      label: Accessibilité
+      options:
+        - label: Ce bug affecte l'accessibilité (lecteur d'écran, clavier, contraste…)
+        - label: Ce bug empêche complètement l'utilisation de Dys-Play
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        **Vie privée** : Dys-Play est conçu pour ne jamais transmettre vos textes ou documents.
+        Ce formulaire ne demande aucune donnée personnelle. Ne collez pas de contenu sensible dans votre signalement.

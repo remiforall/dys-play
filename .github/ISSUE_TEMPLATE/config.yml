@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 📧 Signaler par e-mail (sans compte GitHub)
+    url: mailto:remi@posthack.com
+    about: Vous n'avez pas de compte GitHub ? Écrivez directement à remi@posthack.com.
+  - name: ♿ Déclaration d'accessibilité
+    url: https://dys-play.net/accessibilite.html
+    about: Consulter la déclaration RGAA 4.1.2 de Dys-Play et les voies de recours.

@@ -1,0 +1,51 @@
+name: 💡 Idée / Amélioration
+description: Proposer une évolution fonctionnelle, ergonomique ou d'accessibilité
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci pour votre idée. Dys-Play est piloté par les retours d'utilisateurs dys et de leurs proches.
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: Votre idée
+      description: Décrivez l'amélioration que vous souhaiteriez voir.
+      placeholder: |
+        Exemple :
+        Pouvoir importer un fichier EPUB pour éviter de passer par l'OCR
+        quand on a déjà le texte propre.
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexte d'usage
+      description: Dans quelle situation cette évolution vous serait utile ?
+      placeholder: |
+        Exemple :
+        J'achète mes livres en EPUB pour l'école, l'OCR sur un scan
+        prend trop de temps et produit des erreurs.
+
+  - type: dropdown
+    id: public
+    attributes:
+      label: Quel public bénéficierait le plus ?
+      options:
+        - Enfant dyslexique
+        - Adolescent·e TDA/H
+        - Adulte dys
+        - Enseignant·e ou AESH
+        - Orthophoniste
+        - Parent
+        - Autre
+
+  - type: checkboxes
+    id: priority
+    attributes:
+      label: Priorité perçue
+      options:
+        - label: Cette évolution serait un gros gain pour mon usage quotidien
+        - label: Elle améliorerait significativement l'accessibilité
