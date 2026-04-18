@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <meta name="robots" content="index, follow" />
+    <title>Déclaration d'accessibilité — Dys-Play</title>
+    <meta
+      name="description"
+      content="Déclaration d'accessibilité de Dys-Play conformément à l'article 47 de la loi n° 2005-102 du 11 février 2005 et au RGAA 4.1.2."
+    />
+    <link rel="icon" type="image/svg+xml" href="img/favicon.svg" />
+    <link rel="stylesheet" href="fonts/fonts.css" />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      main.a11y-page {
+        max-width: 64rem;
+        margin: 0 auto;
+        padding: var(--space-xl) var(--space-lg);
+        line-height: var(--line-height);
+      }
+      main.a11y-page h1 {
+        margin-bottom: var(--space-lg);
+      }
+      main.a11y-page h2 {
+        margin-top: var(--space-2xl);
+        margin-bottom: var(--space-md);
+        border-bottom: 2px solid var(--color-border);
+        padding-bottom: var(--space-sm);
+      }
+      main.a11y-page h3 {
+        margin-top: var(--space-xl);
+        margin-bottom: var(--space-sm);
+      }
+      main.a11y-page ul,
+      main.a11y-page ol {
+        padding-left: 1.5em;
+        margin-bottom: var(--space-md);
+      }
+      main.a11y-page li {
+        margin-bottom: var(--space-xs);
+      }
+      main.a11y-page a {
+        color: var(--color-primary);
+        text-decoration: underline;
+      }
+      main.a11y-page .back-link {
+        display: inline-block;
+        margin-bottom: var(--space-lg);
+      }
+      main.a11y-page .addr {
+        font-style: normal;
+        padding: var(--space-md);
+        background: var(--color-bg-secondary);
+        border-left: 4px solid var(--color-primary);
+        border-radius: var(--radius-sm);
+      }
+      main.a11y-page .credit-list li {
+        margin-bottom: var(--space-sm);
+      }
+    </style>
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+
+    <main id="main-content" class="a11y-page" role="main">
+      <a href="/" class="back-link">← Retour à Dys-Play</a>
+
+      <h1>Déclaration d'accessibilité</h1>
+
+      <p>
+        <strong>Posthack</strong> s'engage à rendre ses services de
+        communication au public en ligne accessibles conformément à l'article
+        47 de la loi n° 2005-102 du 11 février 2005.
+      </p>
+
+      <p>
+        À cette fin, Posthack met en œuvre la stratégie et les actions
+        suivantes dans le cadre du projet Dys-Play.
+      </p>
+
+      <p>Cette déclaration d'accessibilité s'applique au service en ligne suivant :</p>
+
+      <ul>
+        <li>
+          <strong>Nom du service :</strong> Dys-Play — lecture augmentée pour
+          personnes dyslexiques, dysorthographiques et TDA/H
+        </li>
+        <li>
+          <strong>URL :</strong>
+          <a href="https://dys-play.net">https://dys-play.net</a>
+        </li>
+      </ul>
+
+      <h2>État de conformité</h2>
+
+      <p>
+        Dys-Play est <strong>non conforme</strong> au Référentiel général
+        d'amélioration de l'accessibilité (RGAA) version 4.1.2.
+      </p>
+
+      <p>
+        Cette déclaration de non-conformité est provisoire :
+        <strong>aucun audit de conformité n'a encore été réalisé</strong> à la
+        date de publication du présent document. Un audit externe est
+        planifié au cours du second semestre 2026.
+      </p>
+
+      <p>
+        Dès la réalisation de cet audit, le présent état sera mis à jour pour
+        indiquer soit une conformité totale, soit une conformité partielle
+        avec le taux atteint.
+      </p>
+
+      <h2>Contenus non accessibles connus à ce jour</h2>
+
+      <p>
+        En l'absence d'audit externe formel, la liste ci-dessous résulte d'un
+        auto-examen et n'est pas exhaustive. Elle sera complétée après audit.
+      </p>
+
+      <ul>
+        <li>
+          Les contrastes de certains libellés du panneau de réglages sur le
+          thème « crème » n'ont pas encore tous été validés à 4.5:1.
+        </li>
+        <li>
+          La synchronisation mot-par-mot du lecteur vocal n'est pas disponible
+          sur Chrome pour Android, en raison d'une limitation de l'API Web
+          Speech du navigateur (<code>SpeechSynthesisUtterance.onboundary</code>
+          non supporté).
+        </li>
+        <li>
+          La reconnaissance optique de caractères (OCR) sur images arabes
+          présente un taux d'erreur supérieur aux langues latines — limite
+          connue du moteur Tesseract.js exécuté localement.
+        </li>
+      </ul>
+
+      <p>
+        Si une ou plusieurs de ces non-conformités vous empêchent d'utiliser le
+        service, vous pouvez nous contacter pour obtenir une alternative
+        accessible ou le contenu sous une autre forme (voir section
+        <a href="#recours">Voies de recours</a> ci-dessous).
+      </p>
+
+      <h3>Dérogations pour charge disproportionnée</h3>
+      <p>Aucune dérogation pour charge disproportionnée n'est invoquée à ce jour.</p>
+
+      <h3>Contenus non soumis à l'obligation d'accessibilité</h3>
+      <p>Néant.</p>
+
+      <h2>Établissement de cette déclaration d'accessibilité</h2>
+
+      <p>Cette déclaration a été établie le <strong>18 avril 2026</strong>.</p>
+
+      <h3>Technologies utilisées</h3>
+
+      <p>Dys-Play s'appuie sur les technologies web suivantes :</p>
+
+      <ul>
+        <li>HTML5</li>
+        <li>CSS3</li>
+        <li>JavaScript (vanilla, sans framework, sans étape de build)</li>
+        <li>
+          WebAssembly (pour la reconnaissance optique de caractères via
+          Tesseract.js, exécutée localement)
+        </li>
+        <li>Service Worker (pour le fonctionnement hors ligne)</li>
+        <li>IndexedDB et localStorage (pour le stockage local des réglages)</li>
+        <li>API Web Speech (pour la synthèse vocale)</li>
+      </ul>
+
+      <h3>Environnements de test</h3>
+
+      <p>
+        Un auto-examen est en cours. Les environnements de test seront
+        précisés lors de la publication de l'audit externe prévu au second
+        semestre 2026. À titre indicatif, l'application est développée et
+        vérifiée en continu sur :
+      </p>
+
+      <ul>
+        <li>Firefox et Chrome sur macOS et Windows 11.</li>
+        <li>Safari sur macOS et iOS.</li>
+        <li>Chrome sur Android.</li>
+      </ul>
+
+      <h3>Outils utilisés pour l'évaluation</h3>
+
+      <ul>
+        <li>Inspecteur d'accessibilité de Firefox.</li>
+        <li>Extension axe DevTools.</li>
+        <li>Tanaguru Contrast-Finder pour les contrastes.</li>
+        <li>Test manuel au clavier (Tab, Shift+Tab, Enter, Espace, Échap).</li>
+        <li>
+          Tests manuels avec lecteurs d'écran (VoiceOver sur macOS/iOS,
+          TalkBack sur Android).
+        </li>
+      </ul>
+
+      <h3>Pages du service ayant fait l'objet de la vérification</h3>
+
+      <p>
+        Dys-Play est une application monopage. Les parcours vérifiés en
+        auto-examen sont :
+      </p>
+
+      <ul>
+        <li>
+          Page d'accueil et interface principale :
+          <a href="https://dys-play.net">https://dys-play.net</a>
+        </li>
+        <li>Panneau de réglages (vue latérale).</li>
+        <li>Parcours d'onboarding en 3 étapes.</li>
+        <li>Parcours d'import (photo, fichier, collage).</li>
+        <li>
+          Mentions légales et présente déclaration d'accessibilité
+          (<code>/accessibilite.html</code>).
+        </li>
+      </ul>
+
+      <h2>Retour d'information et contact</h2>
+
+      <p>
+        Si vous n'arrivez pas à accéder à un contenu ou à un service, vous
+        pouvez contacter le responsable de Dys-Play pour être orienté vers
+        une alternative accessible ou obtenir le contenu sous une autre forme.
+      </p>
+
+      <ul>
+        <li>
+          <strong>Contact :</strong> Rémi —
+          <a href="mailto:remi@posthack.com">remi@posthack.com</a>
+        </li>
+      </ul>
+
+      <p>Nous nous engageons à vous répondre dans un délai raisonnable.</p>
+
+      <h2 id="recours">Voies de recours</h2>
+
+      <p>
+        Cette procédure est à utiliser dans le cas suivant : vous avez signalé
+        au responsable du site un défaut d'accessibilité qui vous empêche
+        d'accéder à un contenu ou à un service du portail, et vous n'avez pas
+        obtenu de réponse satisfaisante.
+      </p>
+
+      <p>Vous pouvez :</p>
+
+      <ul>
+        <li>
+          Écrire un message au Défenseur des droits :
+          <a href="https://formulaire.defenseurdesdroits.fr/"
+            >formulaire.defenseurdesdroits.fr</a
+          >
+        </li>
+        <li>
+          Contacter le délégué du Défenseur des droits dans votre région :
+          <a href="https://www.defenseurdesdroits.fr/saisir/delegues"
+            >defenseurdesdroits.fr/saisir/delegues</a
+          >
+        </li>
+        <li>Envoyer un courrier par la poste (gratuit, ne pas affranchir) :</li>
+      </ul>
+
+      <address class="addr">
+        Défenseur des droits<br />
+        Libre réponse 71120<br />
+        75342 Paris CEDEX 07
+      </address>
+
+      <p>
+        Vous pouvez également signaler le manquement à l'Autorité de
+        régulation de la communication audiovisuelle et numérique (ARCOM) via
+        son formulaire dédié aux manquements à l'accessibilité numérique :
+        <a href="https://www.arcom.fr/">arcom.fr</a>.
+      </p>
+
+      <h2>Amélioration et plan d'action</h2>
+
+      <p>
+        Posthack s'engage à améliorer progressivement l'accessibilité de
+        Dys-Play, avec les priorités suivantes pour les douze mois à venir :
+      </p>
+
+      <ol>
+        <li>Réalisation d'un audit RGAA 4.1.2 externe par une société spécialisée.</li>
+        <li>Traitement des non-conformités identifiées par cet audit.</li>
+        <li>
+          Publication d'un schéma pluriannuel d'accessibilité et d'un plan
+          d'action annuel.
+        </li>
+        <li>Mise à jour trimestrielle de la présente déclaration.</li>
+      </ol>
+
+      <p>
+        Pour toute suggestion d'amélioration :
+        <a href="mailto:remi@posthack.com">remi@posthack.com</a>.
+      </p>
+
+      <h2>Crédits typographiques</h2>
+
+      <p>
+        Dys-Play sert les polices suivantes localement, sans CDN tiers, pour
+        respecter la promesse de traitement 100 % local.
+      </p>
+
+      <ul class="credit-list">
+        <li>
+          Police <strong>Luciole</strong> — Centre Technique Régional pour la
+          Déficience Visuelle (CTRDV) et studio typographies.fr — Licence
+          Creative Commons Attribution 4.0 —
+          <a href="https://www.luciole-vision.com/">luciole-vision.com</a>
+        </li>
+        <li>
+          Police <strong>Atkinson Hyperlegible</strong> — Braille Institute of
+          America — SIL Open Font License 1.1 —
+          <a href="https://brailleinstitute.org/freefont">brailleinstitute.org/freefont</a>
+        </li>
+        <li>
+          Police <strong>OpenDyslexic</strong> — Abbie Gonzalez — SIL Open
+          Font License 1.1 —
+          <a href="https://opendyslexic.org/">opendyslexic.org</a>
+        </li>
+        <li>
+          Police <strong>Comic Neue</strong> — Craig Rozynski — SIL Open Font
+          License 1.1 —
+          <a href="https://comicneue.com/">comicneue.com</a>
+        </li>
+      </ul>
+
+      <p>
+        Les autres polices proposées dans le sélecteur (Arial, Verdana,
+        Georgia, Système) sont utilisées uniquement si elles sont présentes
+        sur le système de l'utilisateur ; Dys-Play ne les distribue pas.
+      </p>
+
+      <hr />
+
+      <p>
+        <em
+          >Cette déclaration a été rédigée le 18 avril 2026 selon le modèle
+          officiel fourni par la Direction interministérielle du numérique
+          (DINUM) à l'adresse
+          <a href="https://accessibilite.numerique.gouv.fr/obligations/declaration-accessibilite/"
+            >accessibilite.numerique.gouv.fr</a
+          >, dans le cadre de l'article 47 de la loi n° 2005-102 du 11
+          février 2005 et du décret n° 2019-768 du 24 juillet 2019.</em
+        >
+      </p>
+    </main>
+  </body>
+</html>

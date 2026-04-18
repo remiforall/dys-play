@@ -1,4 +1,38 @@
-/* OpenDyslexic Font - Optimized for dyslexic readers */
+/* Luciole - Centre Technique Régional pour la Déficience Visuelle (CTRDV) — CC-BY 4.0 */
+@font-face {
+    font-family: 'Luciole';
+    src: url('./Luciole-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Luciole';
+    src: url('./Luciole-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* Atkinson Hyperlegible - Braille Institute of America — SIL OFL 1.1 */
+@font-face {
+    font-family: 'Atkinson Hyperlegible';
+    src: url('./AtkinsonHyperlegible-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Atkinson Hyperlegible';
+    src: url('./AtkinsonHyperlegible-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* OpenDyslexic - Police expérimentale (préférence subjective) */
 @font-face {
     font-family: 'OpenDyslexic';
     src: url('./OpenDyslexic-Regular.woff2') format('woff2'),

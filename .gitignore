@@ -29,3 +29,7 @@ developpement-pwa-dys-play.md
 # Polices woff legacy (woff2 suffisent)
 fonts/*.woff
 fonts/download-fonts.sh
+
+# Documents d'audit (inputs de session, non versionnés)
+files/
+files.zip

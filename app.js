@@ -94,15 +94,18 @@ const i18n = {
 
   fr: {
     // Onboarding
-    "onboarding.title": "Bienvenue dans Dys-Play Pro",
+    "onboarding.title": "Bienvenue dans Dys-Play",
     "onboarding.subtitle":
       "Une application spécialement conçue pour la lecture augmentée. Prenez quelques secondes pour configurer vos préférences.",
     "onboarding.language": "Langue préférée",
     "onboarding.font": "Police d'écriture",
+    "onboarding.fontDesc.luciole": "Luciole (recommandée)",
+    "onboarding.fontDesc.atkinson": "Atkinson Hyperlegible (très lisible)",
     "onboarding.fontDesc.system": "Système (défaut)",
-    "onboarding.fontDesc.opendyslexic": "OpenDyslexic (optimisée dyslexie)",
-    "onboarding.fontDesc.comicneue": "Comic Neue (claire et aérée)",
-    "onboarding.fontDesc.arial": "Arial (épurée)",
+    "onboarding.fontDesc.arial": "Arial (sans serif classique)",
+    "onboarding.fontDesc.verdana": "Verdana (sans serif confortable)",
+    "onboarding.fontDesc.comicneue": "Comic Neue (aérée)",
+    "onboarding.fontDesc.opendyslexic": "OpenDyslexic (police expérimentale)",
     "onboarding.fontDesc.georgia": "Georgia (serif lisible)",
     "onboarding.theme": "Thème",
     "onboarding.themeLight": "☀️ Clair",
@@ -112,7 +115,7 @@ const i18n = {
     "onboarding.quickSetup": "⚙️ Configuration rapide",
 
     // Main Interface
-    "app.title": "Dys-Play Pro",
+    "app.title": "Dys-Play",
     "status.online": "En ligne",
     "status.offline": "Hors-ligne",
     "btn.import": "Importer",
@@ -138,7 +141,7 @@ const i18n = {
     "toggle.syllable": "Coloration syllabique",
     "toggle.reducedMotion": "Mode calme",
     "section.overlay": "Overlay couleur",
-    "overlay.desc": "Filtre coloré pour le stress visuel (syndrome d'Irlen)",
+    "overlay.desc": "Filtre coloré (confort visuel personnalisé)",
     "label.overlayOpacity": "Intensité",
     "label.rulerMode": "Mode règle",
     "ruler.line": "Ligne",
@@ -148,6 +151,8 @@ const i18n = {
     "msg.saving": "Sauvegarde...",
     "msg.saved": "Sauvegardé",
     "msg.error": "Erreur",
+    "msg.noTextToSave":
+      "Aucun texte à sauvegarder — importez d'abord un document.",
     "msg.offline": "Mode hors-ligne",
     "msg.ocr.processing": "Reconnaissance de texte en cours...",
     "msg.ocr.complete": "Texte reconnu",
@@ -171,15 +176,18 @@ const i18n = {
 
   en: {
     // Onboarding
-    "onboarding.title": "Welcome to Dys-Play Pro",
+    "onboarding.title": "Welcome to Dys-Play",
     "onboarding.subtitle":
       "An application specially designed for enhanced reading. Take a few seconds to configure your preferences.",
     "onboarding.language": "Preferred Language",
     "onboarding.font": "Font",
+    "onboarding.fontDesc.luciole": "Luciole (recommended)",
+    "onboarding.fontDesc.atkinson": "Atkinson Hyperlegible (highly readable)",
     "onboarding.fontDesc.system": "System (default)",
-    "onboarding.fontDesc.opendyslexic": "OpenDyslexic (dyslexia friendly)",
-    "onboarding.fontDesc.comicneue": "Comic Neue (clear and spacious)",
-    "onboarding.fontDesc.arial": "Arial (clean)",
+    "onboarding.fontDesc.arial": "Arial (classic sans serif)",
+    "onboarding.fontDesc.verdana": "Verdana (comfortable sans serif)",
+    "onboarding.fontDesc.comicneue": "Comic Neue (airy)",
+    "onboarding.fontDesc.opendyslexic": "OpenDyslexic (experimental font)",
     "onboarding.fontDesc.georgia": "Georgia (readable serif)",
     "onboarding.theme": "Theme",
     "onboarding.themeLight": "☀️ Light",
@@ -189,7 +197,7 @@ const i18n = {
     "onboarding.quickSetup": "⚙️ Quick Setup",
 
     // Main Interface
-    "app.title": "Dys-Play Pro",
+    "app.title": "Dys-Play",
     "status.online": "Online",
     "status.offline": "Offline",
     "btn.import": "Import",
@@ -215,7 +223,7 @@ const i18n = {
     "toggle.syllable": "Syllable Color",
     "toggle.reducedMotion": "Calm mode",
     "section.overlay": "Color Overlay",
-    "overlay.desc": "Colored filter for visual stress (Irlen syndrome)",
+    "overlay.desc": "Colored filter (personal visual comfort)",
     "label.overlayOpacity": "Intensity",
     "label.rulerMode": "Ruler Mode",
     "ruler.line": "Line",
@@ -225,6 +233,7 @@ const i18n = {
     "msg.saving": "Saving...",
     "msg.saved": "Saved",
     "msg.error": "Error",
+    "msg.noTextToSave": "No text to save — import a document first.",
     "msg.offline": "Offline mode",
     "msg.ocr.processing": "Text recognition in progress...",
     "msg.ocr.complete": "Text recognized",
@@ -239,15 +248,19 @@ const i18n = {
 
   ar: {
     // Onboarding
-    "onboarding.title": "مرحبا بك في Dys-Play Pro",
+    "onboarding.title": "مرحبا بك في Dys-Play",
     "onboarding.subtitle":
       "تطبيق مصمم خصيصا للقراءة المحسنة. خذ بضع ثوان لتكوين تفضيلاتك.",
     "onboarding.language": "اللغة المفضلة",
     "onboarding.font": "الخط",
+    "onboarding.fontDesc.luciole": "Luciole (موصى بها)",
+    "onboarding.fontDesc.atkinson":
+      "Atkinson Hyperlegible (قابلة للقراءة بشدة)",
     "onboarding.fontDesc.system": "النظام (الافتراضي)",
-    "onboarding.fontDesc.opendyslexic": "OpenDyslexic (صديقة الديسلكسيا)",
-    "onboarding.fontDesc.comicneue": "Comic Neue (واضحة وفسيحة)",
-    "onboarding.fontDesc.arial": "Arial (نظيفة)",
+    "onboarding.fontDesc.arial": "Arial (sans serif كلاسيكية)",
+    "onboarding.fontDesc.verdana": "Verdana (sans serif مريحة)",
+    "onboarding.fontDesc.comicneue": "Comic Neue (واسعة)",
+    "onboarding.fontDesc.opendyslexic": "OpenDyslexic (خط تجريبي)",
     "onboarding.fontDesc.georgia": "Georgia (serif سهلة القراءة)",
     "onboarding.theme": "المظهر",
     "onboarding.themeLight": "☀️ فاتح",
@@ -257,7 +270,7 @@ const i18n = {
     "onboarding.quickSetup": "⚙️ إعداد سريع",
 
     // Main Interface
-    "app.title": "Dys-Play Pro",
+    "app.title": "Dys-Play",
     "status.online": "متصل",
     "status.offline": "غير متصل",
     "btn.import": "استيراد",
@@ -293,6 +306,7 @@ const i18n = {
     "msg.saving": "جاري الحفظ...",
     "msg.saved": "تم الحفظ",
     "msg.error": "خطأ",
+    "msg.noTextToSave": "لا يوجد نص للحفظ — قم باستيراد مستند أولاً.",
     "msg.offline": "وضع غير متصل",
     "msg.ocr.processing": "جاري التعرف على النص...",
     "msg.ocr.complete": "تم التعرف على النص",
@@ -498,6 +512,12 @@ const Storage = {
     try {
       localStorage.setItem(CONFIG.LS_PREFIX + key, JSON.stringify(value));
     } catch (e) {
+      console.error(
+        `[Storage.set] Échec pour clé "${key}" :`,
+        e.name,
+        e.message,
+        { value },
+      );
       showToast("Erreur de sauvegarde des paramètres", "error");
     }
   },
@@ -1014,6 +1034,22 @@ const focusMask = new FocusMaskEngine();
 // 9. MOTEUR TYPOGRAPHIE
 // ============================================
 
+const FONT_FAMILIES = {
+  Luciole: "'Luciole', system-ui, sans-serif",
+  "Atkinson Hyperlegible": "'Atkinson Hyperlegible', system-ui, sans-serif",
+  OpenDyslexic: "'OpenDyslexic', 'Comic Neue', sans-serif",
+  "Comic Neue": "'Comic Neue', 'Comic Sans MS', cursive",
+  Arial: "Arial, Helvetica, sans-serif",
+  Verdana: "Verdana, Geneva, sans-serif",
+  Georgia: "Georgia, 'Times New Roman', serif",
+  "system-ui":
+    "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+};
+
+function resolveFontFamily(font) {
+  return FONT_FAMILIES[font] || `'${font}', system-ui, sans-serif`;
+}
+
 class TypographyEngine {
   constructor() {
     this.root = document.documentElement;
@@ -1036,20 +1072,10 @@ class TypographyEngine {
       );
     }
 
-    // Police
-    if (settings.font === "OpenDyslexic") {
-      this.root.style.setProperty(
-        "--font-family",
-        "'OpenDyslexic', 'Comic Neue', sans-serif",
-      );
-    } else if (settings.font === "Comic Neue") {
-      this.root.style.setProperty(
-        "--font-family",
-        "'Comic Neue', 'Comic Sans MS', cursive",
-      );
-    } else {
-      this.root.style.setProperty("--font-family", settings.font);
-    }
+    this.root.style.setProperty(
+      "--font-family",
+      resolveFontFamily(settings.font),
+    );
 
     const elapsed = performance.now() - startTime;
 
@@ -1087,27 +1113,14 @@ class TypographyEngine {
 
   setFont(font) {
     state.settings.font = font;
-    // Les polices Google Fonts sont pré-chargées dans le head
-    if (font === "OpenDyslexic") {
-      this.root.style.setProperty(
-        "--font-family",
-        "'OpenDyslexic', 'Comic Neue', sans-serif",
-      );
-    } else if (font === "Comic Neue") {
-      this.root.style.setProperty(
-        "--font-family",
-        "'Comic Neue', 'Comic Sans MS', cursive",
-      );
-    } else {
-      this.root.style.setProperty("--font-family", font);
-    }
+    this.root.style.setProperty("--font-family", resolveFontFamily(font));
     Storage.set("font", font);
   }
 }
 
 const typography = new TypographyEngine();
 
-// Gestion overlay couleur Irlen
+// Gestion overlay couleur (confort visuel personnalisé)
 const colorOverlay = {
   element: null,
 
@@ -1555,8 +1568,8 @@ function applyOCRResults() {
     });
     updatePlayButton();
     closeOCRResultsModal();
-    // Sauvegarder automatiquement en bibliothèque
-    libraryManager.saveCurrentDocument();
+    // Sauvegarder automatiquement en bibliothèque (silencieux — OCR)
+    libraryManager.saveCurrentDocument({ silent: true });
   }
 }
 
@@ -1856,18 +1869,24 @@ class LibraryManager {
     renderLibrary();
   }
 
-  async saveCurrentDocument() {
+  async saveCurrentDocument({ silent = false } = {}) {
     if (!state.textContent.trim()) {
-      showToast(i18n[state.currentLang]["msg.error"], "error");
+      if (!silent) {
+        showToast(
+          i18n.t("msg.noTextToSave") ||
+            "Aucun texte à sauvegarder — importez d'abord un document.",
+          "info",
+        );
+      }
       return;
     }
 
-    showToast(i18n[state.currentLang]["msg.saving"], "info");
+    if (!silent) showToast(i18n[state.currentLang]["msg.saving"], "info");
 
     try {
       await db.addDocument(state.textContent, state.currentLang);
       await this.refresh();
-      showToast(i18n[state.currentLang]["msg.saved"], "success");
+      if (!silent) showToast(i18n[state.currentLang]["msg.saved"], "success");
     } catch (error) {
       console.error("Erreur sauvegarde:", error);
       showToast(i18n[state.currentLang]["msg.error"], "error");
@@ -2060,7 +2079,7 @@ async function pasteTextFromClipboard() {
       syllables: state.settings.syllableColor,
     });
     updatePlayButton();
-    libraryManager.saveCurrentDocument();
+    libraryManager.saveCurrentDocument({ silent: true });
     showToast(
       i18n[state.currentLang]?.["msg.text_imported"] || "Texte importé",
       "success",
@@ -2238,26 +2257,30 @@ function initEventListeners() {
     const ocrSettingsModal = document.getElementById("ocr-settings-modal");
     if (ocrSettingsModal) {
       document
-        .getElementById("close-ocr-settings")
-        .addEventListener("click", closeOCRSettingsModal);
+        .getElementById("close-ocr-settings-btn")
+        ?.addEventListener("click", closeOCRSettingsModal);
       document
         .getElementById("save-ocr-settings-btn")
-        .addEventListener("click", saveOCRSettings);
+        ?.addEventListener("click", saveOCRSettings);
       document
         .getElementById("ocr-settings-backdrop")
-        .addEventListener("click", closeOCRSettingsModal);
+        ?.addEventListener("click", closeOCRSettingsModal);
       document
         .getElementById("open-ocr-settings-btn")
-        .addEventListener("click", openOCRSettingsModal);
+        ?.addEventListener("click", openOCRSettingsModal);
 
       // Update confidence threshold display
-      document
-        .getElementById("ocr-confidence-threshold")
-        .addEventListener("input", (e) => {
-          document.getElementById(
-            "ocr-confidence-threshold-value",
-          ).textContent = e.target.value;
+      const confidenceInput = document.getElementById(
+        "ocr-confidence-threshold",
+      );
+      const confidenceValue = document.getElementById(
+        "ocr-confidence-threshold-value",
+      );
+      if (confidenceInput && confidenceValue) {
+        confidenceInput.addEventListener("input", (e) => {
+          confidenceValue.textContent = e.target.value;
         });
+      }
     }
 
     // Zone Selector Modal
@@ -2284,6 +2307,7 @@ function initEventListeners() {
         });
         updatePlayButton();
         input.value = "";
+        libraryManager.saveCurrentDocument({ silent: true });
       }
     });
 
@@ -2433,7 +2457,7 @@ function initEventListeners() {
         }
       });
 
-    // Overlay couleur Irlen
+    // Overlay couleur (confort visuel personnalisé)
     document.querySelectorAll(".overlay-color-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         document
@@ -2662,7 +2686,12 @@ function initEventListeners() {
         }
       });
     });
-  } catch (error) {}
+  } catch (error) {
+    console.error(
+      "[initEventListeners] Exception — listeners suivants non attachés :",
+      error,
+    );
+  }
 }
 
 // ============================================
@@ -2779,8 +2808,8 @@ async function handleFile(file, useZoneSelection = false) {
         syllables: state.settings.syllableColor,
       });
       updatePlayButton();
-      // Sauvegarder automatiquement en bibliothèque
-      libraryManager.saveCurrentDocument();
+      // Sauvegarder automatiquement en bibliothèque (silencieux — import fichier)
+      libraryManager.saveCurrentDocument({ silent: true });
     }
   } catch (error) {
     console.error("Erreur traitement fichier:", error);

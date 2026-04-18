@@ -44,7 +44,7 @@ python3 -m http.server 8080
 
 ## Accessibilite
 
-- Cible WCAG 2.2 AAA
+- Cible RGAA 4.1.2 / WCAG 2.1 AA (conformite partielle en cours, audit externe planifie)
 - Navigation clavier complete
 - Support lecteurs d'ecran (ARIA)
 - Contrastes verifies sur les 4 themes

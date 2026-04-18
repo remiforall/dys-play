@@ -128,12 +128,12 @@
     <link rel="preload" href="app.js" as="script" />
     <link
       rel="preload"
-      href="fonts/OpenDyslexic-Regular.woff2"
+      href="fonts/Luciole-Regular.woff2"
       as="font"
       type="font/woff2"
       crossorigin
     />
-    <!-- Local Fonts: OpenDyslexic & Comic Neue -->
+    <!-- Polices locales : Luciole, Atkinson Hyperlegible, OpenDyslexic, Comic Neue -->
     <link rel="stylesheet" href="fonts/fonts.css" />
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -166,7 +166,6 @@
         </button>
         <h1 class="app-title">
           <span class="title-main">Dys-Play</span>
-          <span class="title-sub">Pro</span>
         </h1>
       </div>
 
@@ -399,13 +398,39 @@
                   cursor: pointer;
                 "
               >
-                <option value="system-ui">Système (défaut)</option>
-                <option value="OpenDyslexic">
-                  OpenDyslexic (optimisée dyslexie)
+                <option value="Luciole" data-key="onboarding.fontDesc.luciole">
+                  Luciole (recommandée)
                 </option>
-                <option value="Comic Neue">Comic Neue (claire et aérée)</option>
-                <option value="Arial">Arial (épurée)</option>
-                <option value="Georgia">Georgia (serif lisible)</option>
+                <option
+                  value="Atkinson Hyperlegible"
+                  data-key="onboarding.fontDesc.atkinson"
+                >
+                  Atkinson Hyperlegible (très lisible)
+                </option>
+                <option value="system-ui" data-key="onboarding.fontDesc.system">
+                  Système (défaut)
+                </option>
+                <option value="Arial" data-key="onboarding.fontDesc.arial">
+                  Arial (sans serif classique)
+                </option>
+                <option value="Verdana" data-key="onboarding.fontDesc.verdana">
+                  Verdana (sans serif confortable)
+                </option>
+                <option
+                  value="Comic Neue"
+                  data-key="onboarding.fontDesc.comicneue"
+                >
+                  Comic Neue (aérée)
+                </option>
+                <option
+                  value="OpenDyslexic"
+                  data-key="onboarding.fontDesc.opendyslexic"
+                >
+                  OpenDyslexic (police expérimentale)
+                </option>
+                <option value="Georgia" data-key="onboarding.fontDesc.georgia">
+                  Georgia (serif lisible)
+                </option>
               </select>
             </div>
 
@@ -837,7 +862,7 @@
       <!-- Loader -->
       <div id="loader" class="loader hidden" role="status" aria-live="polite">
         <div class="spinner"></div>
-        <span id="loader-text">Analyse en cours...</span>
+        <span id="loader-text"></span>
         <div class="loader-progress-wrapper" aria-hidden="true">
           <div
             id="loader-progress"
@@ -1001,6 +1026,23 @@
             </a>
           </li>
           <li>
+            <a href="accessibilite.html" id="nav-a11y" class="nav-link">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="8" r="1.5" fill="currentColor"></circle>
+                <path d="M8 11h8M12 11v7M9 18l3-4 3 4"></path>
+              </svg>
+              Accessibilité
+            </a>
+          </li>
+          <li>
             <a href="#" id="nav-legal" class="nav-link">
               <svg
                 class="icon"
@@ -1149,10 +1191,15 @@
           <div class="setting-row">
             <label for="font-select">Police</label>
             <select id="font-select" aria-label="Police de caractères">
+              <option value="Luciole">Luciole (recommandée)</option>
+              <option value="Atkinson Hyperlegible">
+                Atkinson Hyperlegible
+              </option>
               <option value="system-ui">Système</option>
-              <option value="OpenDyslexic">OpenDyslexic</option>
-              <option value="Comic Neue">Comic Neue</option>
               <option value="Arial">Arial</option>
+              <option value="Verdana">Verdana</option>
+              <option value="Comic Neue">Comic Neue</option>
+              <option value="OpenDyslexic">OpenDyslexic (expérimentale)</option>
               <option value="Georgia">Georgia</option>
             </select>
           </div>
@@ -1245,11 +1292,11 @@
           </div>
         </section>
 
-        <!-- Overlay couleur (Irlen) -->
+        <!-- Overlay couleur (confort visuel personnalisé) -->
         <section class="settings-section">
           <h3>Overlay couleur</h3>
           <p class="setting-description">
-            Filtre coloré pour le stress visuel (syndrome d'Irlen)
+            Filtre coloré (confort visuel personnalisé)
           </p>
           <div class="overlay-color-options">
             <button
@@ -2020,8 +2067,30 @@
 
           <h3>Accessibilité</h3>
           <p>
-            Dys-Play vise la conformité WCAG 2.2 niveau AAA. Si vous rencontrez
-            un obstacle d'accessibilité, contactez-nous.
+            Dys-Play vise la conformité au
+            <strong
+              >Référentiel général d'amélioration de l'accessibilité (RGAA)
+              version 4.1.2</strong
+            >, qui correspond au niveau AA des Web Content Accessibility
+            Guidelines (WCAG) 2.1.
+          </p>
+          <p>
+            À la date de publication, le service est
+            <strong>non conforme</strong>
+            car il n'a pas encore fait l'objet d'un audit externe formel. Un
+            audit est planifié et sa date prévisionnelle sera communiquée sur la
+            page dédiée.
+          </p>
+          <p>
+            Si vous rencontrez un obstacle d'accessibilité, écrivez-nous à
+            <a href="mailto:remi@posthack.com">remi@posthack.com</a>. Nous nous
+            engageons à vous répondre dans un délai raisonnable et à vous
+            proposer, si nécessaire, une alternative accessible.
+          </p>
+          <p>
+            Pour consulter la déclaration d'accessibilité complète, les voies de
+            recours et les crédits typographiques, rendez-vous sur la page
+            <a href="accessibilite.html">Accessibilité</a>.
           </p>
 
           <h3>Licence</h3>
