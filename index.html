@@ -124,8 +124,8 @@
     <link rel="icon" type="image/svg+xml" href="img/icon.svg" />
     <link rel="apple-touch-icon" href="img/icon-192.png" />
     <!-- Preload critique (above-the-fold) -->
-    <link rel="preload" href="styles.css?v=15" as="style" />
-    <link rel="preload" href="app.js?v=15" as="script" />
+    <link rel="preload" href="styles.css?v=16" as="style" />
+    <link rel="preload" href="app.js?v=16" as="script" />
     <link
       rel="preload"
       href="fonts/Luciole-Regular.woff2"
@@ -134,8 +134,8 @@
       crossorigin
     />
     <!-- Polices locales : Luciole, Atkinson Hyperlegible, OpenDyslexic, Comic Neue -->
-    <link rel="stylesheet" href="fonts/fonts.css?v=15" />
-    <link rel="stylesheet" href="styles.css?v=15" />
+    <link rel="stylesheet" href="fonts/fonts.css?v=16" />
+    <link rel="stylesheet" href="styles.css?v=16" />
   </head>
   <body>
     <!-- Skip Links pour Accessibilité -->
@@ -2177,6 +2177,72 @@
             </small>
           </div>
 
+          <div class="setting-row">
+            <label for="feedback-screenshot"
+              >Capture d'écran (facultatif)</label
+            >
+            <div
+              id="feedback-screenshot-drop"
+              class="feedback-screenshot-drop"
+              tabindex="0"
+              role="button"
+              aria-label="Zone de dépôt de capture d'écran : coller avec Ctrl+V, glisser-déposer ou cliquer pour choisir un fichier"
+            >
+              <input
+                type="file"
+                id="feedback-screenshot"
+                accept="image/png,image/jpeg,image/webp"
+                class="sr-only"
+              />
+              <div
+                id="feedback-screenshot-empty"
+                class="feedback-screenshot-empty"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  aria-hidden="true"
+                  class="feedback-screenshot-icon"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                <p>
+                  <strong>Coller</strong> (Ctrl+V),
+                  <strong>glisser-déposer</strong> ou
+                  <strong>cliquer</strong> pour choisir une image
+                </p>
+                <small class="feedback-hint">
+                  PNG, JPEG ou WebP. Taille max 5 Mo.
+                </small>
+              </div>
+              <div
+                id="feedback-screenshot-preview"
+                class="feedback-screenshot-preview"
+                hidden
+              >
+                <img id="feedback-screenshot-img" alt="Aperçu de la capture" />
+                <button
+                  id="feedback-screenshot-remove"
+                  type="button"
+                  class="feedback-screenshot-remove"
+                  aria-label="Retirer la capture"
+                >
+                  Retirer
+                </button>
+                <p class="feedback-hint" id="feedback-screenshot-meta"></p>
+              </div>
+            </div>
+            <small class="feedback-hint">
+              La capture est traitée localement. À l'envoi par e-mail elle sera
+              téléchargée pour que vous la joigniez ; pour GitHub elle sera
+              copiée dans le presse-papiers à coller dans l'issue.
+            </small>
+          </div>
+
           <details class="feedback-context">
             <summary>Informations techniques jointes automatiquement</summary>
             <ul>
@@ -2261,11 +2327,11 @@
     <script src="libs/tesseract.min.js" defer></script>
     <script src="libs/pdf.min.js" defer></script>
     <!-- OCR Configuration et Modules -->
-    <script src="ocr-config.js?v=15" defer></script>
-    <script src="ocr-zone-selector.js?v=15" defer></script>
-    <script src="ocr-preprocessor.js?v=15" defer></script>
-    <script src="ocr-validator.js?v=15" defer></script>
+    <script src="ocr-config.js?v=16" defer></script>
+    <script src="ocr-zone-selector.js?v=16" defer></script>
+    <script src="ocr-preprocessor.js?v=16" defer></script>
+    <script src="ocr-validator.js?v=16" defer></script>
     <!-- Application principale -->
-    <script src="app.js?v=15" defer></script>
+    <script src="app.js?v=16" defer></script>
   </body>
 </html>

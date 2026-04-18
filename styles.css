@@ -2262,3 +2262,86 @@ html[data-reduced-motion] {
   background: #8b5cf6;
   border-color: #8b5cf6;
 }
+
+/* ============================================
+   18. FEEDBACK — Zone capture d'écran
+   ============================================ */
+
+.feedback-screenshot-drop {
+  position: relative;
+  display: block;
+  width: 100%;
+  min-height: 120px;
+  padding: var(--space-md);
+  background: var(--color-bg-secondary);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    background var(--transition-fast);
+}
+
+.feedback-screenshot-drop:hover,
+.feedback-screenshot-drop:focus-visible,
+.feedback-screenshot-drop.is-dragover {
+  border-color: var(--color-primary);
+  background: var(--color-bg-tertiary);
+}
+
+.feedback-screenshot-drop:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.feedback-screenshot-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.feedback-screenshot-icon {
+  width: 40px;
+  height: 40px;
+  color: var(--color-primary);
+}
+
+.feedback-screenshot-empty p {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.feedback-screenshot-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.feedback-screenshot-preview img {
+  max-width: 100%;
+  max-height: 240px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.feedback-screenshot-remove {
+  padding: var(--space-xs) var(--space-md);
+  background: transparent;
+  color: var(--color-danger);
+  border: 2px solid var(--color-danger);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.85rem;
+  min-height: 36px;
+  min-width: auto;
+}
+
+.feedback-screenshot-remove:hover,
+.feedback-screenshot-remove:focus-visible {
+  background: var(--color-danger);
+  color: #ffffff;
+}

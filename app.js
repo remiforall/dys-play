@@ -2094,6 +2094,7 @@ async function pasteTextFromClipboard() {
 const FEEDBACK = {
   email: "remi@posthack.com",
   repoUrl: "https://github.com/remiforall/dys-play",
+  MAX_SCREENSHOT_BYTES: 5 * 1024 * 1024, // 5 Mo
   categoryLabels: {
     bug: "Bug",
     idea: "Idée",
@@ -2107,7 +2108,108 @@ const FEEDBACK = {
     other: "triage",
   },
   lastFocus: null,
+  screenshotBlob: null,
 };
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return `${bytes} o`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} Ko`;
+  return `${(bytes / (1024 * 1024)).toFixed(2)} Mo`;
+}
+
+function setFeedbackScreenshot(blob) {
+  if (!blob) return clearFeedbackScreenshot();
+  if (!blob.type.startsWith("image/")) {
+    showToast("Format non supporté — PNG, JPEG ou WebP uniquement", "info");
+    return;
+  }
+  if (blob.size > FEEDBACK.MAX_SCREENSHOT_BYTES) {
+    showToast(
+      `Image trop lourde (${formatBytes(blob.size)}) — max 5 Mo`,
+      "info",
+    );
+    return;
+  }
+  FEEDBACK.screenshotBlob = blob;
+  const img = document.getElementById("feedback-screenshot-img");
+  const meta = document.getElementById("feedback-screenshot-meta");
+  const empty = document.getElementById("feedback-screenshot-empty");
+  const preview = document.getElementById("feedback-screenshot-preview");
+  if (img.src && img.src.startsWith("blob:")) URL.revokeObjectURL(img.src);
+  img.src = URL.createObjectURL(blob);
+  meta.textContent = `${formatBytes(blob.size)} — ${blob.type.replace("image/", "").toUpperCase()}`;
+  empty.hidden = true;
+  preview.hidden = false;
+}
+
+function clearFeedbackScreenshot() {
+  FEEDBACK.screenshotBlob = null;
+  const img = document.getElementById("feedback-screenshot-img");
+  const empty = document.getElementById("feedback-screenshot-empty");
+  const preview = document.getElementById("feedback-screenshot-preview");
+  const input = document.getElementById("feedback-screenshot");
+  if (img && img.src && img.src.startsWith("blob:"))
+    URL.revokeObjectURL(img.src);
+  if (img) img.removeAttribute("src");
+  if (input) input.value = "";
+  if (empty) empty.hidden = false;
+  if (preview) preview.hidden = true;
+}
+
+function getScreenshotFilename() {
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, "0");
+  const stamp = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}_${pad(now.getHours())}${pad(now.getMinutes())}`;
+  const ext = (FEEDBACK.screenshotBlob?.type || "image/png").split("/")[1];
+  return `dysplay-feedback-${stamp}.${ext}`;
+}
+
+function downloadScreenshot() {
+  if (!FEEDBACK.screenshotBlob) return;
+  const url = URL.createObjectURL(FEEDBACK.screenshotBlob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = getScreenshotFilename();
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+async function copyScreenshotToClipboard() {
+  if (!FEEDBACK.screenshotBlob) return false;
+  try {
+    if (!navigator.clipboard || !window.ClipboardItem) return false;
+    // Le presse-papiers n'accepte que PNG de manière fiable — convertir si besoin
+    const blob =
+      FEEDBACK.screenshotBlob.type === "image/png"
+        ? FEEDBACK.screenshotBlob
+        : await convertBlobToPng(FEEDBACK.screenshotBlob);
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+    return true;
+  } catch (err) {
+    console.error("[feedback] copie presse-papiers échouée:", err);
+    return false;
+  }
+}
+
+function convertBlobToPng(blob) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      canvas.getContext("2d").drawImage(img, 0, 0);
+      canvas.toBlob(
+        (b) => (b ? resolve(b) : reject(new Error("toBlob null"))),
+        "image/png",
+      );
+    };
+    img.onerror = () => reject(new Error("image load failed"));
+    img.src = URL.createObjectURL(blob);
+  });
+}
 
 function buildFeedbackBody() {
   const description = document
@@ -2153,27 +2255,61 @@ function validateFeedback() {
 function submitFeedbackByEmail() {
   if (!validateFeedback()) return;
   const { category, plainText } = buildFeedbackBody();
+  const hasScreenshot = !!FEEDBACK.screenshotBlob;
+  const body = hasScreenshot
+    ? plainText +
+      `\n\n[Capture d'écran : fichier ${getScreenshotFilename()} téléchargé localement — pensez à le joindre à ce message.]`
+    : plainText;
   const subject = `[Dys-Play ${FEEDBACK.categoryLabels[category] || category}] Signalement depuis dys-play.net`;
   const href =
     `mailto:${FEEDBACK.email}` +
     `?subject=${encodeURIComponent(subject)}` +
-    `&body=${encodeURIComponent(plainText)}`;
+    `&body=${encodeURIComponent(body)}`;
+  if (hasScreenshot) {
+    downloadScreenshot();
+    showToast(
+      `Capture téléchargée (${getScreenshotFilename()}) — glissez-la dans votre e-mail avant d'envoyer`,
+      "info",
+    );
+  }
   window.location.href = href;
-  setTimeout(closeFeedbackModal, 300);
+  setTimeout(closeFeedbackModal, 500);
 }
 
-function submitFeedbackByGithub() {
+async function submitFeedbackByGithub() {
   if (!validateFeedback()) return;
   const { category, description, markdown } = buildFeedbackBody();
+  const hasScreenshot = !!FEEDBACK.screenshotBlob;
+  let copied = false;
+  if (hasScreenshot) {
+    copied = await copyScreenshotToClipboard();
+  }
+  const extra = hasScreenshot
+    ? copied
+      ? "\n\n> 📎 Une capture d'écran a été copiée dans votre presse-papiers. Collez-la (Ctrl+V ou ⌘+V) dans le corps de l'issue GitHub après ouverture."
+      : "\n\n> 📎 Une capture d'écran est disponible, mais la copie vers le presse-papiers a échoué. Glissez-la manuellement dans l'issue GitHub depuis vos fichiers."
+    : "";
   const title = description.split("\n")[0].slice(0, 80);
   const labels = FEEDBACK.categoryGithubLabels[category] || "triage";
   const href =
     `${FEEDBACK.repoUrl}/issues/new` +
     `?title=${encodeURIComponent(title)}` +
-    `&body=${encodeURIComponent(markdown)}` +
+    `&body=${encodeURIComponent(markdown + extra)}` +
     `&labels=${encodeURIComponent(labels)}`;
+  if (hasScreenshot && copied) {
+    showToast(
+      "Capture copiée — collez-la (Ctrl+V) dans l'issue après ouverture",
+      "info",
+    );
+  } else if (hasScreenshot && !copied) {
+    downloadScreenshot();
+    showToast(
+      "Capture téléchargée — glissez-la dans l'issue GitHub après ouverture",
+      "info",
+    );
+  }
   window.open(href, "_blank", "noopener,noreferrer");
-  setTimeout(closeFeedbackModal, 300);
+  setTimeout(closeFeedbackModal, 500);
 }
 
 function openFeedbackModal() {
@@ -2197,6 +2333,7 @@ function closeFeedbackModal() {
   if (!modal) return;
   modal.hidden = true;
   document.body.style.overflow = "";
+  clearFeedbackScreenshot();
   if (FEEDBACK.lastFocus && typeof FEEDBACK.lastFocus.focus === "function") {
     FEEDBACK.lastFocus.focus();
   }
@@ -2221,6 +2358,64 @@ function initFeedbackModal() {
   document
     .getElementById("feedback-submit-github")
     ?.addEventListener("click", submitFeedbackByGithub);
+
+  // Capture d'écran : file input, drop, paste, remove
+  const drop = document.getElementById("feedback-screenshot-drop");
+  const fileInput = document.getElementById("feedback-screenshot");
+  const removeBtn = document.getElementById("feedback-screenshot-remove");
+
+  drop?.addEventListener("click", (e) => {
+    if (
+      e.target === removeBtn ||
+      e.target.closest("#feedback-screenshot-remove")
+    )
+      return;
+    fileInput?.click();
+  });
+  drop?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      fileInput?.click();
+    }
+  });
+  fileInput?.addEventListener("change", (e) => {
+    const file = e.target.files?.[0];
+    if (file) setFeedbackScreenshot(file);
+  });
+  drop?.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    drop.classList.add("is-dragover");
+  });
+  drop?.addEventListener("dragleave", () => {
+    drop.classList.remove("is-dragover");
+  });
+  drop?.addEventListener("drop", (e) => {
+    e.preventDefault();
+    drop.classList.remove("is-dragover");
+    const file = e.dataTransfer?.files?.[0];
+    if (file) setFeedbackScreenshot(file);
+  });
+  removeBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    clearFeedbackScreenshot();
+  });
+
+  // Paste Ctrl+V depuis presse-papiers quand la modale est ouverte
+  document.addEventListener("paste", (e) => {
+    const modal = document.getElementById("feedback-modal");
+    if (!modal || modal.hidden) return;
+    const item = Array.from(e.clipboardData?.items || []).find((it) =>
+      it.type.startsWith("image/"),
+    );
+    if (item) {
+      const blob = item.getAsFile();
+      if (blob) {
+        e.preventDefault();
+        setFeedbackScreenshot(blob);
+      }
+    }
+  });
+
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
       const modal = document.getElementById("feedback-modal");
