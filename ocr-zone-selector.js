@@ -1,7 +1,16 @@
 /**
- * Zone Selector Module - Sélection de zone sur image
- * Mode 2 taps : tap coin 1, tap coin 2 → zone sélectionnée
- * Presets : image entière, A4, moitié sup, tiers sup
+ * Zone Selector Module — Sélection de zone sur image
+ *
+ * Pattern :
+ *   1. Pose initiale en 2 taps : coin 1 → coin 2 → rectangle créé
+ *   2. Ajustement : drag des 4 poignées de coin (pointer events unifiés
+ *      touch + mouse + stylet), contraint aux bornes de l'image et à
+ *      une taille minimale (30×30 px).
+ *
+ * Cibles tactiles : rayon de tolérance 22 px canvas autour de chaque coin
+ * (≥ cible AAA 44×44). Dessin agrandi avec halo blanc pour visibilité.
+ *
+ * Presets : image entière, A4, moitié sup, tiers sup.
  */
 
 class ZoneSelector {
@@ -14,22 +23,28 @@ class ZoneSelector {
     // Zone sélectionnée (coordonnées image originale)
     this.rect = { x: 0, y: 0, width: 0, height: 0 };
 
-    // État du mode 2 taps
-    this.tap1 = null; // Premier tap (coin)
-    this.tap2 = null; // Deuxième tap (coin opposé)
+    // État du mode pose initiale
+    this.tap1 = null;
+    this.tap2 = null;
+    this.rectCreated = false;
 
-    // Ratio d'affichage
+    // État du drag
+    this.activeHandle = null; // 'tl' | 'tr' | 'bl' | 'br'
+    this.dragStartImg = null; // point de départ (coord image)
+    this.dragStartRect = null; // rect au début du drag
+    this.activePointerId = null;
+
+    // Échelle d'affichage et tolérance de hit test (canvas px)
     this.displayScale = 1;
+    this.handleHitRadius = 22; // ~44px diamètre
 
     this.init();
   }
 
   init() {
-    // Dimensions de l'image originale
     const natW = this.image.naturalWidth || this.image.width;
     const natH = this.image.naturalHeight || this.image.height;
 
-    // Adapter au conteneur
     const containerWidth = this.container.clientWidth || 300;
     this.displayScale = Math.min(containerWidth / natW, 1);
 
@@ -40,100 +55,228 @@ class ZoneSelector {
     this.canvas.style.maxWidth = "100%";
     this.canvas.style.borderRadius = "8px";
     this.canvas.style.cursor = "crosshair";
+    this.canvas.style.touchAction = "none"; // empêche pan/zoom natif
 
-    // Insérer après l'image (l'image sera cachée)
     this.image.style.display = "none";
     this.image.parentElement.insertBefore(this.canvas, this.image.nextSibling);
 
-    // Clic / tap → sélection par 2 points
-    this.canvas.addEventListener("click", (e) => this._handleTap(e));
-    this.canvas.addEventListener(
-      "touchend",
-      (e) => {
-        e.preventDefault();
-        // Convertir le touch en coordonnées
-        const touch = e.changedTouches[0];
-        this._handleTapAt(touch.clientX, touch.clientY);
-      },
-      { passive: false },
-    );
+    // Pointer Events : unifie touch + mouse + stylet sur tous navigateurs modernes
+    this.canvas.addEventListener("pointerdown", (e) => this._onPointerDown(e));
+    this.canvas.addEventListener("pointermove", (e) => this._onPointerMove(e));
+    this.canvas.addEventListener("pointerup", (e) => this._onPointerUp(e));
+    this.canvas.addEventListener("pointercancel", (e) => this._onPointerUp(e));
 
-    // Empêcher le pull-to-refresh et le scroll sur le canvas
-    this.canvas.addEventListener("touchmove", (e) => e.preventDefault(), {
-      passive: false,
-    });
-
-    // Sélection par défaut : image entière
+    // Sélection par défaut : image entière (état "pas encore posé")
     this.applyPreset("full");
+    this.rectCreated = false; // applyPreset force rectCreated=true, on reset
   }
 
-  _handleTap(e) {
-    this._handleTapAt(e.clientX, e.clientY);
-  }
+  // ---------------------------------------------------------------------
+  // Pointer handlers
+  // ---------------------------------------------------------------------
 
-  _handleTapAt(clientX, clientY) {
-    const rect = this.canvas.getBoundingClientRect();
-    const canvasX = clientX - rect.left;
-    const canvasY = clientY - rect.top;
+  _onPointerDown(e) {
+    // Un seul pointeur à la fois (évite les conflits multi-touch)
+    if (this.activePointerId !== null) return;
 
-    // Convertir en coordonnées image originale
-    const imgX = Math.round(canvasX / this.displayScale);
-    const imgY = Math.round(canvasY / this.displayScale);
+    const img = this._pointerToImageCoords(e);
 
+    // Si un rectangle existe, tester la proximité avec un coin
+    if (this.rectCreated) {
+      const handle = this._hitTestHandle(img);
+      if (handle) {
+        this.activeHandle = handle;
+        this.dragStartImg = img;
+        this.dragStartRect = { ...this.rect };
+        this.activePointerId = e.pointerId;
+        try {
+          this.canvas.setPointerCapture(e.pointerId);
+        } catch {
+          // Certaines vieilles implémentations refusent — on s'en passe
+        }
+        this.canvas.style.cursor = "grabbing";
+        e.preventDefault();
+        return;
+      }
+      // Tap hors poignée : on ne casse pas la sélection (presets = reset)
+      return;
+    }
+
+    // Pose initiale : pattern 2 taps
     if (!this.tap1) {
-      // Premier tap
-      this.tap1 = { x: imgX, y: imgY };
+      this.tap1 = { x: img.x, y: img.y };
       this.tap2 = null;
       this._renderWithMarker();
     } else {
-      // Deuxième tap → créer le rectangle
-      this.tap2 = { x: imgX, y: imgY };
+      this.tap2 = { x: img.x, y: img.y };
       const x = Math.min(this.tap1.x, this.tap2.x);
       const y = Math.min(this.tap1.y, this.tap2.y);
       const w = Math.abs(this.tap2.x - this.tap1.x);
       const h = Math.abs(this.tap2.y - this.tap1.y);
 
-      // Taille minimale
       if (w < 30 || h < 30) {
+        // Sélection trop petite : on annule
         this.tap1 = null;
         this.tap2 = null;
         this.applyPreset("full");
+        this.rectCreated = false;
         return;
       }
 
       this.rect = { x, y, width: w, height: h };
       this.tap1 = null;
       this.tap2 = null;
+      this.rectCreated = true;
       this.render();
     }
   }
 
+  _onPointerMove(e) {
+    if (this.activePointerId !== e.pointerId || !this.activeHandle) return;
+    const img = this._pointerToImageCoords(e);
+    this._applyHandleMove(this.activeHandle, img);
+    this.render();
+  }
+
+  _onPointerUp(e) {
+    if (this.activePointerId !== e.pointerId) return;
+    this.activeHandle = null;
+    this.dragStartImg = null;
+    this.dragStartRect = null;
+    this.activePointerId = null;
+    try {
+      this.canvas.releasePointerCapture(e.pointerId);
+    } catch {
+      // Pointer déjà relâché, on ignore
+    }
+    this.canvas.style.cursor = "crosshair";
+  }
+
+  // ---------------------------------------------------------------------
+  // Hit testing et transformations
+  // ---------------------------------------------------------------------
+
+  _pointerToImageCoords(e) {
+    const rect = this.canvas.getBoundingClientRect();
+    const canvasX = e.clientX - rect.left;
+    const canvasY = e.clientY - rect.top;
+    return {
+      x: canvasX / this.displayScale,
+      y: canvasY / this.displayScale,
+      canvasX,
+      canvasY,
+    };
+  }
+
+  _hitTestHandle(img) {
+    const tolImg = this.handleHitRadius / this.displayScale;
+    const corners = {
+      tl: { x: this.rect.x, y: this.rect.y },
+      tr: { x: this.rect.x + this.rect.width, y: this.rect.y },
+      bl: { x: this.rect.x, y: this.rect.y + this.rect.height },
+      br: {
+        x: this.rect.x + this.rect.width,
+        y: this.rect.y + this.rect.height,
+      },
+    };
+    let best = null;
+    let bestDist = Infinity;
+    for (const [key, c] of Object.entries(corners)) {
+      const dx = img.x - c.x;
+      const dy = img.y - c.y;
+      const d = Math.hypot(dx, dy);
+      if (d < tolImg && d < bestDist) {
+        best = key;
+        bestDist = d;
+      }
+    }
+    return best;
+  }
+
+  _applyHandleMove(handle, img) {
+    const natW = this.image.naturalWidth || this.image.width;
+    const natH = this.image.naturalHeight || this.image.height;
+    const MIN = 30;
+
+    // Clamper le point dans l'image
+    const px = Math.max(0, Math.min(natW, img.x));
+    const py = Math.max(0, Math.min(natH, img.y));
+
+    const r = { ...this.rect };
+
+    switch (handle) {
+      case "tl": {
+        const maxX = r.x + r.width - MIN;
+        const maxY = r.y + r.height - MIN;
+        const nx = Math.min(px, maxX);
+        const ny = Math.min(py, maxY);
+        r.width = r.x + r.width - nx;
+        r.height = r.y + r.height - ny;
+        r.x = nx;
+        r.y = ny;
+        break;
+      }
+      case "tr": {
+        const minX = r.x + MIN;
+        const maxY = r.y + r.height - MIN;
+        const nx = Math.max(px, minX);
+        const ny = Math.min(py, maxY);
+        r.width = nx - r.x;
+        r.height = r.y + r.height - ny;
+        r.y = ny;
+        break;
+      }
+      case "bl": {
+        const maxX = r.x + r.width - MIN;
+        const minY = r.y + MIN;
+        const nx = Math.min(px, maxX);
+        const ny = Math.max(py, minY);
+        r.width = r.x + r.width - nx;
+        r.height = ny - r.y;
+        r.x = nx;
+        break;
+      }
+      case "br": {
+        const minX = r.x + MIN;
+        const minY = r.y + MIN;
+        const nx = Math.max(px, minX);
+        const ny = Math.max(py, minY);
+        r.width = nx - r.x;
+        r.height = ny - r.y;
+        break;
+      }
+    }
+
+    this.rect = r;
+  }
+
+  // ---------------------------------------------------------------------
+  // Rendu
+  // ---------------------------------------------------------------------
+
   _renderWithMarker() {
-    // Dessiner l'image + marqueur du premier tap
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.save();
     this.ctx.scale(this.displayScale, this.displayScale);
     this.ctx.drawImage(this.image, 0, 0);
     this.ctx.restore();
 
-    // Marqueur du premier point
     if (this.tap1) {
       const sx = this.tap1.x * this.displayScale;
       const sy = this.tap1.y * this.displayScale;
+      // Halo blanc + point bleu pour visibilité sur tout fond
+      this.ctx.fillStyle = "white";
+      this.ctx.beginPath();
+      this.ctx.arc(sx, sy, 12, 0, Math.PI * 2);
+      this.ctx.fill();
       this.ctx.fillStyle = "#2563eb";
       this.ctx.beginPath();
       this.ctx.arc(sx, sy, 8, 0, Math.PI * 2);
       this.ctx.fill();
-      this.ctx.strokeStyle = "white";
-      this.ctx.lineWidth = 2;
-      this.ctx.beginPath();
-      this.ctx.arc(sx, sy, 8, 0, Math.PI * 2);
-      this.ctx.stroke();
 
-      // Texte d'aide
-      this.ctx.fillStyle = "rgba(37, 99, 235, 0.9)";
+      this.ctx.fillStyle = "rgba(37, 99, 235, 0.95)";
       this.ctx.font = "bold 14px system-ui";
-      this.ctx.fillText("Touchez le coin opposé", sx + 14, sy + 5);
+      this.ctx.fillText("Touchez le coin opposé", sx + 16, sy + 5);
     }
   }
 
@@ -143,6 +286,7 @@ class ZoneSelector {
 
     this.tap1 = null;
     this.tap2 = null;
+    this.activeHandle = null;
 
     switch (presetName) {
       case "full":
@@ -176,6 +320,7 @@ class ZoneSelector {
         this.rect = { x: 0, y: 0, width: natW, height: natH };
     }
 
+    this.rectCreated = true;
     this.render();
   }
 
@@ -184,26 +329,21 @@ class ZoneSelector {
     this.ctx.save();
     this.ctx.scale(this.displayScale, this.displayScale);
 
-    // Image complète
     this.ctx.drawImage(this.image, 0, 0);
 
     const natW = this.image.naturalWidth || this.image.width;
     const natH = this.image.naturalHeight || this.image.height;
 
-    // Overlay sombre sur la zone NON sélectionnée
+    // Overlay sombre hors sélection
     this.ctx.fillStyle = "rgba(0, 0, 0, 0.45)";
-    // Haut
     this.ctx.fillRect(0, 0, natW, this.rect.y);
-    // Bas
     this.ctx.fillRect(
       0,
       this.rect.y + this.rect.height,
       natW,
       natH - this.rect.y - this.rect.height,
     );
-    // Gauche
     this.ctx.fillRect(0, this.rect.y, this.rect.x, this.rect.height);
-    // Droite
     this.ctx.fillRect(
       this.rect.x + this.rect.width,
       this.rect.y,
@@ -211,7 +351,7 @@ class ZoneSelector {
       this.rect.height,
     );
 
-    // Bordure du rectangle sélectionné
+    // Bordure rectangle
     this.ctx.strokeStyle = "#2563eb";
     this.ctx.lineWidth = 3 / this.displayScale;
     this.ctx.strokeRect(
@@ -221,20 +361,45 @@ class ZoneSelector {
       this.rect.height,
     );
 
-    // Poignées aux coins
-    const hs = 6 / this.displayScale;
-    this.ctx.fillStyle = "#2563eb";
-    [
-      [this.rect.x, this.rect.y],
-      [this.rect.x + this.rect.width, this.rect.y],
-      [this.rect.x, this.rect.y + this.rect.height],
-      [this.rect.x + this.rect.width, this.rect.y + this.rect.height],
-    ].forEach(([cx, cy]) => {
-      this.ctx.fillRect(cx - hs, cy - hs, hs * 2, hs * 2);
-    });
-
     this.ctx.restore();
+
+    // Poignées dessinées en coords canvas (pas scalées) pour taille constante
+    const corners = [
+      { x: this.rect.x, y: this.rect.y },
+      { x: this.rect.x + this.rect.width, y: this.rect.y },
+      { x: this.rect.x, y: this.rect.y + this.rect.height },
+      { x: this.rect.x + this.rect.width, y: this.rect.y + this.rect.height },
+    ];
+    const outer = 14; // rayon halo (cible tactile visuelle)
+    const inner = 7; // rayon centre
+    for (const c of corners) {
+      const cx = c.x * this.displayScale;
+      const cy = c.y * this.displayScale;
+
+      // Halo blanc pour visibilité sur fond foncé ou clair
+      this.ctx.fillStyle = "white";
+      this.ctx.beginPath();
+      this.ctx.arc(cx, cy, outer, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      // Centre bleu plein
+      this.ctx.fillStyle = "#2563eb";
+      this.ctx.beginPath();
+      this.ctx.arc(cx, cy, inner, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      // Contour bleu foncé pour contraste AAA sur le halo blanc
+      this.ctx.strokeStyle = "#1e3a8a";
+      this.ctx.lineWidth = 2;
+      this.ctx.beginPath();
+      this.ctx.arc(cx, cy, outer, 0, Math.PI * 2);
+      this.ctx.stroke();
+    }
   }
+
+  // ---------------------------------------------------------------------
+  // API publique
+  // ---------------------------------------------------------------------
 
   getSelectedZone() {
     const natW = this.image.naturalWidth || this.image.width;
@@ -273,9 +438,9 @@ class ZoneSelector {
   reset() {
     this.tap1 = null;
     this.tap2 = null;
+    this.activeHandle = null;
     this.applyPreset("full");
   }
 }
 
-// Export
 window.ZoneSelector = ZoneSelector;

@@ -596,6 +596,8 @@ class OCREngine {
       i18n[state.currentLang]?.["msg.ocr.processing"] || "Analyse en cours…",
       true,
     );
+    renderOCRSteps();
+    setOCRStep(0, "active");
 
     try {
       const result = await this.service.recognize(imageFile, {
@@ -605,8 +607,13 @@ class OCREngine {
           updateLoaderProgress(Math.round(pct));
           const label = _progressLabel(step);
           if (label) showLoader(true, label, true);
+          const idx = _milestoneIndexFromStep(step);
+          if (idx !== null) setOCRStep(idx, "active");
         },
       });
+
+      // Tous les jalons 0-2 terminés, on entre en validation
+      setOCRStep(3, "active");
 
       // Validation dictionnaires FR/EN (module legacy conservé)
       let validation = null;
@@ -617,6 +624,7 @@ class OCREngine {
           CONFIG.OCR.AUTO_CORRECT,
         );
       }
+      setOCRStep(3, "done");
 
       // Shim Tesseract v5-like pour le validator (attend words + confidence)
       const tesseractShim = {
@@ -762,6 +770,72 @@ function _progressLabel(step) {
   if (step === "ocr.loading") return "Chargement moteur OCR…";
   if (step === "ocr.recognizing") return "Reconnaissance texte…";
   return null;
+}
+
+// Jalons utilisateur du pipeline OCR (4 étapes visibles dans le loader)
+const OCR_PIPELINE_STEPS = Object.freeze([
+  { id: "prep", label: "Préparation de l'image" },
+  { id: "enhance", label: "Amélioration (redressement + binarisation)" },
+  { id: "recognize", label: "Reconnaissance du texte" },
+  { id: "validate", label: "Validation du texte" },
+]);
+
+// Mappe un step technique (émis par le service OCR) vers l'index du jalon
+function _milestoneIndexFromStep(step) {
+  if (!step) return null;
+  if (
+    step.startsWith("preprocess.decode") ||
+    step.startsWith("preprocess.resize") ||
+    step.startsWith("preprocess.grayscale") ||
+    step.startsWith("preprocess.contrast")
+  )
+    return 0;
+  if (
+    step.startsWith("preprocess.deskew") ||
+    step.startsWith("preprocess.binarize") ||
+    step.startsWith("preprocess.encode")
+  )
+    return 1;
+  if (step === "ocr.loading" || step === "ocr.recognizing") return 2;
+  return null;
+}
+
+function renderOCRSteps() {
+  const ol = document.getElementById("loader-steps");
+  if (!ol) return;
+  ol.hidden = false;
+  // Reconstruire via createElement pour éviter innerHTML (cohérent avec
+  // les règles de sécurité transverses : jamais d'injection HTML brute).
+  while (ol.firstChild) ol.removeChild(ol.firstChild);
+  OCR_PIPELINE_STEPS.forEach((s) => {
+    const li = document.createElement("li");
+    li.className = "loader-step";
+    li.dataset.status = "pending";
+    li.id = "loader-step-" + s.id;
+    const icon = document.createElement("span");
+    icon.className = "step-icon";
+    icon.setAttribute("aria-hidden", "true");
+    const label = document.createElement("span");
+    label.className = "step-label";
+    label.textContent = s.label;
+    li.append(icon, label);
+    ol.appendChild(li);
+  });
+}
+
+function setOCRStep(index, status) {
+  OCR_PIPELINE_STEPS.forEach((s, i) => {
+    const li = document.getElementById("loader-step-" + s.id);
+    if (!li) return;
+    if (i < index) li.dataset.status = "done";
+    else if (i === index) li.dataset.status = status;
+    else li.dataset.status = "pending";
+  });
+}
+
+function hideOCRSteps() {
+  const ol = document.getElementById("loader-steps");
+  if (ol) ol.hidden = true;
 }
 
 const ocr = new OCREngine();
@@ -1376,6 +1450,8 @@ function showLoader(show, text = "", cancellable = false) {
   } else {
     loader.classList.add("hidden");
     if (cancelBtn) cancelBtn.classList.add("hidden");
+    // Masquer la liste de jalons du pipeline OCR (si présente)
+    hideOCRSteps();
   }
 }
 

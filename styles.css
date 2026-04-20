@@ -1299,6 +1299,81 @@ html[data-ruler-mode="line"] .ruler-guide {
   transition: width 200ms ease;
 }
 
+/* Liste des jalons du pipeline OCR */
+.loader-steps {
+  list-style: none;
+  padding: 0;
+  margin: var(--space-md) 0 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 280px;
+  max-width: 380px;
+}
+
+.loader-step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  color: var(--color-text-muted);
+  transition: all 200ms ease;
+}
+
+.loader-step .step-icon {
+  width: 1.2em;
+  height: 1.2em;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  line-height: 1;
+}
+
+.loader-step[data-status="pending"] .step-icon::before {
+  content: "";
+}
+
+.loader-step[data-status="active"] {
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  font-weight: 600;
+}
+
+.loader-step[data-status="active"] .step-icon::before {
+  content: "⟳";
+  animation: spin 1s linear infinite;
+  display: inline-block;
+  /* Le caractère ⟳ est décoratif, mais on évite qu'il soit
+     vocalisé par les lecteurs d'écran (icône aria-hidden sur le parent) */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader-step[data-status="active"] .step-icon::before {
+    animation: none;
+  }
+}
+
+.loader-step[data-status="done"] {
+  color: #16a34a; /* CUD-safe : vert + check + non-couleur seule */
+}
+
+.loader-step[data-status="done"] .step-icon {
+  background: #16a34a;
+  border-color: #16a34a;
+  color: white;
+}
+
+.loader-step[data-status="done"] .step-icon::before {
+  content: "✓";
+}
+
 /* ============================================
    12. TOAST NOTIFICATIONS
    ============================================ */
