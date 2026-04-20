@@ -3,7 +3,7 @@
  * Mode offline complet, zéro dépendance CDN
  */
 
-const CACHE_VERSION = 16;
+const CACHE_VERSION = 17;
 const STATIC_CACHE = `dys-play-static-v${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `dys-play-dynamic-v${CACHE_VERSION}`;
 
@@ -31,9 +31,11 @@ const PRECACHE_URLS = [
   // Modules OCR (légers)
   "./ocr-config.js",
   "./ocr-zone-selector.js",
-  "./ocr-preprocessor.js",
   "./ocr-validator.js",
-  // Note : libs/ (~5.5 Mo) cachées on-demand au premier usage
+  // Modules ESM OCR v2 (Sauvola + deskew, orchestration Tesseract v7)
+  "./modules/image-preprocessor.js",
+  "./modules/ocr-engine.js",
+  // Note : libs/tesseract/ (~15 Mo : core WASM + traineddata) cachées on-demand au premier usage
 ];
 
 // Installation : pré-cache des fichiers statiques
@@ -86,8 +88,10 @@ self.addEventListener("fetch", (event) => {
   // Uniquement les requêtes de même origine (zéro CDN)
   if (url.origin !== location.origin) return;
 
-  // Fichiers statiques (.css, .js, .woff2, .svg, .png) : cache-first
-  const isStatic = /\.(css|js|woff2?|svg|png|jpg|ico)$/.test(url.pathname);
+  // Fichiers statiques (.css, .js, .woff2, .svg, .png, .wasm, .traineddata) : cache-first
+  const isStatic = /\.(css|js|woff2?|svg|png|jpg|ico|wasm|traineddata)$/.test(
+    url.pathname,
+  );
 
   if (isStatic) {
     event.respondWith(

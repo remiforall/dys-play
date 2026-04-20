@@ -1033,6 +1033,20 @@ html[data-ruler-mode="line"] .ruler-guide {
   font-weight: 500;
 }
 
+.settings-hint {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary, var(--color-text-muted));
+  margin: 0 0 var(--space-md) 0;
+  line-height: 1.5;
+}
+
+.ocr-metrics {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary, var(--color-text-muted));
+  margin-top: var(--space-xs);
+  font-variant-numeric: tabular-nums;
+}
+
 .theme-options {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

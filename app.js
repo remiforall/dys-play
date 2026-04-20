@@ -27,11 +27,14 @@ const CONFIG = {
     ENABLE_VALIDATION: true,
     AUTO_CORRECT: true,
     RETRY_COUNT: 2,
+    PRESET: "auto", // auto | scan | document-degrade | custom
     PREPROCESSOR_OPTIONS: {
-      improveContrast: true,
-      denoise: false,
-      binarize: false,
-      detectOrientation: true,
+      improveContrast: true, // stretch histogramme (pipeline v2)
+      binarize: true, // Sauvola adaptatif (MDPI 2023 : +40% précision)
+      detectOrientation: true, // deskew par projection
+      sauvolaK: 0.34, // sensibilité (0.2 preserve plus, 0.5 agressif)
+      sauvolaWindow: 25, // taille fenêtre locale (px)
+      maxDimension: 2000, // grand côté max (px) — garde-fou mémoire
     },
   },
 };
@@ -552,207 +555,237 @@ function escapeHtml(str) {
 
 class OCREngine {
   constructor() {
-    this.worker = null;
-    this.isInitialized = false;
-    this.preprocessor = null;
-    this.validator = null;
-    this.retryCount = 0;
+    this.service = null; // OCRService (modules/ocr-engine.js) — lazy
+    this.validator = null; // OCRValidator legacy (conservé)
+    this.abortController = null; // Pour l'annulation
   }
 
-  _ensureModules() {
-    if (!this.preprocessor && typeof ImagePreprocessor !== "undefined") {
-      this.preprocessor = new ImagePreprocessor();
-    }
+  async _ensureService() {
     if (!this.validator && typeof OCRValidator !== "undefined") {
       this.validator = new OCRValidator();
     }
+    if (!this.service) {
+      const { createOCRService } = await import("./modules/ocr-engine.js");
+      this.service = createOCRService({
+        workerPath: "libs/tesseract/worker.min.js",
+        corePath: "libs/tesseract/",
+        langPath: "libs/tesseract/langs",
+        defaultLang: "fra",
+        preprocessOptions: _mapPreprocessOptions(
+          CONFIG.OCR.PREPROCESSOR_OPTIONS,
+        ),
+      });
+    }
+    return this.service;
   }
 
   async init(lang = "fra") {
-    if (this.isInitialized && this.worker) {
-      return this.worker;
-    }
+    await this._ensureService();
+    return this.service;
+  }
 
-    showLoader(true, "Initialisation OCR...");
+  async recognize(imageFile, options = {}) {
+    await this._ensureService();
+    this.abortController = new AbortController();
+
+    const { enableValidation = CONFIG.OCR.ENABLE_VALIDATION } = options;
+    const lang = state.currentLang || "fra";
+
+    showLoader(
+      true,
+      i18n[state.currentLang]?.["msg.ocr.processing"] || "Analyse en cours…",
+      true,
+    );
 
     try {
-      // Créer le worker Tesseract (chemins locaux, zéro CDN)
-      this.worker = await Tesseract.createWorker(lang, 1, {
-        workerPath: "libs/tesseract-worker.min.js",
-        corePath: "libs/tesseract-core.wasm.js",
-        logger: (m) => {
-          if (m.status === "recognizing text") {
-            updateLoaderProgress(Math.round(m.progress * 100));
-          }
+      const result = await this.service.recognize(imageFile, {
+        lang,
+        signal: this.abortController.signal,
+        onProgress: (step, pct) => {
+          updateLoaderProgress(Math.round(pct));
+          const label = _progressLabel(step);
+          if (label) showLoader(true, label, true);
         },
       });
 
-      this.isInitialized = true;
-      showLoader(false);
-      return this.worker;
-    } catch (error) {
-      console.error("Erreur initialisation OCR:", error);
-      showLoader(false);
-      throw error;
-    }
-  }
-
-  /**
-   * Reconnaissance avec pré-traitement et validation
-   */
-  async recognize(imageFile, options = {}) {
-    this._ensureModules();
-    if (!this.worker) {
-      await this.init();
-    }
-
-    const {
-      enablePreprocessing = CONFIG.OCR.ENABLE_PREPROCESSING,
-      enableValidation = CONFIG.OCR.ENABLE_VALIDATION,
-      retryCount = CONFIG.OCR.RETRY_COUNT,
-    } = options;
-
-    showLoader(true, i18n[state.currentLang]["msg.ocr.processing"]);
-
-    try {
-      let processedImage = imageFile;
-
-      // 1. Pré-traitement
-      if (enablePreprocessing) {
-        showLoader(true, "Amélioration image...");
-        const preprocessed = await this.preprocessor.processImage(
-          imageFile,
-          CONFIG.OCR.PREPROCESSOR_OPTIONS,
-        );
-        processedImage = preprocessed;
-      }
-
-      // 2. OCR avec retry
-      let ocrText = "";
-      let ocrData = null;
-      this.retryCount = 0;
-
-      while (this.retryCount < retryCount + 1) {
-        try {
-          showLoader(
-            true,
-            `Reconnaissance texte (tentative ${this.retryCount + 1})...`,
-          );
-
-          const imageSource = processedImage.dataUrl || imageFile;
-          const result = await this.worker.recognize(imageSource);
-
-          ocrText = result.data.text;
-          ocrData = result.data;
-          break; // Succès
-        } catch (error) {
-          this.retryCount++;
-          if (this.retryCount >= retryCount + 1) {
-            throw error;
-          }
-          console.warn(`OCR retry ${this.retryCount}:`, error.message);
-        }
-      }
-
-      // 3. Validation et correction
+      // Validation dictionnaires FR/EN (module legacy conservé)
       let validation = null;
-      if (enableValidation && ocrText.trim()) {
-        showLoader(true, "Validation texte...");
+      if (enableValidation && this.validator && result.text.trim()) {
         validation = this.validator.validateAndCorrect(
-          ocrText,
-          state.currentLang,
+          result.text,
+          lang,
           CONFIG.OCR.AUTO_CORRECT,
         );
       }
 
-      // 4. Calculer confiance
-      const confidence = this.validator.getOverallConfidence(ocrText, ocrData);
+      // Shim Tesseract v5-like pour le validator (attend words + confidence)
+      const tesseractShim = {
+        words: result.words || [],
+        confidence: result.confidence,
+      };
+      const confidence = this.validator
+        ? this.validator.getOverallConfidence(result.text, tesseractShim)
+        : result.confidence;
 
-      // Sauvegarder résultats
       state.ocrState.ocrResults = {
-        text: ocrText,
-        dataUrl: processedImage.dataUrl || null,
-        confidence: confidence,
-        retries: this.retryCount,
+        text: result.text,
+        dataUrl: null,
+        confidence,
+        retries: 0,
+        detectedAngle: result.detectedAngle,
+        preprocessingTimeMs: result.preprocessingTimeMs,
+        ocrTimeMs: result.ocrTimeMs,
       };
       state.ocrState.validation = validation;
       state.ocrState.confidence = confidence;
 
       showLoader(false);
-
-      // Afficher les résultats
-      displayOCRResults(ocrText, confidence, validation);
+      displayOCRResults(result.text, confidence, validation);
 
       return {
-        text: ocrText,
-        confidence: confidence,
-        validation: validation,
-        preprocessed: processedImage,
+        text: result.text,
+        confidence,
+        validation,
+        preprocessed: null,
       };
     } catch (error) {
-      console.error("Erreur OCR:", error);
       showLoader(false);
+      if (error?.name === "AbortError") {
+        showToast(
+          i18n[state.currentLang]?.["msg.ocr.cancelled"] || "Analyse annulée.",
+          "info",
+        );
+        return { aborted: true, text: "", confidence: 0, validation: null };
+      }
+      console.error("Erreur OCR:", error);
       showToast(
-        i18n[state.currentLang]["msg.error"] + ": " + error.message,
+        (i18n[state.currentLang]?.["msg.error"] || "Erreur") +
+          ": " +
+          (error.message || error),
         "error",
       );
       throw error;
+    } finally {
+      this.abortController = null;
     }
   }
 
-  /**
-   * Reconnaissance d'une zone sélectionnée
-   */
   async recognizeZone(imageDataUrl) {
-    this._ensureModules();
-    if (!this.worker) {
-      await this.init();
-    }
+    // Conversion dataURL → Blob pour réutiliser le pipeline recognize()
+    const resp = await fetch(imageDataUrl);
+    const blob = await resp.blob();
+    return this.recognize(blob);
+  }
 
-    showLoader(true, "Traitement zone sélectionnée...");
-
-    try {
-      // Pré-traiter la zone
-      const preprocessed = await this.preprocessor.processZone(
-        imageDataUrl,
-        CONFIG.OCR.PREPROCESSOR_OPTIONS,
-      );
-
-      // OCR sur la zone
-      const result = await this.worker.recognize(preprocessed);
-      const text = result.data.text;
-
-      // Validation
-      const validation = this.validator.validateAndCorrect(
-        text,
-        state.currentLang,
-        CONFIG.OCR.AUTO_CORRECT,
-      );
-      const confidence = this.validator.getOverallConfidence(text, result.data);
-
-      showLoader(false);
-      return {
-        text: text,
-        confidence: confidence,
-        validation: validation,
-      };
-    } catch (error) {
-      console.error("Erreur reconnaissance zone:", error);
-      showLoader(false);
-      throw error;
+  cancel() {
+    if (this.abortController) {
+      this.abortController.abort();
     }
   }
 
-  terminate() {
-    if (this.worker) {
-      this.worker.terminate();
-      this.worker = null;
-      this.isInitialized = false;
+  async terminate() {
+    if (this.service) {
+      try {
+        await this.service.destroy();
+      } catch {
+        // Silencieux : si destroy échoue, on continue
+      }
+      this.service = null;
     }
   }
 }
 
+// Mapping CONFIG.OCR.PREPROCESSOR_OPTIONS → options
+// modules/image-preprocessor.js (pipeline Sauvola + deskew).
+function _mapPreprocessOptions(opts = {}) {
+  return {
+    maxDimension: Number(opts.maxDimension) || 2000,
+    minDimension: 800,
+    stretchContrast: opts.improveContrast !== false,
+    deskew: opts.detectOrientation !== false,
+    binarize: opts.binarize !== false,
+    sauvolaK: Number(opts.sauvolaK) || 0.34,
+    sauvolaWindow: Number(opts.sauvolaWindow) || 25,
+  };
+}
+
+// Presets de pré-traitement selon le type d'image source.
+// L'utilisateur choisit un profil ou tune en mode « custom ».
+const OCR_PRESETS_V2 = Object.freeze({
+  auto: {
+    sauvolaK: 0.34,
+    sauvolaWindow: 25,
+    maxDimension: 2000,
+    improveContrast: true,
+    binarize: true,
+    detectOrientation: true,
+  },
+  scan: {
+    // Scan haute résolution, déjà net : Sauvola plus doux, grande fenêtre,
+    // taille max plus grande (qualité > mémoire).
+    sauvolaK: 0.25,
+    sauvolaWindow: 35,
+    maxDimension: 2400,
+    improveContrast: false,
+    binarize: true,
+    detectOrientation: false,
+  },
+  "document-degrade": {
+    // Papier jauni, photo sombre, contraste faible :
+    // stretch actif, Sauvola plus sévère, grande fenêtre pour tolérer le bruit.
+    sauvolaK: 0.4,
+    sauvolaWindow: 35,
+    maxDimension: 2000,
+    improveContrast: true,
+    binarize: true,
+    detectOrientation: true,
+  },
+});
+
+function applyOCRPresetV2(name) {
+  const preset = OCR_PRESETS_V2[name];
+  if (!preset) return; // 'custom' ou inconnu : on ne touche à rien
+  Object.assign(CONFIG.OCR.PREPROCESSOR_OPTIONS, preset);
+  CONFIG.OCR.PRESET = name;
+}
+
+function _progressLabel(step) {
+  if (!step) return null;
+  if (step.startsWith("preprocess.decode")) return "Décodage image…";
+  if (step.startsWith("preprocess.resize")) return "Redimensionnement…";
+  if (step.startsWith("preprocess.grayscale"))
+    return "Conversion niveaux de gris…";
+  if (step.startsWith("preprocess.contrast")) return "Ajustement contraste…";
+  if (step.startsWith("preprocess.deskew")) return "Correction inclinaison…";
+  if (step.startsWith("preprocess.binarize")) return "Binarisation adaptative…";
+  if (step.startsWith("preprocess.encode")) return "Encodage image…";
+  if (step === "ocr.loading") return "Chargement moteur OCR…";
+  if (step === "ocr.recognizing") return "Reconnaissance texte…";
+  return null;
+}
+
 const ocr = new OCREngine();
+
+// Bouton Annuler dans le loader : propage vers ocr.cancel()
+document.addEventListener("DOMContentLoaded", () => {
+  const cancelBtn = document.getElementById("ocr-cancel-btn");
+  if (cancelBtn) {
+    cancelBtn.addEventListener("click", () => {
+      ocr.cancel();
+      cancelBtn.disabled = true;
+      cancelBtn.textContent = "Annulation…";
+      setTimeout(() => {
+        cancelBtn.disabled = false;
+        cancelBtn.textContent = "Annuler";
+      }, 2000);
+    });
+  }
+});
+
+// Libération du worker à la fermeture (évite les orphelins et rétention mémoire)
+window.addEventListener("pagehide", () => {
+  ocr.terminate();
+});
 
 // ============================================
 // 7. MOTEUR TTS (Web Speech API)
@@ -1329,15 +1362,20 @@ const renderEngine = new RenderEngine();
 // 11. FONCTIONS UTILITAIRES
 // ============================================
 
-function showLoader(show, text = "") {
+function showLoader(show, text = "", cancellable = false) {
   const loader = document.getElementById("loader");
   const loaderText = document.getElementById("loader-text");
+  const cancelBtn = document.getElementById("ocr-cancel-btn");
 
   if (show) {
     loader.classList.remove("hidden");
     loaderText.textContent = text;
+    if (cancelBtn) {
+      cancelBtn.classList.toggle("hidden", !cancellable);
+    }
   } else {
     loader.classList.add("hidden");
+    if (cancelBtn) cancelBtn.classList.add("hidden");
   }
 }
 
@@ -1377,6 +1415,31 @@ function displayOCRResults(text, confidence, validation = null) {
   }
   if (confText) {
     confText.textContent = Math.round(confidence) + "%";
+  }
+
+  // Métriques pipeline (angle, temps) — utile pour diagnostiquer la qualité
+  const metrics = document.getElementById("ocr-metrics");
+  const m = state.ocrState.ocrResults;
+  if (metrics && m) {
+    const parts = [];
+    if (
+      typeof m.detectedAngle === "number" &&
+      Math.abs(m.detectedAngle) > 0.1
+    ) {
+      parts.push(`inclinaison corrigée : ${m.detectedAngle.toFixed(1)}°`);
+    }
+    if (typeof m.preprocessingTimeMs === "number") {
+      parts.push(`prétraitement : ${Math.round(m.preprocessingTimeMs)} ms`);
+    }
+    if (typeof m.ocrTimeMs === "number") {
+      parts.push(`OCR : ${Math.round(m.ocrTimeMs)} ms`);
+    }
+    if (parts.length) {
+      metrics.textContent = parts.join(" · ");
+      metrics.hidden = false;
+    } else {
+      metrics.hidden = true;
+    }
   }
 
   // Afficher problèmes si present
@@ -1601,25 +1664,46 @@ function openZoneSelectorModal(imageElement) {
  */
 function openOCRSettingsModal() {
   const modal = document.getElementById("ocr-settings-modal");
-  if (modal) {
-    modal.hidden = false;
-    modal.setAttribute("aria-modal", "true");
+  if (!modal) return;
+  modal.hidden = false;
+  modal.setAttribute("aria-modal", "true");
+  _syncOCRSettingsUI();
+}
 
-    // Synchroniser les paramètres
-    document.getElementById("ocr-contrast-toggle").checked =
-      CONFIG.OCR.PREPROCESSOR_OPTIONS.improveContrast;
-    document.getElementById("ocr-denoise-toggle").checked =
-      CONFIG.OCR.PREPROCESSOR_OPTIONS.denoise;
-    document.getElementById("ocr-binarize-toggle").checked =
-      CONFIG.OCR.PREPROCESSOR_OPTIONS.binarize;
-    document.getElementById("ocr-orientation-toggle").checked =
-      CONFIG.OCR.PREPROCESSOR_OPTIONS.detectOrientation;
-    document.getElementById("ocr-validation-toggle").checked =
-      CONFIG.OCR.ENABLE_VALIDATION;
-    document.getElementById("ocr-auto-correct-toggle").checked =
-      CONFIG.OCR.AUTO_CORRECT;
-    document.getElementById("ocr-confidence-threshold").value =
-      CONFIG.OCR.CONFIDENCE_THRESHOLD * 100;
+function _syncOCRSettingsUI() {
+  const opts = CONFIG.OCR.PREPROCESSOR_OPTIONS;
+  const $ = (id) => document.getElementById(id);
+
+  if ($("ocr-preset")) $("ocr-preset").value = CONFIG.OCR.PRESET || "auto";
+  if ($("ocr-contrast-toggle"))
+    $("ocr-contrast-toggle").checked = opts.improveContrast !== false;
+  if ($("ocr-binarize-toggle"))
+    $("ocr-binarize-toggle").checked = opts.binarize !== false;
+  if ($("ocr-orientation-toggle"))
+    $("ocr-orientation-toggle").checked = opts.detectOrientation !== false;
+
+  if ($("ocr-sauvola-k")) {
+    $("ocr-sauvola-k").value = opts.sauvolaK;
+    $("ocr-sauvola-k-value").textContent = Number(opts.sauvolaK).toFixed(2);
+  }
+  if ($("ocr-sauvola-window")) {
+    $("ocr-sauvola-window").value = opts.sauvolaWindow;
+    $("ocr-sauvola-window-value").textContent = opts.sauvolaWindow;
+  }
+  if ($("ocr-max-dimension")) {
+    $("ocr-max-dimension").value = opts.maxDimension;
+    $("ocr-max-dimension-value").textContent = opts.maxDimension;
+  }
+
+  if ($("ocr-validation-toggle"))
+    $("ocr-validation-toggle").checked = CONFIG.OCR.ENABLE_VALIDATION;
+  if ($("ocr-auto-correct-toggle"))
+    $("ocr-auto-correct-toggle").checked = CONFIG.OCR.AUTO_CORRECT;
+  if ($("ocr-confidence-threshold")) {
+    $("ocr-confidence-threshold").value = CONFIG.OCR.CONFIDENCE_THRESHOLD * 100;
+    $("ocr-confidence-threshold-value").textContent = Math.round(
+      CONFIG.OCR.CONFIDENCE_THRESHOLD * 100,
+    );
   }
 }
 
@@ -1627,27 +1711,29 @@ function openOCRSettingsModal() {
  * Sauvegarder paramètres OCR avancés
  */
 function saveOCRSettings() {
-  CONFIG.OCR.PREPROCESSOR_OPTIONS.improveContrast = document.getElementById(
-    "ocr-contrast-toggle",
-  ).checked;
-  CONFIG.OCR.PREPROCESSOR_OPTIONS.denoise =
-    document.getElementById("ocr-denoise-toggle").checked;
-  CONFIG.OCR.PREPROCESSOR_OPTIONS.binarize = document.getElementById(
-    "ocr-binarize-toggle",
-  ).checked;
-  CONFIG.OCR.PREPROCESSOR_OPTIONS.detectOrientation = document.getElementById(
-    "ocr-orientation-toggle",
-  ).checked;
-  CONFIG.OCR.ENABLE_VALIDATION = document.getElementById(
-    "ocr-validation-toggle",
-  ).checked;
-  CONFIG.OCR.AUTO_CORRECT = document.getElementById(
-    "ocr-auto-correct-toggle",
-  ).checked;
-  CONFIG.OCR.CONFIDENCE_THRESHOLD =
-    document.getElementById("ocr-confidence-threshold").value / 100;
+  const $ = (id) => document.getElementById(id);
+  const opts = CONFIG.OCR.PREPROCESSOR_OPTIONS;
+
+  CONFIG.OCR.PRESET = $("ocr-preset")?.value || "custom";
+  opts.improveContrast = $("ocr-contrast-toggle").checked;
+  opts.binarize = $("ocr-binarize-toggle").checked;
+  opts.detectOrientation = $("ocr-orientation-toggle").checked;
+  opts.sauvolaK = parseFloat($("ocr-sauvola-k").value);
+  opts.sauvolaWindow = parseInt($("ocr-sauvola-window").value, 10);
+  opts.maxDimension = parseInt($("ocr-max-dimension").value, 10);
+
+  CONFIG.OCR.ENABLE_VALIDATION = $("ocr-validation-toggle").checked;
+  CONFIG.OCR.AUTO_CORRECT = $("ocr-auto-correct-toggle").checked;
+  CONFIG.OCR.CONFIDENCE_THRESHOLD = $("ocr-confidence-threshold").value / 100;
 
   Storage.set("ocrSettings", CONFIG.OCR);
+
+  // Les preprocessOptions sont figées dans l'instance du service OCR
+  // (passées à createOCRService lors de l'initialisation). On détruit le
+  // service pour forcer sa recréation avec les nouvelles options au
+  // prochain recognize().
+  ocr.terminate();
+
   showToast("Paramètres OCR sauvegardés", "success");
   closeOCRSettingsModal();
 }
@@ -2618,6 +2704,58 @@ function initEventListeners() {
           confidenceValue.textContent = e.target.value;
         });
       }
+
+      // Preset selector : change → applique le preset et resync l'UI
+      const presetSelect = document.getElementById("ocr-preset");
+      if (presetSelect) {
+        presetSelect.addEventListener("change", (e) => {
+          const name = e.target.value;
+          if (name !== "custom") {
+            applyOCRPresetV2(name);
+            _syncOCRSettingsUI();
+          } else {
+            CONFIG.OCR.PRESET = "custom";
+          }
+        });
+      }
+
+      // Sliders Sauvola / maxDimension : live display + bascule en « custom »
+      const _markCustom = () => {
+        CONFIG.OCR.PRESET = "custom";
+        const sel = document.getElementById("ocr-preset");
+        if (sel) sel.value = "custom";
+      };
+      const kSlider = document.getElementById("ocr-sauvola-k");
+      const kValue = document.getElementById("ocr-sauvola-k-value");
+      if (kSlider && kValue) {
+        kSlider.addEventListener("input", (e) => {
+          kValue.textContent = parseFloat(e.target.value).toFixed(2);
+          _markCustom();
+        });
+      }
+      const wSlider = document.getElementById("ocr-sauvola-window");
+      const wValue = document.getElementById("ocr-sauvola-window-value");
+      if (wSlider && wValue) {
+        wSlider.addEventListener("input", (e) => {
+          wValue.textContent = e.target.value;
+          _markCustom();
+        });
+      }
+      const mSlider = document.getElementById("ocr-max-dimension");
+      const mValue = document.getElementById("ocr-max-dimension-value");
+      if (mSlider && mValue) {
+        mSlider.addEventListener("input", (e) => {
+          mValue.textContent = e.target.value;
+          _markCustom();
+        });
+      }
+
+      // Toggles : cocher/décocher bascule aussi en « custom »
+      ["ocr-contrast-toggle", "ocr-binarize-toggle", "ocr-orientation-toggle"]
+        .map((id) => document.getElementById(id))
+        .forEach((el) => {
+          if (el) el.addEventListener("change", _markCustom);
+        });
     }
 
     // Bandeau bêta + modale feedback
@@ -3294,6 +3432,38 @@ async function loadSettings() {
         0,
         Math.min(1, ocrSettings.CONFIDENCE_THRESHOLD),
       );
+    if (typeof ocrSettings.PRESET === "string")
+      CONFIG.OCR.PRESET = ocrSettings.PRESET;
+
+    // Restaurer PREPROCESSOR_OPTIONS (validation stricte pour éviter
+    // qu'un localStorage corrompu n'envoie un sauvolaK farfelu au pipeline)
+    const p = ocrSettings.PREPROCESSOR_OPTIONS;
+    if (p && typeof p === "object") {
+      const opts = CONFIG.OCR.PREPROCESSOR_OPTIONS;
+      if (typeof p.improveContrast === "boolean")
+        opts.improveContrast = p.improveContrast;
+      if (typeof p.binarize === "boolean") opts.binarize = p.binarize;
+      if (typeof p.detectOrientation === "boolean")
+        opts.detectOrientation = p.detectOrientation;
+      if (
+        typeof p.sauvolaK === "number" &&
+        p.sauvolaK >= 0.2 &&
+        p.sauvolaK <= 0.5
+      )
+        opts.sauvolaK = p.sauvolaK;
+      if (
+        typeof p.sauvolaWindow === "number" &&
+        p.sauvolaWindow >= 15 &&
+        p.sauvolaWindow <= 45
+      )
+        opts.sauvolaWindow = p.sauvolaWindow;
+      if (
+        typeof p.maxDimension === "number" &&
+        p.maxDimension >= 1600 &&
+        p.maxDimension <= 2400
+      )
+        opts.maxDimension = p.maxDimension;
+    }
   }
 
   // Appliquer les settings
@@ -3632,8 +3802,7 @@ window.DysPlay = {
   libraryManager,
   drawers,
   state,
-  // OCR advanced modules
-  ImagePreprocessor: window.ImagePreprocessor,
+  // OCR advanced modules (pipeline v2 : modules/image-preprocessor.js + modules/ocr-engine.js)
   OCRValidator: window.OCRValidator,
   ZoneSelector: window.ZoneSelector,
 };

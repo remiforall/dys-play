@@ -4,10 +4,10 @@
     <meta charset="UTF-8" />
     <script>
       // Migration one-shot : purge le SW et les caches périmés
-      // (ancien app.js buggé sur loadOpenDyslexic). Retirer après le
-      // 2026-05-01 quand tous les utilisateurs auront migré.
+      // (migration Tesseract v5 UMD → v7 ESM + pipeline Sauvola/deskew).
+      // Retirer après le 2026-06-01 quand tous les utilisateurs auront migré.
       (function () {
-        var FLAG = "dysplay_sw_reset_v5";
+        var FLAG = "dysplay_sw_reset_v6";
         try {
           if (localStorage.getItem(FLAG) === "done") return;
         } catch (e) {
@@ -124,8 +124,8 @@
     <link rel="icon" type="image/svg+xml" href="img/icon.svg" />
     <link rel="apple-touch-icon" href="img/icon-192.png" />
     <!-- Preload critique (above-the-fold) -->
-    <link rel="preload" href="styles.css?v=16" as="style" />
-    <link rel="preload" href="app.js?v=16" as="script" />
+    <link rel="preload" href="styles.css?v=17" as="style" />
+    <link rel="preload" href="app.js?v=17" as="script" />
     <link
       rel="preload"
       href="fonts/Luciole-Regular.woff2"
@@ -133,9 +133,12 @@
       type="font/woff2"
       crossorigin
     />
+    <!-- Modules ESM OCR (palier 1) chargés dynamiquement par app.js via import() -->
+    <link rel="modulepreload" href="modules/ocr-engine.js?v=17" />
+    <link rel="modulepreload" href="modules/image-preprocessor.js?v=17" />
     <!-- Polices locales : Luciole, Atkinson Hyperlegible, OpenDyslexic, Comic Neue -->
-    <link rel="stylesheet" href="fonts/fonts.css?v=16" />
-    <link rel="stylesheet" href="styles.css?v=16" />
+    <link rel="stylesheet" href="fonts/fonts.css?v=17" />
+    <link rel="stylesheet" href="styles.css?v=17" />
   </head>
   <body>
     <!-- Skip Links pour Accessibilité -->
@@ -889,6 +892,14 @@
             style="width: 0%"
           ></div>
         </div>
+        <button
+          type="button"
+          id="ocr-cancel-btn"
+          class="btn btn-secondary loader-cancel hidden"
+          aria-label="Annuler l'analyse OCR en cours"
+        >
+          Annuler
+        </button>
       </div>
 
       <!-- Reader Area -->
@@ -1755,6 +1766,13 @@
             <div class="confidence-bar-wrapper">
               <div id="ocr-confidence-bar" class="ocr-confidence-bar"></div>
             </div>
+            <!-- Métriques pipeline (angle, temps) — diagnostic utilisateur -->
+            <p
+              id="ocr-metrics"
+              class="ocr-metrics"
+              hidden
+              aria-label="Métriques du pré-traitement et de la reconnaissance"
+            ></p>
           </div>
 
           <!-- Text Result -->
@@ -1924,11 +1942,33 @@
           </button>
         </div>
         <div class="modal-body">
+          <!-- Preset d'image source -->
+          <section class="settings-section">
+            <h3>Type d'image</h3>
+            <p class="settings-hint">
+              Choisissez le profil qui correspond le mieux à votre image. Les
+              paramètres avancés s'ajustent automatiquement.
+            </p>
+            <div class="setting-row">
+              <label for="ocr-preset">Profil OCR</label>
+              <select id="ocr-preset">
+                <option value="auto">Auto (photo smartphone)</option>
+                <option value="scan">Scan haute résolution</option>
+                <option value="document-degrade">
+                  Document dégradé (papier jauni, photo sombre)
+                </option>
+                <option value="custom">Personnalisé</option>
+              </select>
+            </div>
+          </section>
+
           <!-- Preprocessing -->
           <section class="settings-section">
-            <h3>Pré-traitement Image</h3>
+            <h3>Pré-traitement image</h3>
             <div class="toggle-row">
-              <label for="ocr-contrast-toggle">Amélioration du contraste</label>
+              <label for="ocr-contrast-toggle"
+                >Ajustement du contraste (stretch histogramme)</label
+              >
               <input
                 type="checkbox"
                 id="ocr-contrast-toggle"
@@ -1937,24 +1977,85 @@
               />
             </div>
             <div class="toggle-row">
-              <label for="ocr-denoise-toggle">Débruitage</label>
-              <input type="checkbox" id="ocr-denoise-toggle" role="switch" />
-            </div>
-            <div class="toggle-row">
               <label for="ocr-binarize-toggle"
-                >Binarisation (Noir & Blanc)</label
+                >Binarisation adaptative (Sauvola)</label
               >
-              <input type="checkbox" id="ocr-binarize-toggle" role="switch" />
+              <input
+                type="checkbox"
+                id="ocr-binarize-toggle"
+                role="switch"
+                checked
+              />
             </div>
             <div class="toggle-row">
               <label for="ocr-orientation-toggle"
-                >Détection d'orientation</label
+                >Correction d'inclinaison (deskew)</label
               >
               <input
                 type="checkbox"
                 id="ocr-orientation-toggle"
                 role="switch"
                 checked
+              />
+            </div>
+          </section>
+
+          <!-- Paramètres Sauvola avancés -->
+          <section class="settings-section" id="ocr-sauvola-section">
+            <h3>Binarisation — réglages avancés</h3>
+            <p class="settings-hint">
+              Si le texte disparaît après binarisation, baisser le seuil. S'il
+              reste du bruit noir, l'augmenter.
+            </p>
+            <div class="setting-row">
+              <label for="ocr-sauvola-k"
+                >Seuil Sauvola (k) :
+                <span id="ocr-sauvola-k-value">0.34</span></label
+              >
+              <input
+                type="range"
+                id="ocr-sauvola-k"
+                min="0.20"
+                max="0.50"
+                step="0.02"
+                value="0.34"
+                aria-valuemin="0.20"
+                aria-valuemax="0.50"
+                aria-valuenow="0.34"
+              />
+            </div>
+            <div class="setting-row">
+              <label for="ocr-sauvola-window"
+                >Fenêtre locale (px) :
+                <span id="ocr-sauvola-window-value">25</span></label
+              >
+              <input
+                type="range"
+                id="ocr-sauvola-window"
+                min="15"
+                max="45"
+                step="2"
+                value="25"
+                aria-valuemin="15"
+                aria-valuemax="45"
+                aria-valuenow="25"
+              />
+            </div>
+            <div class="setting-row">
+              <label for="ocr-max-dimension"
+                >Taille max (px, grand côté) :
+                <span id="ocr-max-dimension-value">2000</span></label
+              >
+              <input
+                type="range"
+                id="ocr-max-dimension"
+                min="1600"
+                max="2400"
+                step="100"
+                value="2000"
+                aria-valuemin="1600"
+                aria-valuemax="2400"
+                aria-valuenow="2000"
               />
             </div>
           </section>
@@ -2323,15 +2424,13 @@
       aria-live="polite"
     ></div>
 
-    <!-- Scripts - Tesseract.js local pour OCR -->
-    <script src="libs/tesseract.min.js" defer></script>
+    <!-- Scripts — PDF.js local (Tesseract.js v7 chargé dynamiquement par app.js) -->
     <script src="libs/pdf.min.js" defer></script>
-    <!-- OCR Configuration et Modules -->
-    <script src="ocr-config.js?v=16" defer></script>
-    <script src="ocr-zone-selector.js?v=16" defer></script>
-    <script src="ocr-preprocessor.js?v=16" defer></script>
-    <script src="ocr-validator.js?v=16" defer></script>
+    <!-- Modules OCR classiques (validator, zone selector, presets) -->
+    <script src="ocr-config.js?v=17" defer></script>
+    <script src="ocr-zone-selector.js?v=17" defer></script>
+    <script src="ocr-validator.js?v=17" defer></script>
     <!-- Application principale -->
-    <script src="app.js?v=16" defer></script>
+    <script src="app.js?v=17" defer></script>
   </body>
 </html>
