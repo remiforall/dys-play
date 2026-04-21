@@ -14,6 +14,17 @@ ExpiresByType font/woff2 "access plus 1 year"
 ExpiresByType application/json "access plus 1 day"
 </IfModule>
 
+# Service Worker : cache très court (5 min) — le SW doit être refetché souvent
+# pour que les updates prennent effet rapidement côté utilisateur.
+<IfModule mod_headers.c>
+<FilesMatch "^sw\.js$">
+Header set Cache-Control "max-age=300, must-revalidate"
+</FilesMatch>
+<FilesMatch "^manifest\.json$">
+Header set Cache-Control "max-age=3600"
+</FilesMatch>
+</IfModule>
+
 # Sécurité
 <IfModule mod_headers.c>
 Header set X-Content-Type-Options "nosniff"
