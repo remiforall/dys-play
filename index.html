@@ -323,12 +323,12 @@
             <div style="font-size: 3.5rem; margin-bottom: var(--space-lg)">
               🌍
             </div>
-            <h1
+            <h2
               id="onboarding-page-1-title"
               style="margin-bottom: var(--space-md); font-size: 1.8rem"
             >
               Bienvenue dans Dys-Play
-            </h1>
+            </h2>
             <p
               id="onboarding-page-1-subtitle"
               style="
@@ -431,12 +431,12 @@
             <div style="font-size: 3.5rem; margin-bottom: var(--space-lg)">
               ✨
             </div>
-            <h1
+            <h2
               id="onboarding-page-2-title"
               style="margin-bottom: var(--space-md); font-size: 1.8rem"
             >
               Personnalisation
-            </h1>
+            </h2>
             <p
               id="onboarding-page-2-subtitle"
               style="
@@ -452,6 +452,7 @@
             <div style="margin-bottom: var(--space-xl); text-align: left">
               <label
                 id="onboarding-page-2-font-label"
+                for="onboarding-page-2-font"
                 style="
                   display: block;
                   margin-bottom: var(--space-md);
@@ -462,6 +463,7 @@
               >
               <select
                 id="onboarding-page-2-font"
+                aria-describedby="onboarding-page-2-font-hint"
                 style="
                   width: 100%;
                   padding: var(--space-md);
@@ -506,6 +508,18 @@
                   Georgia (serif lisible)
                 </option>
               </select>
+              <p
+                id="onboarding-page-2-font-hint"
+                style="
+                  margin-top: var(--space-sm);
+                  font-size: 0.95rem;
+                  color: var(--color-text-secondary);
+                "
+              >
+                Luciole est recommandée : conçue en France avec une démarche
+                académique pour la lisibilité. Tu pourras changer à tout moment
+                dans les réglages.
+              </p>
             </div>
 
             <!-- Theme Selection -->
@@ -605,12 +619,12 @@
             <div style="font-size: 3.5rem; margin-bottom: var(--space-lg)">
               ⚙️
             </div>
-            <h1
+            <h2
               id="onboarding-page-3-title"
               style="margin-bottom: var(--space-md); font-size: 1.8rem"
             >
               Paramètres avancés
-            </h1>
+            </h2>
             <p
               id="onboarding-page-3-subtitle"
               style="
@@ -1319,7 +1333,11 @@
           <h3>Typographie</h3>
           <div class="setting-row">
             <label for="font-select">Police</label>
-            <select id="font-select" aria-label="Police de caractères">
+            <select
+              id="font-select"
+              aria-label="Police de caractères"
+              aria-describedby="font-select-hint"
+            >
               <option value="Luciole">Luciole (recommandée)</option>
               <option value="Atkinson Hyperlegible">
                 Atkinson Hyperlegible
@@ -1332,6 +1350,11 @@
               <option value="Georgia">Georgia</option>
             </select>
           </div>
+          <p id="font-select-hint" class="setting-description">
+            Luciole : démarche académique française. Atkinson Hyperlegible :
+            distingue fortement les lettres proches (b/d, i/l). OpenDyslexic :
+            expérimentale, sans preuve d'efficacité propre.
+          </p>
           <div class="setting-row">
             <label for="font-size"
               >Taille: <span id="font-size-value">20</span>px</label
@@ -1419,6 +1442,21 @@
               aria-label="Mode calme - réduit les animations et stimulations visuelles"
             />
           </div>
+          <div class="toggle-row">
+            <label for="keyboard-shortcuts">Raccourcis clavier</label>
+            <input
+              type="checkbox"
+              id="keyboard-shortcuts"
+              role="switch"
+              checked
+              aria-describedby="keyboard-shortcuts-hint"
+            />
+          </div>
+          <p id="keyboard-shortcuts-hint" class="setting-description">
+            Espace : lecture/pause · Ctrl+P : lecture · Ctrl+F : règle de
+            lecture · Ctrl+S : sauvegarder. Désactive-les s'ils entrent en
+            conflit avec ton lecteur d'écran ou ta saisie vocale.
+          </p>
         </section>
 
         <!-- Overlay couleur (confort visuel personnalisé) -->

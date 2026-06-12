@@ -2228,10 +2228,18 @@ async function pasteTextFromClipboard() {
   }
 
   if (!text) {
-    text = window.prompt(
-      i18n[state.currentLang]?.["import.paste_prompt"] ||
-        "Collez votre texte ici (Ctrl+V ou \u2318+V)",
-    );
+    // Fallback accessible (sans window.prompt, non stylisable) :
+    // diriger vers la zone de saisie du dashboard
+    const input = document.getElementById("text-input");
+    if (input) {
+      input.focus();
+      showToast(
+        i18n[state.currentLang]?.["import.paste_prompt"] ||
+          "Colle ton texte dans la zone de saisie (Ctrl+V ou \u2318+V)",
+        "info",
+      );
+    }
+    return;
   }
 
   if (text && text.trim()) {
@@ -3003,6 +3011,14 @@ function initEventListeners() {
         }
       });
 
+    // Raccourcis clavier activables/désactivables (WCAG 2.1.4)
+    document
+      .getElementById("keyboard-shortcuts")
+      ?.addEventListener("change", (e) => {
+        state.settings.keyboardShortcuts = e.target.checked;
+        Storage.set("keyboardShortcuts", state.settings.keyboardShortcuts);
+      });
+
     // Mode calme (faible stimulation)
     document
       .getElementById("reduced-motion")
@@ -3051,19 +3067,27 @@ function initEventListeners() {
 
     // Reset
     document.getElementById("reset-btn").addEventListener("click", async () => {
-      if (confirm("Êtes-vous sûr de vouloir supprimer toutes vos données?")) {
+      if (confirm("Es-tu sûr·e de vouloir supprimer toutes tes données ?")) {
         Storage.clear();
         await db.clearLibrary();
         location.reload();
       }
     });
 
-    // Library item click
-    document.getElementById("library-list").addEventListener("click", (e) => {
+    // Library item click + activation clavier (role="button" → Enter/Espace)
+    const libraryList = document.getElementById("library-list");
+    const activateLibraryItem = (e) => {
       const item = e.target.closest(".library-item");
       if (item) {
         const id = parseInt(item.dataset.id);
         libraryManager.loadDocument(id);
+      }
+    };
+    libraryList.addEventListener("click", activateLibraryItem);
+    libraryList.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        activateLibraryItem(e);
       }
     });
 
@@ -3097,6 +3121,10 @@ function initEventListeners() {
         }
         drawers.close();
       }
+
+      // Raccourcis désactivables dans les réglages (WCAG 2.1.4) —
+      // Escape (fermeture) reste toujours actif
+      if (state.settings.keyboardShortcuts === false) return;
 
       // Espace pour play/pause (hors champs de saisie)
       if (
@@ -3424,6 +3452,7 @@ async function loadSettings() {
     maskOpacity: Storage.get("maskOpacity") || 0.7,
     voiceRate: Storage.get("voiceRate") || 1.0,
     reducedMotion: Storage.get("reducedMotion") || false,
+    keyboardShortcuts: Storage.get("keyboardShortcuts") !== false,
     overlayColor: Storage.get("overlayColor") || null,
     overlayOpacity: Storage.get("overlayOpacity") || 0.15,
     rulerMode: Storage.get("rulerMode") || "window",
@@ -3437,10 +3466,13 @@ async function loadSettings() {
   if (!validThemes.includes(state.settings.theme))
     state.settings.theme = "light";
   const validFonts = [
+    "Luciole",
+    "Atkinson Hyperlegible",
     "system-ui",
-    "OpenDyslexic",
-    "Comic Neue",
     "Arial",
+    "Verdana",
+    "Comic Neue",
+    "OpenDyslexic",
     "Georgia",
   ];
   if (!validFonts.includes(state.settings.font))
@@ -3572,6 +3604,12 @@ async function loadSettings() {
   document.getElementById("rate-value").textContent =
     state.settings.voiceRate.toFixed(1) + "x";
   document.getElementById("lang-select").value = state.settings.lang;
+
+  // Raccourcis clavier (WCAG 2.1.4)
+  const shortcutsToggle = document.getElementById("keyboard-shortcuts");
+  if (shortcutsToggle) {
+    shortcutsToggle.checked = state.settings.keyboardShortcuts !== false;
+  }
 
   // Mode calme (faible stimulation)
   document.getElementById("reduced-motion").checked =

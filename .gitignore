@@ -33,3 +33,6 @@ fonts/download-fonts.sh
 # Documents d'audit (inputs de session, non versionnés)
 files/
 files.zip
+
+# graphify knowledge graph (build output, ne pas committer)
+graphify-out/
