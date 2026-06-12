@@ -99,7 +99,7 @@ const i18n = {
     // Onboarding
     "onboarding.title": "Bienvenue dans Dys-Play",
     "onboarding.subtitle":
-      "Une application spécialement conçue pour la lecture augmentée. Prenez quelques secondes pour configurer vos préférences.",
+      "Une application spécialement conçue pour la lecture augmentée. Prends quelques secondes pour configurer tes préférences.",
     "onboarding.language": "Langue préférée",
     "onboarding.font": "Police d'écriture",
     "onboarding.fontDesc.luciole": "Luciole (recommandée)",
@@ -169,7 +169,7 @@ const i18n = {
     "ocr.preprocessing": "Pré-traitement Image",
     "ocr.validation": "Validation & Correction",
     "msg.library.empty": "Aucun document sauvegardé",
-    "placeholder.textInput": "Ou saisissez votre texte ici...",
+    "placeholder.textInput": "Ou saisis ton texte ici...",
     "title.settings": "Réglages",
     "title.library": "Ma Bibliothèque",
     "title.menu": "Menu",
@@ -2438,7 +2438,7 @@ function submitFeedbackByEmail() {
   if (hasScreenshot) {
     downloadScreenshot();
     showToast(
-      `Capture téléchargée (${getScreenshotFilename()}) — glissez-la dans votre e-mail avant d'envoyer`,
+      `Capture téléchargée (${getScreenshotFilename()}) — glisse-la dans ton e-mail avant d'envoyer`,
       "info",
     );
   }
@@ -2456,8 +2456,8 @@ async function submitFeedbackByGithub() {
   }
   const extra = hasScreenshot
     ? copied
-      ? "\n\n> 📎 Une capture d'écran a été copiée dans votre presse-papiers. Collez-la (Ctrl+V ou ⌘+V) dans le corps de l'issue GitHub après ouverture."
-      : "\n\n> 📎 Une capture d'écran est disponible, mais la copie vers le presse-papiers a échoué. Glissez-la manuellement dans l'issue GitHub depuis vos fichiers."
+      ? "\n\n> 📎 Une capture d'écran a été copiée dans ton presse-papiers. Colle-la (Ctrl+V ou ⌘+V) dans le corps de l'issue GitHub après ouverture."
+      : "\n\n> 📎 Une capture d'écran est disponible, mais la copie vers le presse-papiers a échoué. Glisse-la manuellement dans l'issue GitHub depuis tes fichiers."
     : "";
   const title = description.split("\n")[0].slice(0, 80);
   const labels = FEEDBACK.categoryGithubLabels[category] || "triage";
@@ -3403,7 +3403,7 @@ async function handleFile(file, useZoneSelection = false) {
     const msg = error.message || "";
     if (msg.includes("load language")) {
       showToast(
-        "Le moteur de reconnaissance n'a pas pu se charger. Vérifiez votre connexion.",
+        "Le moteur de reconnaissance n'a pas pu se charger. Vérifie ta connexion.",
         "error",
       );
     } else if (msg.includes("recognize") || msg.includes("OCR")) {
@@ -3771,6 +3771,87 @@ async function registerServiceWorker() {
 }
 
 // ============================================
+// 17b. SCAN HORS-LIGNE (opt-in dans les réglages)
+// ============================================
+
+async function initOcrOffline() {
+  const btn = document.getElementById("ocr-offline-btn");
+  const label = document.getElementById("ocr-offline-btn-label");
+  const status = document.getElementById("ocr-offline-status");
+  if (!btn || !label || !status) return;
+
+  const markDone = () => {
+    btn.disabled = true;
+    label.textContent = "Scan hors-ligne activé ✓";
+    status.textContent = "Le scan fonctionne maintenant sans connexion.";
+  };
+
+  // L'état réel est vérifié dans le Cache Storage — le localStorage n'est
+  // qu'un indice (le cache peut avoir été purgé par le navigateur)
+  if (Storage.get("ocrOffline") === true && "caches" in window) {
+    try {
+      const hit = await caches.match("./libs/tesseract/langs/fra.traineddata", {
+        ignoreSearch: true,
+      });
+      if (hit) {
+        markDone();
+        return;
+      }
+    } catch (e) {
+      // Cache Storage inaccessible (navigation privée…) : on retombe sur le bouton
+    }
+    Storage.remove("ocrOffline");
+  }
+
+  btn.addEventListener("click", async () => {
+    if (!("serviceWorker" in navigator)) {
+      status.textContent =
+        "⚠️ Indisponible : ce navigateur ne prend pas en charge le mode hors-ligne.";
+      return;
+    }
+    if (navigator.connection && navigator.connection.saveData) {
+      const ok = confirm(
+        "Ton navigateur est en mode « économie de données ». Télécharger quand même ~9 Mo ?",
+      );
+      if (!ok) return;
+    }
+    btn.disabled = true;
+    status.textContent = "Téléchargement en cours…";
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      const sw = registration.active;
+      if (!sw) throw new Error("Service worker inactif");
+      await new Promise((resolve, reject) => {
+        const channel = new MessageChannel();
+        const timeout = setTimeout(
+          () => reject(new Error("Délai dépassé")),
+          120000,
+        );
+        channel.port1.onmessage = (event) => {
+          const msg = event.data || {};
+          if (msg.type === "progress") {
+            status.textContent = `Téléchargement ${msg.done}/${msg.total}…`;
+          } else if (msg.type === "done") {
+            clearTimeout(timeout);
+            if (msg.success) resolve(msg);
+            else reject(new Error(msg.error || "Échec de mise en cache"));
+          }
+        };
+        sw.postMessage({ type: "CACHE_OCR" }, [channel.port2]);
+      });
+      Storage.set("ocrOffline", true);
+      markDone();
+      showToast("Scan hors-ligne activé", "success");
+    } catch (err) {
+      btn.disabled = false;
+      status.textContent =
+        "⚠️ Échec du téléchargement. Vérifie ta connexion puis réessaie.";
+      showToast("Échec de l'activation du scan hors-ligne", "error");
+    }
+  });
+}
+
+// ============================================
 // 17. ONBOARDING & PAGE ROUTING
 // ============================================
 
@@ -3860,7 +3941,7 @@ function navigateToPage(pageName) {
                         <circle cx="12" cy="13" r="4"></circle>
                     </svg>
                     <h2 style="margin: var(--space-md) 0;">Importer, scanner ou saisir</h2>
-                    <p style="margin: 0; color: var(--color-text-secondary);">Choisissez une source pour commencer</p>
+                    <p style="margin: 0; color: var(--color-text-secondary);">Choisis une source pour commencer</p>
                 </div>
             `;
       if (inputSection) inputSection.style.display = "block";
@@ -3892,6 +3973,7 @@ async function init() {
     await db.init();
     await loadSettings();
     await registerServiceWorker();
+    initOcrOffline();
     updateStatus();
     await libraryManager.refresh();
 

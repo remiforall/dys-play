@@ -3,7 +3,7 @@
  * Mode offline complet, zéro dépendance CDN
  */
 
-const CACHE_VERSION = 19;
+const CACHE_VERSION = 20;
 const STATIC_CACHE = `dys-play-static-v${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `dys-play-dynamic-v${CACHE_VERSION}`;
 
@@ -12,6 +12,8 @@ const PRECACHE_URLS = [
   "./",
   "./index.html",
   "./accessibilite.html",
+  "./aide.html",
+  "./a-propos.html",
   "./styles.css",
   "./app.js",
   "./manifest.json",
@@ -35,7 +37,18 @@ const PRECACHE_URLS = [
   // Modules ESM OCR v2 (Sauvola + deskew, orchestration Tesseract v7)
   "./modules/image-preprocessor.js",
   "./modules/ocr-engine.js",
-  // Note : libs/tesseract/ (~15 Mo : core WASM + traineddata) cachées on-demand au premier usage
+  // Note : libs/tesseract/ (~15 Mo : core WASM + traineddata) cachées on-demand
+  // au premier usage, ou via le bouton « Scan hors-ligne » des réglages (OCR_OFFLINE_URLS)
+];
+
+// Scan hors-ligne opt-in (réglages) : moteur OCR + français (~9 Mo).
+// EN/AR restent on-demand au premier usage.
+const OCR_OFFLINE_URLS = [
+  "./libs/tesseract/tesseract.esm.min.js",
+  "./libs/tesseract/worker.min.js",
+  "./libs/tesseract/tesseract-core-simd.wasm.js",
+  "./libs/tesseract/tesseract-core-simd.wasm",
+  "./libs/tesseract/langs/fra.traineddata",
 ];
 
 // Installation : pré-cache des fichiers statiques
@@ -95,7 +108,10 @@ self.addEventListener("fetch", (event) => {
 
   if (isStatic) {
     event.respondWith(
-      caches.match(request).then((cached) => {
+      // ignoreSearch : les assets sont demandés avec ?v=N (cache-busting) mais
+      // pré-cachés sans query — le bump de CACHE_VERSION purge les anciens caches,
+      // et stale-while-revalidate rafraîchit en arrière-plan
+      caches.match(request, { ignoreSearch: true }).then((cached) => {
         const networkFetch = fetch(request)
           .then((response) => {
             if (response && response.status === 200) {
@@ -136,6 +152,39 @@ self.addEventListener("fetch", (event) => {
 self.addEventListener("message", (event) => {
   if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
+  }
+
+  // Mise en cache du moteur OCR pour le scan hors-ligne (opt-in réglages).
+  // Progression envoyée fichier par fichier sur le port fourni.
+  if (event.data && event.data.type === "CACHE_OCR") {
+    const port = event.ports[0];
+    event.waitUntil(
+      caches.open(STATIC_CACHE).then(async (cache) => {
+        try {
+          for (let i = 0; i < OCR_OFFLINE_URLS.length; i++) {
+            const url = OCR_OFFLINE_URLS[i];
+            const already = await cache.match(url, { ignoreSearch: true });
+            if (!already) await cache.add(url);
+            if (port) {
+              port.postMessage({
+                type: "progress",
+                done: i + 1,
+                total: OCR_OFFLINE_URLS.length,
+              });
+            }
+          }
+          if (port) port.postMessage({ type: "done", success: true });
+        } catch (err) {
+          if (port) {
+            port.postMessage({
+              type: "done",
+              success: false,
+              error: String(err),
+            });
+          }
+        }
+      }),
+    );
   }
 
   if (event.data && event.data.type === "CLEAR_CACHE") {
