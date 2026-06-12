@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=5.0"
+    />
+    <meta name="robots" content="index, follow" />
+    <title>À propos — Dys-Play</title>
+    <meta
+      name="description"
+      content="Pourquoi Dys-Play existe : un outil gratuit, libre (AGPL-3.0) et 100 % local d'aide à la lecture pour personnes dyslexiques et TDA/H. Crédits et licences des composants."
+    />
+    <link rel="icon" type="image/svg+xml" href="img/favicon.svg" />
+    <link rel="stylesheet" href="fonts/fonts.css?v=20" />
+    <link rel="stylesheet" href="styles.css?v=20" />
+    <script>
+      // Restaure le thème choisi dans l'app avant le premier paint
+      try {
+        var t = JSON.parse(localStorage.getItem("dysplay_theme"));
+        if (
+          ["light", "cream", "sepia", "dark", "dark-blue"].indexOf(t) !== -1
+        ) {
+          document.documentElement.dataset.theme = t;
+        }
+      } catch (e) {}
+    </script>
+    <style>
+      main.a11y-page {
+        max-width: 64rem;
+        margin: 0 auto;
+        padding: var(--space-xl) var(--space-lg);
+        line-height: var(--line-height);
+      }
+      main.a11y-page h1 {
+        margin-bottom: var(--space-lg);
+      }
+      main.a11y-page h2 {
+        margin-top: var(--space-2xl);
+        margin-bottom: var(--space-md);
+        border-bottom: 2px solid var(--color-border);
+        padding-bottom: var(--space-sm);
+      }
+      main.a11y-page h3 {
+        margin-top: var(--space-xl);
+        margin-bottom: var(--space-sm);
+      }
+      main.a11y-page ul,
+      main.a11y-page ol {
+        padding-left: 1.5em;
+        margin-bottom: var(--space-md);
+      }
+      main.a11y-page li {
+        margin-bottom: var(--space-xs);
+      }
+      main.a11y-page p {
+        margin-bottom: var(--space-md);
+      }
+      main.a11y-page a {
+        color: var(--color-primary);
+        text-decoration: underline;
+      }
+      main.a11y-page .back-link {
+        display: inline-block;
+        margin-bottom: var(--space-lg);
+      }
+      main.a11y-page .credit-list li {
+        margin-bottom: var(--space-sm);
+      }
+      .don-box {
+        padding: var(--space-lg);
+        background: var(--color-bg-secondary);
+        border: 2px solid var(--color-border);
+        border-left: 6px solid var(--color-primary);
+        border-radius: var(--radius-sm);
+        margin: var(--space-lg) 0;
+      }
+      .don-box .don-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5em;
+        min-height: 56px;
+        padding: var(--space-sm) var(--space-lg);
+        margin-top: var(--space-sm);
+        background: var(--color-primary);
+        color: var(--color-bg, #fff);
+        border-radius: var(--radius-sm);
+        font-weight: 700;
+        text-decoration: none;
+      }
+      .don-box .don-btn:hover,
+      .don-box .don-btn:focus-visible {
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+
+    <main id="main-content" class="a11y-page" role="main">
+      <a href="/" class="back-link">← Retour à Dys-Play</a>
+
+      <h1>À propos de Dys-Play</h1>
+
+      <h2>La mission</h2>
+
+      <p>
+        Environ 8 à 10 % de la population présente un trouble spécifique du
+        langage écrit. Pour ces lecteurs, un simple document papier, un PDF mal
+        construit ou une page trop dense peuvent devenir un obstacle quotidien —
+        à l'école, au travail, dans les démarches administratives.
+      </p>
+
+      <p>
+        Dys-Play est un outil gratuit qui transforme n'importe quel texte
+        (photo, PDF, copier-coller) en une lecture adaptée à tes besoins :
+        police au choix, espacement élargi, syllabes colorées, règle de lecture,
+        lecture à voix haute synchronisée.
+      </p>
+
+      <p>Trois engagements non négociables :</p>
+
+      <ul>
+        <li>
+          <strong>100 % local.</strong> Tout se passe dans ton navigateur, y
+          compris la reconnaissance de texte sur les photos. Aucun texte, aucune
+          image, aucune donnée ne quitte ton appareil. Pas de compte, pas de
+          cookie tiers, pas de statistiques d'usage.
+        </li>
+        <li>
+          <strong>Gratuit, sans contrepartie.</strong> Pas de version « premium
+          », pas de publicité, pas de revente de données — il n'y a d'ailleurs
+          aucune donnée à revendre.
+        </li>
+        <li>
+          <strong>Fondé sur la recherche.</strong> Chaque fonctionnalité
+          s'appuie sur des travaux académiques publiés, ou est explicitement
+          étiquetée « expérimentale » quand les preuves manquent.
+        </li>
+      </ul>
+
+      <h2>Pour qui ?</h2>
+
+      <p>
+        Dys-Play s'adresse d'abord aux personnes dyslexiques (quel que soit le
+        profil), dysorthographiques et TDA/H — enfants, adolescents et adultes.
+        Il est aussi pensé pour celles et ceux qui les accompagnent :
+        enseignants, orthophonistes, parents. La page
+        <a href="aide.html">Aide et premiers pas</a> détaille les usages
+        concrets.
+      </p>
+
+      <h2>L'approche scientifique</h2>
+
+      <p>
+        Plutôt que des promesses, des sources. Les principaux choix de
+        conception s'appuient sur :
+      </p>
+
+      <ul>
+        <li>
+          <strong>L'espacement des lettres et des mots</strong> — Zorzi et al.
+          (2012, PNAS, laboratoire d'Aix-Marseille) : un espacement élargi
+          améliore la vitesse et la précision de lecture chez les enfants
+          dyslexiques. C'est le cœur des réglages typographiques de Dys-Play.
+        </li>
+        <li>
+          <strong>La règle de lecture numérique</strong> — travaux présentés à
+          CHI 2023 : le guidage visuel ligne à ligne apporte des gains mesurés
+          pour les lecteurs dyslexiques et TDA/H.
+        </li>
+        <li>
+          <strong>La lecture bimodale</strong> (écouter en lisant, avec
+          surlignage synchronisé) : gains significatifs de compréhension
+          documentés dans la littérature.
+        </li>
+        <li>
+          <strong>Les polices « dyslexie »</strong> — les études (Wery &
+          Diliberto 2017, Kuster et al. 2018) ne montrent pas de bénéfice propre
+          à la forme des lettres : c'est l'espacement qui compte. C'est pourquoi
+          OpenDyslexic est proposée mais étiquetée « expérimentale », et Luciole
+          (conçue par le CTRDV avec une démarche académique française)
+          recommandée.
+        </li>
+        <li>
+          <strong>Les filtres de couleur</strong> sont proposés comme confort
+          visuel personnalisé : certains lecteurs s'y sentent mieux, mais aucun
+          bénéfice clinique n'est revendiqué.
+        </li>
+      </ul>
+
+      <h2>Soutenir Dys-Play</h2>
+
+      <div class="don-box">
+        <p>
+          Dys-Play est développé, maintenu et hébergé gracieusement, sur le
+          temps libre de son auteur. L'outil restera gratuit et sans publicité.
+          Si Dys-Play t'aide au quotidien, un don — même petit — contribue aux
+          frais d'hébergement et au temps de développement.
+        </p>
+        <a
+          class="don-btn"
+          href="https://liberapay.com/dys-play"
+          rel="noopener noreferrer external"
+          >♥ Faire un don via Liberapay</a
+        >
+        <p style="margin-top: var(--space-sm); margin-bottom: 0">
+          <small
+            >Liberapay est une plateforme de dons à but non lucratif, basée en
+            France, sans publicité ni traqueur. Le lien s'ouvre sur un site
+            externe.</small
+          >
+        </p>
+      </div>
+
+      <h2>Licence et code source</h2>
+
+      <p>
+        Dys-Play est un logiciel libre publié sous licence
+        <strong>GNU AGPL-3.0</strong> : tu peux l'étudier, le modifier et le
+        redistribuer, à condition que toute version dérivée mise à disposition
+        en ligne publie également son code source.
+      </p>
+
+      <ul>
+        <li>
+          Code source :
+          <a
+            href="https://github.com/remiforall/dys-play"
+            rel="noopener noreferrer external"
+            >github.com/remiforall/dys-play</a
+          >
+        </li>
+        <li>
+          Texte de la licence :
+          <a
+            href="https://www.gnu.org/licenses/agpl-3.0.fr.html"
+            rel="noopener noreferrer external"
+            >gnu.org/licenses/agpl-3.0</a
+          >
+        </li>
+      </ul>
+
+      <h2>Composants et licences</h2>
+
+      <p>
+        Tous les composants sont servis localement depuis dys-play.net — aucun
+        CDN, aucune requête vers un service tiers à l'exécution.
+      </p>
+
+      <h3>Composants logiciels</h3>
+
+      <ul class="credit-list">
+        <li>
+          <strong>Tesseract.js</strong> v7 (moteur de reconnaissance de texte,
+          exécuté en WebAssembly dans ton navigateur) — Licence Apache 2.0 —
+          <a
+            href="https://github.com/naptha/tesseract.js"
+            rel="noopener noreferrer external"
+            >github.com/naptha/tesseract.js</a
+          >
+        </li>
+        <li>
+          <strong>Modèles de reconnaissance tessdata_fast</strong> (français,
+          anglais, arabe) — Licence Apache 2.0 —
+          <a
+            href="https://github.com/tesseract-ocr/tessdata_fast"
+            rel="noopener noreferrer external"
+            >github.com/tesseract-ocr/tessdata_fast</a
+          >
+        </li>
+        <li>
+          <strong>PDF.js</strong> v3.11 (lecture des fichiers PDF) — Mozilla —
+          Licence Apache 2.0 —
+          <a
+            href="https://mozilla.github.io/pdf.js/"
+            rel="noopener noreferrer external"
+            >mozilla.github.io/pdf.js</a
+          >
+        </li>
+      </ul>
+
+      <h3>Polices de caractères</h3>
+
+      <ul class="credit-list">
+        <li>
+          <strong>Luciole</strong> — Centre Technique Régional pour la
+          Déficience Visuelle (CTRDV) et studio typographies.fr — Licence
+          Creative Commons Attribution 4.0 —
+          <a
+            href="https://www.luciole-vision.com/"
+            rel="noopener noreferrer external"
+            >luciole-vision.com</a
+          >
+        </li>
+        <li>
+          <strong>Atkinson Hyperlegible</strong> — Braille Institute of America
+          — SIL Open Font License 1.1 —
+          <a
+            href="https://brailleinstitute.org/freefont"
+            rel="noopener noreferrer external"
+            >brailleinstitute.org/freefont</a
+          >
+        </li>
+        <li>
+          <strong>OpenDyslexic</strong> — Abbie Gonzalez — SIL Open Font License
+          1.1 —
+          <a href="https://opendyslexic.org/" rel="noopener noreferrer external"
+            >opendyslexic.org</a
+          >
+        </li>
+        <li>
+          <strong>Comic Neue</strong> — Craig Rozynski — SIL Open Font License
+          1.1 —
+          <a href="https://comicneue.com/" rel="noopener noreferrer external"
+            >comicneue.com</a
+          >
+        </li>
+      </ul>
+
+      <p>
+        Les autres polices proposées (Arial, Verdana, Georgia, police système)
+        ne sont pas distribuées avec l'application : elles sont utilisées
+        uniquement si elles sont déjà présentes sur ton appareil.
+      </p>
+
+      <h2>Qui est derrière Dys-Play ?</h2>
+
+      <p>
+        Dys-Play est édité par <strong>PostHack</strong> (Rémi Vincent, France).
+        Contact : <a href="mailto:remi@posthack.com">remi@posthack.com</a>.
+      </p>
+
+      <h2>Pour aller plus loin</h2>
+
+      <ul>
+        <li><a href="aide.html">Aide et premiers pas</a></li>
+        <li>
+          <a href="accessibilite.html">Déclaration d'accessibilité</a> (RGAA
+          4.1.2)
+        </li>
+      </ul>
+    </main>
+  </body>
+</html>

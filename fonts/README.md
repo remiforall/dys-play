@@ -1,86 +1,52 @@
-# 🔤 Polices de Caractère - Dys-Play
+# Polices de caractères — Dys-Play
 
-Ce dossier contient la configuration et les fichiers des polices utilisées par Dys-Play.
+Ce dossier contient les fichiers WOFF2 des polices distribuées avec Dys-Play
+et les règles `@font-face` (`fonts.css`). Toutes les polices sont servies
+localement — zéro CDN.
 
-## Polices Intégrées
+## Polices intégrées
 
-### OpenDyslexic
-- **Description**: Police optimisée pour les personnes dyslexiques
-- **Fichiers**: `OpenDyslexic-Regular.woff2`, `OpenDyslexic-Bold.woff2`
-- **Source**: https://github.com/antijingoist/open-dyslexic
-- **License**: MIT
+### Luciole (recommandée)
+
+- **Description** : police conçue par le CTRDV et le studio typographies.fr,
+  démarche académique française (soutien du ministère de la Culture)
+- **Fichiers** : `Luciole-Regular.woff2`, `Luciole-Bold.woff2`
+- **Source** : https://luciole-vision.com
+- **Licence** : Creative Commons Attribution 4.0 (CC-BY 4.0)
+
+### Atkinson Hyperlegible
+
+- **Description** : maximise la distinction entre lettres proches (b/d, i/l)
+- **Fichiers** : `AtkinsonHyperlegible-Regular.woff2`, `AtkinsonHyperlegible-Bold.woff2`
+- **Source** : https://brailleinstitute.org/freefont
+- **Licence** : SIL Open Font License 1.1
 
 ### Comic Neue
-- **Description**: Police claire et aérée, variante moderne du Comic Sans
-- **Fichiers**: `ComicNeue-Regular.woff2`, `ComicNeue-Bold.woff2`
-- **Source**: https://github.com/crommie/comic-neue
-- **License**: SIL Open Font License
 
-## 📥 Installation des Polices
+- **Description** : police claire et aérée, variante moderne du Comic Sans
+- **Fichiers** : `ComicNeue-Regular.woff2`, `ComicNeue-Bold.woff2`
+- **Source** : https://github.com/crozynski/comicneue
+- **Licence** : SIL Open Font License 1.1
 
-### Automatique (avec bash)
+### OpenDyslexic (expérimentale)
+
+- **Description** : police expérimentale — les études (Wery & Diliberto 2017,
+  Kuster et al. 2018) ne montrent pas de bénéfice propre à la forme des lettres
+- **Fichiers** : `OpenDyslexic-Regular.woff2`, `OpenDyslexic-Bold.woff2`
+- **Source** : https://opendyslexic.org
+- **Licence** : SIL Open Font License 1.1
+
+## Règles projet
+
+- Ordre imposé dans les sélecteurs : Luciole → Atkinson Hyperlegible → Système
+  → Arial/Verdana → Comic Neue → OpenDyslexic → Georgia (cf. CLAUDE.md)
+- `font-display: swap` obligatoire
+- Vérifier après tout ajout que le fichier est une vraie fonte :
+  `file *.woff2` → « Web Open Font Format (Version 2) »
+
+## Vérification
+
 ```bash
-cd fonts/
-chmod +x download-fonts.sh
-./download-fonts.sh
-```
-
-### Manuel
-Téléchargez les fichiers WOFF2 depuis les sources officielles et placez-les dans ce dossier:
-
-**OpenDyslexic**:
-- https://github.com/antijingoist/open-dyslexic/raw/master/fonts/OpenDyslexic-Regular.woff2
-- https://github.com/antijingoist/open-dyslexic/raw/master/fonts/OpenDyslexic-Bold.woff2
-
-**Comic Neue**:
-- https://github.com/crommie/comic-neue/raw/master/dist/ComicNeue-Regular.woff2
-- https://github.com/crommie/comic-neue/raw/master/dist/ComicNeue-Bold.woff2
-
-## 📋 Structure Attendue
-
-```
-fonts/
-├── fonts.css                          # Règles @font-face
-├── download-fonts.sh                  # Script de téléchargement
-├── README.md                          # Ce fichier
-├── OpenDyslexic-Regular.woff2         # Fichiers de polices
-├── OpenDyslexic-Bold.woff2
-├── ComicNeue-Regular.woff2
-└── ComicNeue-Bold.woff2
-```
-
-## ⚙️ Configuration
-
-Le fichier `fonts.css` est inclus dans `index.html` et contient:
-- Les règles `@font-face` pour OpenDyslexic et Comic Neue
-- Les chemins relatifs vers les fichiers WOFF2
-- Support fallback pour WOFF
-
-## 🚀 Intégration dans l'App
-
-Les polices sont disponibles dans les sélecteurs:
-- **Page d'onboarding**: Configuration initiale de la police
-- **Paramètres** (menu): Changement dynamique de la police
-- **Stockage**: Le choix est sauvegardé en localStorage
-
-## 📊 Performance
-
-- **WOFF2**: Format compressé moderne (~40 KB par police)
-- **WOFF**: Fallback pour navigateurs plus anciens (~60 KB par police)
-- **font-display: swap**: Affichage du texte immédiat avec remplacement des polices
-- **Pas de requêtes externes**: Les polices sont servies localement
-
-## ✅ Vérification
-
-Après téléchargement, vérifiez que les fichiers sont présents:
-```bash
-ls -lh fonts/*.woff*
-```
-
-Devrait afficher quelque chose comme:
-```
--rw-r--r--  ComicNeue-Bold.woff2 (~35 KB)
--rw-r--r--  ComicNeue-Regular.woff2 (~35 KB)
--rw-r--r--  OpenDyslexic-Bold.woff2 (~45 KB)
--rw-r--r--  OpenDyslexic-Regular.woff2 (~45 KB)
+ls -lh fonts/*.woff2
+file fonts/*.woff2
 ```

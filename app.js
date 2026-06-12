@@ -125,10 +125,10 @@ const i18n = {
     "btn.scan": "Scanner",
     "btn.play": "Lecture",
     "btn.pause": "Pause",
-    "btn.focus": "Mode Focus",
+    "btn.focus": "Règle de lecture",
     "btn.settings": "Réglages",
     "btn.library": "Bibliothèque",
-    "section.acquisition": "Acquisition",
+    "section.acquisition": "Ajouter un texte",
     "section.audio": "Audio",
     "section.focus": "Aide Visuelle",
     "section.typography": "Typographie",
@@ -207,10 +207,10 @@ const i18n = {
     "btn.scan": "Scan",
     "btn.play": "Play",
     "btn.pause": "Pause",
-    "btn.focus": "Focus Mode",
+    "btn.focus": "Reading ruler",
     "btn.settings": "Settings",
     "btn.library": "Library",
-    "section.acquisition": "Acquisition",
+    "section.acquisition": "Add a text",
     "section.audio": "Audio",
     "section.focus": "Visual Aid",
     "section.typography": "Typography",
@@ -280,10 +280,10 @@ const i18n = {
     "btn.scan": "مسح",
     "btn.play": "تشغيل",
     "btn.pause": "إيقاف",
-    "btn.focus": "وضع التركيز",
+    "btn.focus": "مسطرة القراءة",
     "btn.settings": "الإعدادات",
     "btn.library": "المكتبة",
-    "section.acquisition": "الاستحواذ",
+    "section.acquisition": "إضافة نص",
     "section.audio": "صوتي",
     "section.focus": "المساعدة البصرية",
     "section.typography": "الطباعة",
@@ -2646,9 +2646,16 @@ function initEventListeners() {
       drawers.close();
     });
 
-    // Menu navigation links - prevent default and close drawer
+    // Liens du menu : les liens avec un vrai href (aide, à propos,
+    // accessibilité, don) naviguent normalement ; les actions internes
+    // (href="#") sont interceptées
     document.querySelectorAll(".nav-link").forEach((link) => {
       link.addEventListener("click", (e) => {
+        const href = e.currentTarget.getAttribute("href");
+        if (href && href !== "#") {
+          drawers.close();
+          return;
+        }
         e.preventDefault();
         const navId = e.currentTarget.id;
 
@@ -2664,11 +2671,9 @@ function initEventListeners() {
               libraryManager.refresh();
             }, 300);
             break;
-          case "nav-help":
-            showToast(
-              "Aide: Utilisez les boutons Importer/Scanner pour ajouter du texte, puis Lecture pour écouter",
-              "info",
-            );
+          case "nav-setup":
+            // Relance l'onboarding via le mécanisme resetOnboarding de loadSettings()
+            window.location.href = "?resetOnboarding=1";
             break;
           case "nav-legal":
             {

@@ -1,28 +1,33 @@
 # Dys-Play
 
-**Application web progressive d'aide a la lecture pour les personnes dyslexiques, dysorthographiques et TDA/H.**
+**Application web progressive d'aide à la lecture pour les personnes dyslexiques, dysorthographiques et TDA/H.**
 
-Dys-Play transforme n'importe quel texte pour faciliter la lecture : police adaptee, espacement personnalisable, syllabation coloree, regle de lecture, synthese vocale.
+Dys-Play transforme n'importe quel texte pour faciliter la lecture : police adaptée, espacement personnalisable, syllabation colorée, règle de lecture, synthèse vocale.
 
-## Fonctionnalites
+- **Application** : https://dys-play.net
+- **Aide et premiers pas** : https://dys-play.net/aide.html
+- **À propos (mission, sources, licences)** : https://dys-play.net/a-propos.html
+- **Soutenir le projet** : https://liberapay.com/dys-play
 
-- **OCR local** : photographiez un texte imprime, Dys-Play le convertit (Tesseract.js)
+## Fonctionnalités
+
+- **OCR local** : photographie un texte imprimé, Dys-Play le convertit (Tesseract.js v7, WASM, 100 % dans le navigateur)
 - **Import PDF** : extraction de texte depuis des documents PDF (PDF.js)
-- **Saisie libre** : collez ou tapez directement votre texte
-- **Polices adaptees** : OpenDyslexic, Comic Neue
-- **Syllabation coloree** : chaque syllabe coloree differemment pour faciliter le decodage
-- **Mode zebre** : lignes alternees en couleur
-- **Regle de lecture (Focus Mask)** : masque de focus qui suit la ligne lue
-- **Synthese vocale** : lecture a voix haute avec suivi mot par mot
-- **4 themes** : clair, creme, sepia, sombre
-- **i18n** : francais, anglais, arabe (RTL)
-- **Bibliotheque locale** : sauvegarde des textes dans IndexedDB
-- **PWA** : fonctionne hors-ligne, installable sur mobile
+- **Saisie libre** : colle ou tape directement ton texte
+- **Polices adaptées** : Luciole (recommandée), Atkinson Hyperlegible, Comic Neue, OpenDyslexic (expérimentale)
+- **Syllabation colorée** : chaque syllabe colorée différemment pour faciliter le décodage
+- **Mode zèbre** : lignes alternées en couleur
+- **Règle de lecture** : guidage visuel ligne à ligne, 4 modes
+- **Synthèse vocale** : lecture à voix haute avec suivi mot par mot
+- **4 thèmes** : clair, crème, sépia, sombre
+- **i18n** : français, anglais, arabe (RTL)
+- **Bibliothèque locale** : sauvegarde des textes dans IndexedDB
+- **PWA** : fonctionne hors-ligne, installable sur mobile ; scan hors-ligne activable dans les réglages
 
-## Vie privee
+## Vie privée
 
-- Zero collecte de donnees
-- Zero cookie, zero tracker, zero CDN externe
+- Zéro collecte de données
+- Zéro cookie, zéro tracker, zéro CDN externe
 - Tout le traitement se fait localement dans le navigateur
 - Conforme RGPD
 
@@ -36,22 +41,26 @@ python3 -m http.server 8080
 
 ## Stack technique
 
-- HTML / CSS / JavaScript vanilla (zero framework)
-- Tesseract.js v5.1.1 (OCR local)
+- HTML / CSS / JavaScript vanilla (zéro framework, zéro bundler)
+- Tesseract.js v7 ESM (OCR local, WASM SIMD) + pipeline de prétraitement maison (Sauvola adaptatif, deskew)
 - PDF.js v3.11 (extraction texte PDF)
 - Service Worker pour le mode hors-ligne
 - IndexedDB + localStorage pour la persistance
 
-## Accessibilite
+## Accessibilité
 
-- Cible RGAA 4.1.2 / WCAG 2.1 AA (conformite partielle en cours, audit externe planifie)
-- Navigation clavier complete
-- Support lecteurs d'ecran (ARIA)
-- Contrastes verifies sur les 4 themes
-- Cibles tactiles minimum 44x44px
+- Cible RGAA 4.1.2 / WCAG 2.1 AA (conformité partielle en cours, audit externe planifié)
+- Navigation clavier complète
+- Support lecteurs d'écran (ARIA)
+- Contrastes vérifiés sur les 4 thèmes
+- Cibles tactiles 56×56 px
 - Support RTL (arabe)
 - `prefers-reduced-motion`, `prefers-contrast`, `forced-colors`
 
+Voir la [déclaration d'accessibilité](https://dys-play.net/accessibilite.html).
+
 ## Licence
 
-Projet open-source par PostHack.
+Dys-Play est un logiciel libre publié sous licence **GNU AGPL-3.0** (voir [LICENSE](LICENSE)) par PostHack.
+
+Les composants tiers embarqués (Tesseract.js, PDF.js, polices) sont listés avec leurs licences dans [CREDITS.md](CREDITS.md).

@@ -109,15 +109,71 @@
         "featureList": [
           "OCR local",
           "Synthèse vocale",
-          "Police OpenDyslexic",
+          "Polices adaptées (Luciole, Atkinson Hyperlegible)",
           "Syllabation colorée",
           "Règle de lecture",
-          "Overlay Irlen",
+          "Overlay couleur",
           "Fonctionne hors-ligne"
         ],
         "keywords": "dyslexie, dysorthographie, TDAH, lecture adaptée, OCR, accessibilité, WCAG, RGPD, PWA hors-ligne",
         "inLanguage": ["fr", "en", "ar"],
         "isAccessibleForFree": true
+      }
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Dys-Play est-il gratuit ?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Oui, entièrement gratuit : pas de version payante, pas de publicité, pas de compte à créer. Un don volontaire via Liberapay permet de soutenir l'hébergement et le développement."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Où vont mes textes et mes photos ?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Nulle part : tout le traitement (reconnaissance de texte, lecture vocale, bibliothèque) se fait dans le navigateur. Aucune donnée ne quitte l'appareil, aucun cookie tiers, aucune statistique d'usage."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Dys-Play fonctionne-t-il sans connexion Internet ?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Oui. Après la première visite, l'application fonctionne hors ligne. Le scan de documents hors-ligne s'active dans les réglages (téléchargement unique d'environ 4 Mo)."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "À qui s'adresse Dys-Play ?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Aux personnes dyslexiques, dysorthographiques et TDA/H — enfants, adolescents et adultes — ainsi qu'aux enseignants, orthophonistes et parents qui les accompagnent."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Quelle police choisir pour la dyslexie ?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Luciole est recommandée (conçue par le CTRDV avec une démarche académique française). Selon la recherche, c'est surtout l'espacement des lettres et des mots qui améliore la lecture, plus que la forme des lettres."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Comment installer Dys-Play comme une application ?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sur Android : menu Chrome puis « Ajouter à l'écran d'accueil ». Sur iPhone/iPad : bouton Partager puis « Sur l'écran d'accueil ». Sur ordinateur : icône d'installation dans la barre d'adresse."
+            }
+          }
+        ]
       }
     </script>
     <link rel="manifest" href="manifest.json" />
@@ -282,7 +338,7 @@
               "
             >
               Conçu pour les personnes dyslexiques, dysorthographiques et TDA/H.
-              Choisissez votre langue préférée.
+              Choisis ta langue préférée.
             </p>
 
             <div
@@ -389,7 +445,7 @@
                 font-size: 1rem;
               "
             >
-              Choisissez votre police et votre thème
+              Choisis ta police et ton thème
             </p>
 
             <!-- Font Selection -->
@@ -563,7 +619,7 @@
                 font-size: 1rem;
               "
             >
-              Ajustez selon vos préférences
+              Ajuste selon tes préférences
             </p>
 
             <p
@@ -710,7 +766,7 @@
               ></path>
               <circle cx="12" cy="13" r="4"></circle>
             </svg>
-            Acquisition
+            Ajouter un texte
           </h2>
           <div class="card-actions">
             <button
@@ -829,9 +885,9 @@
             id="focus-toggle"
             class="btn-toggle"
             aria-pressed="false"
-            aria-label="Activer le mode Focus"
+            aria-label="Activer la règle de lecture"
           >
-            <span class="toggle-text">Mode Focus</span>
+            <span class="toggle-text">Règle de lecture</span>
             <span class="toggle-status"></span>
           </button>
           <fieldset
@@ -943,7 +999,7 @@
         <label for="text-input" class="sr-only">Saisir du texte à lire</label>
         <textarea
           id="text-input"
-          placeholder="Ou saisissez votre texte ici..."
+          placeholder="Ou saisis ton texte ici..."
           rows="3"
           aria-label="Zone de saisie de texte"
         ></textarea>
@@ -1042,19 +1098,60 @@
             </a>
           </li>
           <li>
-            <a href="#" id="nav-help" class="nav-link">
+            <a href="aide.html" id="nav-help" class="nav-link">
               <svg
                 class="icon"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
+                aria-hidden="true"
               >
                 <circle cx="12" cy="12" r="10"></circle>
                 <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
                 <line x1="12" y1="17" x2="12.01" y2="17"></line>
               </svg>
               Aide
+            </a>
+          </li>
+          <li>
+            <a href="a-propos.html" id="nav-about" class="nav-link">
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              À propos
+            </a>
+          </li>
+          <li>
+            <a
+              href="https://liberapay.com/dys-play"
+              id="nav-don"
+              class="nav-link"
+              rel="noopener noreferrer external"
+            >
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path
+                  d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                ></path>
+              </svg>
+              Soutenir Dys-Play
+              <span class="sr-only">(don volontaire, lien externe)</span>
             </a>
           </li>
           <li>
@@ -1462,8 +1559,7 @@
         </div>
         <div class="modal-body">
           <p class="import-intro">
-            Trois façons d'ajouter votre texte. Choisissez la plus simple pour
-            vous.
+            Trois façons d'ajouter ton texte. Choisis la plus simple pour toi.
           </p>
           <div class="import-options">
             <button
@@ -1952,7 +2048,7 @@
           <section class="settings-section">
             <h3>Type d'image</h3>
             <p class="settings-hint">
-              Choisissez le profil qui correspond le mieux à votre image. Les
+              Choisis le profil qui correspond le mieux à ton image. Les
               paramètres avancés s'ajustent automatiquement.
             </p>
             <div class="setting-row">
@@ -2216,7 +2312,16 @@
           </p>
 
           <h3>Licence</h3>
-          <p>Code source disponible sous licence open-source.</p>
+          <p>
+            Dys-Play est un logiciel libre publié sous licence
+            <strong>GNU AGPL-3.0</strong>. Code source :
+            <a
+              href="https://github.com/remiforall/dys-play"
+              rel="noopener noreferrer external"
+              >github.com/remiforall/dys-play</a
+            >. Crédits des composants tiers sur la page
+            <a href="a-propos.html">À propos</a>.
+          </p>
         </div>
       </div>
     </div>
@@ -2254,10 +2359,10 @@
         </div>
         <div class="modal-body">
           <p class="feedback-intro">
-            Dys-Play est en préversion publique. Vos retours aident à améliorer
+            Dys-Play est en préversion publique. Tes retours aident à améliorer
             l'outil pour toutes les personnes dys. Aucune donnée n'est envoyée à
-            un serveur tiers : votre signalement s'ouvre dans votre client
-            e-mail ou sur GitHub, selon le canal que vous choisissez.
+            un serveur tiers : ton signalement s'ouvre dans ton client e-mail ou
+            sur GitHub, selon le canal que tu choisis.
           </p>
 
           <div class="setting-row">
@@ -2277,10 +2382,10 @@
               rows="6"
               minlength="10"
               required
-              placeholder="Décrivez le problème rencontré, les étapes pour le reproduire, ou votre idée d'amélioration…"
+              placeholder="Décris le problème rencontré, les étapes pour le reproduire, ou ton idée d'amélioration…"
             ></textarea>
             <small id="feedback-description-hint" class="feedback-hint">
-              Minimum 10 caractères. Soyez aussi précis·e que possible.
+              Minimum 10 caractères. Sois aussi précis·e que possible.
             </small>
           </div>
 
@@ -2345,8 +2450,8 @@
             </div>
             <small class="feedback-hint">
               La capture est traitée localement. À l'envoi par e-mail elle sera
-              téléchargée pour que vous la joigniez ; pour GitHub elle sera
-              copiée dans le presse-papiers à coller dans l'issue.
+              téléchargée pour que tu la joignes ; pour GitHub elle sera copiée
+              dans le presse-papiers à coller dans l'issue.
             </small>
           </div>
 
@@ -2366,7 +2471,7 @@
             </ul>
             <p class="feedback-hint">
               Ces informations aident à reproduire le problème. Rien d'autre
-              n'est transmis — vos textes et documents restent chez vous.
+              n'est transmis — tes textes et documents restent chez toi.
             </p>
           </details>
         </div>

@@ -2,28 +2,30 @@
 
 > Application web progressive gratuite d'aide à la lecture pour personnes dyslexiques, dysorthographiques et TDA/H. Fonctionne 100 % en local dans le navigateur. Zéro collecte de données, zéro CDN externe, zéro tracker.
 
-Dys-Play est un outil d'assistance à la lecture open et souverain, édité par Posthack. Il s'appuie sur des recherches scientifiques sur la lecture adaptée (Labo Aix-Marseille sur l'espacement, CHI 2023 sur la règle de lecture numérique) et cible à la fois les personnes concernées et leurs accompagnants (orthophonistes, enseignants, parents).
+Dys-Play est un outil d'assistance à la lecture libre (AGPL-3.0) et souverain, édité par Posthack. Il s'appuie sur des recherches scientifiques sur la lecture adaptée (Labo Aix-Marseille sur l'espacement, CHI 2023 sur la règle de lecture numérique) et cible à la fois les personnes concernées et leurs accompagnants (orthophonistes, enseignants, parents).
 
 ## Application
 
 - [Dys-Play (app)](https://dys-play.net/) : interface de lecture adaptée — OCR, synthèse vocale, personnalisation visuelle, bibliothèque locale
+- [Aide et premiers pas](https://dys-play.net/aide.html) : usages concrets, guide par fonctionnalité, FAQ
+- [À propos](https://dys-play.net/a-propos.html) : mission, sources scientifiques, licences des composants
 
 ## Fonctionnalités
 
 - Reconnaissance de texte par photo (OCR Tesseract.js, traitement local)
 - Import de fichiers PDF et texte (PDF.js)
 - Collage de texte depuis le presse-papiers
-- Police OpenDyslexic et Comic Neue (optimisées dyslexie)
+- Polices au choix : Luciole (recommandée, CTRDV), Atkinson Hyperlegible, Comic Neue, OpenDyslexic (expérimentale)
 - Syllabation colorée pour faciliter le décodage
 - Mode zèbre (lignes alternées)
 - Règle de lecture (focus mask, 4 modes)
-- Overlay couleur (syndrome d'Irlen, stress visuel)
+- Overlay couleur (confort visuel personnalisé, stress visuel)
 - Synthèse vocale avec suivi mot par mot
 - Espacement des lettres, mots et interlignes réglable
 - 4 thèmes de couleurs (clair, crème, sépia, sombre)
 - Internationalisation FR, EN, AR (avec support RTL)
 - Bibliothèque locale (IndexedDB)
-- Fonctionne hors-ligne (PWA)
+- Fonctionne hors-ligne (PWA), scan hors-ligne activable dans les réglages
 - Zéro cookie, zéro tracker, zéro CDN externe
 
 ## Public cible
@@ -31,13 +33,13 @@ Dys-Play est un outil d'assistance à la lecture open et souverain, édité par 
 - Personnes dyslexiques (4 types : phonologique, de surface, mixte, visuo-attentionnelle)
 - Personnes dysorthographiques, dysgraphiques, dyspraxiques
 - Personnes avec TDA/H
-- Personnes avec syndrome d'Irlen / stress visuel
+- Personnes en recherche de confort visuel personnalisé (stress visuel)
 - Accompagnants : enseignants, orthophonistes, parents
 
 ## Technique
 
 - HTML/CSS/JS vanilla, zéro framework, zéro dépendance npm
-- Tesseract.js v5 (OCR local, WASM)
+- Tesseract.js v7 ESM (OCR local, WASM SIMD) + pipeline de prétraitement maison (Sauvola, deskew)
 - PDF.js v3 (extraction texte)
 - Service Worker pour fonctionnement hors-ligne
 - Données 100 % locales (localStorage + IndexedDB)
@@ -52,9 +54,10 @@ Dys-Play est un outil d'assistance à la lecture open et souverain, édité par 
 
 - Zorzi et al. (2012), Aix-Marseille : l'espacement des lettres et des mots améliore la vitesse de lecture des enfants dyslexiques de ~20 %
 - CHI 2023 : la règle de lecture numérique apporte des gains majeurs pour la dyslexie et le TDAH
-- Méta-analyses : les polices « dyslexie » (OpenDyslexic, Dyslexie) apportent un bénéfice via l'espacement qu'elles imposent, pas la forme des lettres
+- Méta-analyses (Wery & Diliberto 2017, Kuster et al. 2018) : les polices « dyslexie » (OpenDyslexic, Dyslexie) apportent un bénéfice via l'espacement qu'elles imposent, pas la forme des lettres
 
 ## Optional
 
-- [Code source](https://github.com/remiforall/dys-play) : licence libre
-- Licence et politique de confidentialité : voir la page « Mentions légales » dans l'application (aucune donnée ne quitte le navigateur)
+- [Code source](https://github.com/remiforall/dys-play) : licence GNU AGPL-3.0
+- [Soutenir le projet](https://liberapay.com/dys-play) : don volontaire via Liberapay (l'outil reste gratuit)
+- Licence et politique de confidentialité : voir les pages « À propos » et « Mentions légales » (aucune donnée ne quitte le navigateur)

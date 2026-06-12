@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=5.0"
+    />
+    <meta name="robots" content="index, follow" />
+    <title>Aide et premiers pas — Dys-Play</title>
+    <meta
+      name="description"
+      content="Comment utiliser Dys-Play : scanner un document papier, lire un PDF, écouter un texte, utiliser la règle de lecture. Guide pas à pas et questions fréquentes."
+    />
+    <link rel="icon" type="image/svg+xml" href="img/favicon.svg" />
+    <link rel="stylesheet" href="fonts/fonts.css?v=20" />
+    <link rel="stylesheet" href="styles.css?v=20" />
+    <script>
+      // Restaure le thème choisi dans l'app avant le premier paint
+      try {
+        var t = JSON.parse(localStorage.getItem("dysplay_theme"));
+        if (
+          ["light", "cream", "sepia", "dark", "dark-blue"].indexOf(t) !== -1
+        ) {
+          document.documentElement.dataset.theme = t;
+        }
+      } catch (e) {}
+    </script>
+    <style>
+      main.a11y-page {
+        max-width: 64rem;
+        margin: 0 auto;
+        padding: var(--space-xl) var(--space-lg);
+        line-height: var(--line-height);
+      }
+      main.a11y-page h1 {
+        margin-bottom: var(--space-lg);
+      }
+      main.a11y-page h2 {
+        margin-top: var(--space-2xl);
+        margin-bottom: var(--space-md);
+        border-bottom: 2px solid var(--color-border);
+        padding-bottom: var(--space-sm);
+      }
+      main.a11y-page h3 {
+        margin-top: var(--space-xl);
+        margin-bottom: var(--space-sm);
+      }
+      main.a11y-page ul,
+      main.a11y-page ol {
+        padding-left: 1.5em;
+        margin-bottom: var(--space-md);
+      }
+      main.a11y-page li {
+        margin-bottom: var(--space-xs);
+      }
+      main.a11y-page p {
+        margin-bottom: var(--space-md);
+      }
+      main.a11y-page a {
+        color: var(--color-primary);
+        text-decoration: underline;
+      }
+      main.a11y-page .back-link {
+        display: inline-block;
+        margin-bottom: var(--space-lg);
+      }
+      .usage-card {
+        padding: var(--space-md) var(--space-lg);
+        background: var(--color-bg-secondary);
+        border: 2px solid var(--color-border);
+        border-radius: var(--radius-sm);
+        margin-bottom: var(--space-md);
+      }
+      .usage-card h3 {
+        margin-top: 0;
+      }
+      .faq-list dt {
+        font-weight: 700;
+        margin-top: var(--space-lg);
+        margin-bottom: var(--space-xs);
+      }
+      .faq-list dd {
+        margin-left: 0;
+        margin-bottom: var(--space-md);
+      }
+    </style>
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">Aller au contenu principal</a>
+
+    <main id="main-content" class="a11y-page" role="main">
+      <a href="/" class="back-link">← Retour à Dys-Play</a>
+
+      <h1>Aide et premiers pas</h1>
+
+      <p>
+        Dys-Play transforme n'importe quel texte en une lecture adaptée à tes
+        besoins. Cette page explique à qui s'adresse l'outil, ce que tu peux
+        faire avec, et comment t'y prendre — pas à pas.
+      </p>
+
+      <h2>Pour qui ?</h2>
+
+      <ul>
+        <li>
+          <strong>Tu es dyslexique</strong> — quel que soit ton profil de
+          lecture : confusion de sons, de lettres proches, fatigue visuelle,
+          lenteur. Les réglages se combinent pour s'adapter à toi.
+        </li>
+        <li>
+          <strong>Tu es dysorthographique ou dysgraphique</strong> — écouter un
+          texte en le suivant des yeux aide à fixer l'orthographe des mots.
+        </li>
+        <li>
+          <strong>Tu as un TDA/H</strong> — la règle de lecture et le masque de
+          concentration réduisent les distractions autour de la ligne que tu
+          lis.
+        </li>
+        <li>
+          <strong>Les lettres semblent bouger ou éblouir</strong> — les filtres
+          de couleur et les thèmes doux peuvent apporter un confort visuel
+          personnalisé.
+        </li>
+        <li>
+          <strong>Tu accompagnes un lecteur</strong> — enseignant,
+          orthophoniste, parent : Dys-Play permet de préparer un texte adapté en
+          quelques secondes, sans créer de compte ni installer quoi que ce soit.
+        </li>
+      </ul>
+
+      <h2>Que peux-tu faire avec Dys-Play ?</h2>
+
+      <div class="usage-card">
+        <h3>📷 Lire un document papier</h3>
+        <p>
+          Une feuille d'exercices, une page de livre, un courrier : prends-le en
+          photo et Dys-Play en extrait le texte, directement sur ton appareil.
+          Touche <strong>« Scanner ou importer »</strong>, puis
+          <strong>« Photographier »</strong>. Tu peux sélectionner la zone qui
+          t'intéresse en touchant deux coins, puis corriger le texte reconnu
+          avant la lecture.
+        </p>
+      </div>
+
+      <div class="usage-card">
+        <h3>📄 Lire un PDF</h3>
+        <p>
+          Touche <strong>« Scanner ou importer »</strong> puis
+          <strong>« Choisir un fichier »</strong> et sélectionne ton PDF. Le
+          texte est extrait et affiché avec tes réglages. Si le PDF est un scan
+          (une image), Dys-Play bascule automatiquement sur la reconnaissance de
+          texte.
+        </p>
+      </div>
+
+      <div class="usage-card">
+        <h3>✍️ Coller ou taper un texte</h3>
+        <p>
+          Copie un texte depuis n'importe où (site web, e-mail, document) et
+          colle-le dans la zone de saisie, puis touche
+          <strong>« Lire avec mes réglages »</strong>.
+        </p>
+      </div>
+
+      <div class="usage-card">
+        <h3>🔊 Écouter en lisant</h3>
+        <p>
+          La lecture à voix haute surligne chaque mot au moment où il est
+          prononcé. Lire et écouter en même temps (lecture « bimodale »)
+          améliore la compréhension. Tu peux ralentir ou accélérer la voix (de
+          0,5× à 2×) dans la carte <strong>Audio</strong>.
+        </p>
+      </div>
+
+      <div class="usage-card">
+        <h3>📏 Te concentrer avec la règle de lecture</h3>
+        <p>
+          La règle de lecture guide tes yeux ligne par ligne, comme une règle
+          posée sous la ligne sur du papier. Quatre modes au choix : ligne,
+          fenêtre, masque ou spot. Des travaux de recherche (CHI 2023) montrent
+          des gains réels pour les lecteurs dyslexiques et TDA/H.
+        </p>
+      </div>
+
+      <div class="usage-card">
+        <h3>🎨 Adapter l'affichage à tes besoins</h3>
+        <p>
+          Dans les <strong>réglages</strong> (icône en haut à droite) : police
+          (Luciole est recommandée), taille, espacement des lettres et des mots,
+          hauteur de ligne, syllabes colorées, mode zèbre, thèmes et filtres de
+          couleur. L'espacement élargi est le réglage le plus efficace selon la
+          recherche — commence par lui.
+        </p>
+      </div>
+
+      <div class="usage-card">
+        <h3>📚 Retrouver tes textes</h3>
+        <p>
+          Chaque texte traité est gardé automatiquement dans ta
+          <strong>bibliothèque</strong> (menu ☰), stockée uniquement sur ton
+          appareil. Tu peux reprendre ta lecture plus tard, même sans connexion.
+        </p>
+      </div>
+
+      <h2>Trois conseils pour bien démarrer</h2>
+
+      <ol>
+        <li>
+          <strong>Prends 2 minutes pour les réglages.</strong> Police, taille,
+          espacement : c'est le cœur de l'outil. Le bon réglage est celui qui TE
+          convient — il n'y a pas de réponse universelle.
+        </li>
+        <li>
+          <strong>Essaie la lecture audio sur un vrai texte</strong> (un devoir,
+          un article), pas sur un texte de test : c'est là qu'on sent la
+          différence.
+        </li>
+        <li>
+          <strong>Installe l'application</strong> (voir la question ci-dessous)
+          pour l'avoir sous la main, même sans connexion.
+        </li>
+      </ol>
+
+      <h2>Questions fréquentes</h2>
+
+      <dl class="faq-list">
+        <dt>C'est vraiment gratuit ?</dt>
+        <dd>
+          Oui, entièrement. Pas de version payante, pas de publicité, pas de
+          compte à créer. Si l'outil t'aide, tu peux
+          <a href="a-propos.html#main-content">faire un don</a> pour soutenir
+          son développement et son hébergement — mais rien n'est jamais bloqué.
+        </dd>
+
+        <dt>Où vont mes textes et mes photos ?</dt>
+        <dd>
+          Nulle part : ils ne quittent jamais ton appareil. La reconnaissance de
+          texte, la lecture vocale et la bibliothèque fonctionnent entièrement
+          dans ton navigateur. Dys-Play n'a aucun serveur qui reçoit tes
+          données, aucun cookie publicitaire, aucune statistique d'usage.
+        </dd>
+
+        <dt>Est-ce que ça marche sans connexion Internet ?</dt>
+        <dd>
+          Oui. Après ta première visite, l'application fonctionne hors ligne.
+          Pour que le <strong>scan de documents</strong> marche aussi sans
+          connexion, active « Scan hors-ligne » dans les réglages (un
+          téléchargement unique d'environ 4 Mo) — ou lance simplement un premier
+          scan pendant que tu es connecté.
+        </dd>
+
+        <dt>Comment installer Dys-Play comme une application ?</dt>
+        <dd>
+          Sur Android (Chrome) : menu ⋮ puis « Ajouter à l'écran d'accueil ».
+          Sur iPhone/iPad (Safari) : bouton Partager puis « Sur l'écran
+          d'accueil ». Sur ordinateur (Chrome, Edge) : icône d'installation dans
+          la barre d'adresse. L'application s'ouvre alors comme une app normale,
+          sans navigateur autour.
+        </dd>
+
+        <dt>Quelle police choisir ?</dt>
+        <dd>
+          <strong>Luciole</strong> est recommandée : elle a été conçue en France
+          par le CTRDV avec une démarche académique. Atkinson Hyperlegible
+          maximise la différence entre lettres proches (b/d, i/l). OpenDyslexic
+          est proposée à titre expérimental : les études n'ont pas montré de
+          bénéfice lié à la forme de ses lettres. Dans tous les cas, c'est
+          <em>l'espacement</em> qui apporte le plus — essaie plusieurs
+          combinaisons.
+        </dd>
+
+        <dt>À quoi servent les filtres de couleur ?</dt>
+        <dd>
+          Certains lecteurs trouvent le texte plus confortable sur un fond
+          teinté (moins d'éblouissement, impression de stabilité). C'est un
+          confort visuel personnalisé : aucun effet thérapeutique n'est démontré
+          scientifiquement, mais si une teinte te soulage, elle est là pour ça.
+        </dd>
+
+        <dt>La reconnaissance de texte fait des erreurs, c'est normal ?</dt>
+        <dd>
+          Oui, surtout sur les photos floues, mal éclairées ou les écritures
+          manuscrites. Pour de meilleurs résultats : pose le document à plat,
+          éclaire-le bien, cadre droit, et sélectionne uniquement la zone de
+          texte. Tu peux toujours corriger le texte reconnu avant de lancer la
+          lecture.
+        </dd>
+
+        <dt>Quelles langues sont disponibles ?</dt>
+        <dd>
+          L'interface existe en français, anglais et arabe (avec affichage de
+          droite à gauche). La reconnaissance de texte fonctionne pour ces trois
+          langues. La lecture à voix haute dépend des voix installées sur ton
+          appareil.
+        </dd>
+
+        <dt>Est-ce que Dys-Play remplace une prise en charge ?</dt>
+        <dd>
+          Non. Dys-Play est un outil de confort et de compensation au quotidien.
+          Il ne remplace ni un diagnostic, ni un suivi orthophonique. Si tu
+          suspectes un trouble du langage écrit, parles-en à un professionnel de
+          santé.
+        </dd>
+
+        <dt>Mes réglages et ma bibliothèque peuvent-ils disparaître ?</dt>
+        <dd>
+          Tout est stocké dans ton navigateur. Si tu effaces les données de
+          navigation (« vider le cache et les données de sites »), tes réglages
+          et ta bibliothèque seront effacés aussi. L'installation en application
+          (voir plus haut) rend ce stockage plus durable.
+        </dd>
+
+        <dt>Sur quels appareils ça fonctionne ?</dt>
+        <dd>
+          Sur tout navigateur récent : Chrome, Firefox, Safari, Edge — sur
+          téléphone, tablette et ordinateur. Aucune installation n'est
+          obligatoire.
+        </dd>
+
+        <dt>J'ai trouvé un problème ou j'ai une idée, comment le signaler ?</dt>
+        <dd>
+          Utilise le bouton <strong>« Bêta — donner mon avis »</strong> dans
+          l'application, ou écris à
+          <a href="mailto:remi@posthack.com">remi@posthack.com</a>. Chaque
+          retour compte : l'outil évolue grâce à ses utilisateurs.
+        </dd>
+      </dl>
+
+      <h2>Pour aller plus loin</h2>
+
+      <ul>
+        <li>
+          <a href="a-propos.html">À propos de Dys-Play</a> — mission, sources
+          scientifiques, licences
+        </li>
+        <li>
+          <a href="accessibilite.html">Déclaration d'accessibilité</a> (RGAA
+          4.1.2)
+        </li>
+      </ul>
+    </main>
+  </body>
+</html>
