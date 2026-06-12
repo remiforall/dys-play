@@ -3087,6 +3087,8 @@ function initEventListeners() {
     libraryList.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
+        // Empêche le raccourci global Espace (play/pause) de se déclencher aussi
+        e.stopPropagation();
         activateLibraryItem(e);
       }
     });
