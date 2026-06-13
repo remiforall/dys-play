@@ -14,6 +14,7 @@ const PRECACHE_URLS = [
   "./accessibilite.html",
   "./aide.html",
   "./a-propos.html",
+  "./theme-init.js",
   "./styles.css",
   "./app.js",
   "./manifest.json",

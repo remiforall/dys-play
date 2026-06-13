@@ -15,17 +15,7 @@
     <link rel="icon" type="image/svg+xml" href="img/favicon.svg" />
     <link rel="stylesheet" href="fonts/fonts.css?v=20" />
     <link rel="stylesheet" href="styles.css?v=20" />
-    <script>
-      // Restaure le thème choisi dans l'app avant le premier paint
-      try {
-        var t = JSON.parse(localStorage.getItem("dysplay_theme"));
-        if (
-          ["light", "cream", "sepia", "dark", "dark-blue"].indexOf(t) !== -1
-        ) {
-          document.documentElement.dataset.theme = t;
-        }
-      } catch (e) {}
-    </script>
+    <script src="theme-init.js?v=20"></script>
     <style>
       main.a11y-page {
         max-width: 64rem;
