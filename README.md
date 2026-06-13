@@ -7,7 +7,7 @@ Dys-Play transforme n'importe quel texte pour faciliter la lecture : police adap
 - **Application** : https://dys-play.net
 - **Aide et premiers pas** : https://dys-play.net/aide.html
 - **À propos (mission, sources, licences)** : https://dys-play.net/a-propos.html
-- **Soutenir le projet** : https://liberapay.com/dys-play
+- **Soutenir le projet** : https://liberapay.com/PostHack/donate
 
 ## Fonctionnalités
 
