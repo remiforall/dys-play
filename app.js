@@ -3435,6 +3435,10 @@ async function loadSettings() {
     Storage.set("isFirstTime", true);
     Storage.remove("theme");
     Storage.remove("font");
+    // Nettoie le paramètre pour qu'un rechargement ne relance pas l'onboarding
+    if (window.history && window.history.replaceState) {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
   }
 
   // Vérifier si première visite
@@ -3858,7 +3862,7 @@ async function initOcrOffline() {
 // ============================================
 
 function showOnboarding() {
-  const modal = document.getElementById("onboarding-modal");
+  const modal = document.getElementById("onboarding-container");
 
   if (modal) {
     modal.removeAttribute("hidden");
@@ -3887,7 +3891,7 @@ function showOnboarding() {
 }
 
 function hideOnboarding() {
-  const modal = document.getElementById("onboarding-modal");
+  const modal = document.getElementById("onboarding-container");
   if (modal) {
     modal.setAttribute("hidden", "");
     modal.removeAttribute("aria-modal");
@@ -3916,7 +3920,7 @@ function completeOnboarding() {
   }
 
   // Récupérer la sélection police
-  const fontSelect = document.getElementById("onboarding-font");
+  const fontSelect = document.getElementById("onboarding-page-2-font");
   if (fontSelect && fontSelect.value) {
     typography.setFont(fontSelect.value);
   }
