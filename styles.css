@@ -744,7 +744,7 @@ html[data-ruler-mode="line"] .ruler-guide {
   min-width: 0;
 }
 
-/* Overlay couleur - Syndrome d'Irlen / stress visuel */
+/* Overlay couleur - confort visuel personnalisé / stress visuel */
 .color-overlay {
   position: absolute;
   top: 0;
