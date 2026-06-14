@@ -10,7 +10,7 @@
 
 // Version applicative — DOIT rester alignée avec CACHE_VERSION de sw.js et les
 // query ?v=N des assets. Affichée dans le menu (≪ Version N ≫) pour le support.
-const APP_VERSION = 42;
+const APP_VERSION = 43;
 
 const CONFIG = {
   DB_NAME: "DysPlayDB",
@@ -4284,7 +4284,6 @@ function completeOnboarding() {
 
 function navigateToPage(pageName) {
   state.currentPage = pageName;
-  const reader = document.getElementById("reader-area");
   const dashboard = document.querySelector(".dashboard");
   const inputSection = document.querySelector(".input-section");
 
@@ -4292,8 +4291,15 @@ function navigateToPage(pageName) {
     case "acquisition":
       // Afficher dashboard avec scanner/importer
       if (dashboard) dashboard.style.display = "grid";
-      if (reader)
-        reader.innerHTML = `
+      // IMPORTANT : vider le CONTENU de #text-content, sans le supprimer.
+      // Avant, on écrasait reader.innerHTML → #text-content (mémorisé par
+      // renderEngine) ET les overlays (masque/règle) disparaissaient, et tout
+      // rendu ultérieur visait un nœud détaché (texte jamais affiché).
+      {
+        const tc = document.getElementById("text-content");
+        if (tc) {
+          tc.classList.remove("zebra-mode");
+          tc.innerHTML = `
                 <div class="empty-state">
                     <svg class="icon-huge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
                         <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
@@ -4303,6 +4309,8 @@ function navigateToPage(pageName) {
                     <p style="margin: 0; color: var(--color-text-secondary);">Choisis une source pour commencer</p>
                 </div>
             `;
+        }
+      }
       if (inputSection) inputSection.style.display = "block";
       break;
 
