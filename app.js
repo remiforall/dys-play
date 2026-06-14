@@ -10,7 +10,7 @@
 
 // Version applicative — DOIT rester alignée avec CACHE_VERSION de sw.js et les
 // query ?v=N des assets. Affichée dans le menu (≪ Version N ≫) pour le support.
-const APP_VERSION = 27;
+const APP_VERSION = 28;
 
 const CONFIG = {
   DB_NAME: "DysPlayDB",
@@ -605,7 +605,18 @@ class OCREngine {
     this.abortController = new AbortController();
 
     const { enableValidation = CONFIG.OCR.ENABLE_VALIDATION } = options;
-    const lang = state.currentLang || "fra";
+    // L'UI utilise les codes i18n 2 lettres (fr/en/ar) ; Tesseract attend les
+    // codes traineddata 3 lettres (fra/eng/ara). On mappe (et on accepte déjà
+    // un code 3 lettres par sécurité), défaut fra.
+    const OCR_LANG_MAP = {
+      fr: "fra",
+      en: "eng",
+      ar: "ara",
+      fra: "fra",
+      eng: "eng",
+      ara: "ara",
+    };
+    const lang = OCR_LANG_MAP[state.currentLang] || "fra";
 
     showLoader(
       true,
