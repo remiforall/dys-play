@@ -68,7 +68,13 @@ const DEFAULT_OPTIONS = Object.freeze({
   grayscale: true,
   stretchContrast: true,
   deskew: true,
-  binarize: true,
+  // Binarisation Sauvola DÉSACTIVÉE par défaut. Mesures empiriques (banc de
+  // test sur photos réelles, 2026-06-14) : la binarisation DÉGRADE fortement
+  // le moteur LSTM de Tesseract v5+ (page propre 88 % → 48 %, magazine
+  // 71 % → 44 %). Le LSTM est entraîné sur du gris ; le meilleur résultat est
+  // niveaux de gris + étirement de contraste, sans binarisation. Reste
+  // activable (profil « document dégradé ») pour les cas très contrastés.
+  binarize: false,
   sauvolaWindow: 25,
   sauvolaK: 0.34,
   outputFormat: "image/png",

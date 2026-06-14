@@ -10,7 +10,7 @@
 
 // Version applicative — DOIT rester alignée avec CACHE_VERSION de sw.js et les
 // query ?v=N des assets. Affichée dans le menu (≪ Version N ≫) pour le support.
-const APP_VERSION = 35;
+const APP_VERSION = 36;
 
 const CONFIG = {
   DB_NAME: "DysPlayDB",
@@ -772,7 +772,9 @@ function _mapPreprocessOptions(opts = {}) {
     // Le deskew (projections multi-angles + rotation = canvas en plus) est la
     // 2e étape la plus lourde : on le coupe sur les appareils contraints.
     deskew: opts.detectOrientation !== false && deviceMax >= 1700,
-    binarize: opts.binarize !== false,
+    // Binarisation OFF par défaut (mesuré : dégrade le LSTM de Tesseract).
+    // Activée seulement si un profil la demande explicitement.
+    binarize: opts.binarize === true,
     sauvolaK: Number(opts.sauvolaK) || 0.34,
     sauvolaWindow: Number(opts.sauvolaWindow) || 25,
   };
@@ -782,26 +784,25 @@ function _mapPreprocessOptions(opts = {}) {
 // L'utilisateur choisit un profil ou tune en mode « custom ».
 const OCR_PRESETS_V2 = Object.freeze({
   auto: {
-    sauvolaK: 0.34,
-    sauvolaWindow: 25,
+    // Profil universel (mesuré meilleur sur photos réelles) : niveaux de gris
+    // + étirement de contraste, SANS binarisation. Marche sur documents
+    // propres ET fonds colorés (boîtes de jeux, livres enfants).
     maxDimension: 2000,
     improveContrast: true,
-    binarize: true,
+    binarize: false,
     detectOrientation: true,
   },
   scan: {
-    // Scan haute résolution, déjà net : Sauvola plus doux, grande fenêtre,
-    // taille max plus grande (qualité > mémoire).
-    sauvolaK: 0.25,
-    sauvolaWindow: 35,
+    // Scan haute résolution, déjà net : grande taille max (qualité > mémoire),
+    // pas de stretch (déjà bon contraste), pas de binarisation.
     maxDimension: 2400,
     improveContrast: false,
-    binarize: true,
+    binarize: false,
     detectOrientation: false,
   },
   "document-degrade": {
-    // Papier jauni, photo sombre, contraste faible :
-    // stretch actif, Sauvola plus sévère, grande fenêtre pour tolérer le bruit.
+    // Papier jauni, photo très sombre/délavée, contraste très faible : SEUL
+    // cas où la binarisation Sauvola peut aider à isoler le texte du fond.
     sauvolaK: 0.4,
     sauvolaWindow: 35,
     maxDimension: 2000,
