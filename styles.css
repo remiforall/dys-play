@@ -888,6 +888,7 @@ html[data-ruler-mode="line"] .ruler-guide {
   position: fixed;
   top: 0;
   height: 100vh;
+  height: 100dvh; /* viewport réel mobile (barres navigateur) — repli 100vh */
   width: 100%;
   max-width: 100%;
   background: var(--color-bg);
@@ -2031,6 +2032,7 @@ input[type="range"]:focus::-moz-range-thumb {
   left: 0;
   width: 100%;
   height: 100vh;
+  height: 100dvh; /* viewport réel mobile — sinon le footer « Suivant » passe sous l'écran */
   background: var(--color-bg);
   display: flex;
   flex-direction: column;
@@ -2046,6 +2048,7 @@ input[type="range"]:focus::-moz-range-thumb {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh; /* viewport réel mobile — footer toujours visible */
   position: absolute;
   top: 0;
   left: 0;
