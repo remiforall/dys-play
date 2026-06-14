@@ -8,6 +8,10 @@
 // 1. CONSTANTES ET CONFIGURATION
 // ============================================
 
+// Version applicative — DOIT rester alignée avec CACHE_VERSION de sw.js et les
+// query ?v=N des assets. Affichée dans le menu (≪ Version N ≫) pour le support.
+const APP_VERSION = 25;
+
 const CONFIG = {
   DB_NAME: "DysPlayDB",
   DB_VERSION: 1,
@@ -3769,7 +3773,17 @@ async function registerServiceWorker() {
     try {
       const registration = await navigator.serviceWorker.register("./sw.js");
 
-      // Vérifier les mises à jour
+      // Mise à jour automatique : quand un nouveau Service Worker prend le
+      // contrôle (skipWaiting + clients.claim côté sw.js), on recharge une
+      // fois pour servir le code frais. Sans ça, l'utilisateur reste bloqué
+      // sur l'ancienne version cachée pendant 2-3 rechargements manuels.
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => {
+        if (refreshing) return;
+        refreshing = true;
+        window.location.reload();
+      });
+
       registration.addEventListener("updatefound", () => {
         const newWorker = registration.installing;
         newWorker.addEventListener("statechange", () => {
@@ -3777,7 +3791,7 @@ async function registerServiceWorker() {
             newWorker.state === "installed" &&
             navigator.serviceWorker.controller
           ) {
-            showToast("Nouvelle version disponible!", "info");
+            showToast("Mise à jour en cours…", "info");
           }
         });
       });
@@ -3985,6 +3999,10 @@ async function init() {
   } catch (error) {
     console.error("Erreur initEventListeners:", error);
   }
+
+  // Numéro de version visible dans le menu (support / diagnostic cache)
+  const versionEl = document.getElementById("app-version");
+  if (versionEl) versionEl.textContent = `Version ${APP_VERSION}`;
 
   try {
     await db.init();
