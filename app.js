@@ -10,7 +10,7 @@
 
 // Version applicative — DOIT rester alignée avec CACHE_VERSION de sw.js et les
 // query ?v=N des assets. Affichée dans le menu (≪ Version N ≫) pour le support.
-const APP_VERSION = 37;
+const APP_VERSION = 38;
 
 const CONFIG = {
   DB_NAME: "DysPlayDB",
@@ -1606,6 +1606,7 @@ function displayOCRResults(text, confidence, validation = null) {
   // Afficher modal
   modal.hidden = false;
   modal.setAttribute("aria-modal", "true");
+  armBackGuard();
 }
 
 /**
@@ -1802,6 +1803,7 @@ function openZoneSelectorModal(imageElement) {
   if (modal) {
     modal.hidden = false;
     modal.setAttribute("aria-modal", "true");
+    armBackGuard();
     initZoneSelector(imageElement);
   }
 }
@@ -1814,6 +1816,7 @@ function openOCRSettingsModal() {
   if (!modal) return;
   modal.hidden = false;
   modal.setAttribute("aria-modal", "true");
+  armBackGuard();
   _syncOCRSettingsUI();
 }
 
@@ -1995,6 +1998,7 @@ class DrawerManager {
     drawer.classList.add("open");
     drawer.hidden = false;
     this.activeDrawer = drawerId;
+    armBackGuard(); // le « retour » navigateur fermera ce drawer
 
     const trigger = document.querySelector(`[aria-controls="${drawerId}"]`);
     if (trigger) trigger.setAttribute("aria-expanded", "true");
@@ -2103,6 +2107,67 @@ function setInert(state, exceptNode) {
 }
 
 const drawers = new DrawerManager();
+
+// ============================================
+// 12b. BOUTON RETOUR NAVIGATEUR → ferme l'overlay du dessus
+// ============================================
+// Sans ça, le « retour » du navigateur quitte l'app au lieu de fermer la
+// modale/vue en cours (réflexe natif cassé). On pousse une entrée d'historique
+// à chaque ouverture d'overlay ; le retour déclenche popstate → on ferme le
+// plus haut. Tout est dans des try/catch : au pire le retour est sans effet,
+// jamais cassant.
+
+function armBackGuard() {
+  try {
+    history.pushState({ dpOverlay: true }, "");
+  } catch (e) {
+    /* historique indisponible : on dégrade silencieusement */
+  }
+}
+
+function closeTopmostOverlay() {
+  const modals = [
+    ["ocr-results-modal", () => closeOCRResultsModal()],
+    ["zone-selector-modal", () => closeZoneSelectorModal()],
+    ["import-modal", () => closeImportModal()],
+    ["ocr-settings-modal", () => closeOCRSettingsModal()],
+    ["feedback-modal", () => closeFeedbackModal()],
+    [
+      "legal-modal",
+      () => {
+        const m = document.getElementById("legal-modal");
+        if (m) {
+          m.hidden = true;
+          m.removeAttribute("aria-modal");
+        }
+      },
+    ],
+  ];
+  for (const [id, closeFn] of modals) {
+    const m = document.getElementById(id);
+    if (m && !m.hidden) {
+      try {
+        closeFn();
+      } catch (e) {
+        /* ignore */
+      }
+      return true;
+    }
+  }
+  if (drawers && drawers.activeDrawer) {
+    drawers.close();
+    return true;
+  }
+  return false;
+}
+
+window.addEventListener("popstate", () => {
+  try {
+    closeTopmostOverlay();
+  } catch (e) {
+    /* jamais cassant */
+  }
+});
 
 // ============================================
 // 13. GESTION DE LA BIBLIOTHÈQUE
@@ -2245,6 +2310,7 @@ function openImportModal() {
   if (!modal) return;
   modal.hidden = false;
   modal.setAttribute("aria-modal", "true");
+  armBackGuard();
   trapFocus(modal);
   setInert(true, modal);
   const firstOption = modal.querySelector(".import-option");
@@ -2593,6 +2659,7 @@ function openFeedbackModal() {
   document.getElementById("feedback-lang").textContent =
     state.currentLang || "fr";
   modal.hidden = false;
+  armBackGuard();
   document.getElementById("feedback-description")?.focus();
   document.body.style.overflow = "hidden";
 }
@@ -2788,6 +2855,7 @@ function initEventListeners() {
               if (legalModal) {
                 legalModal.hidden = false;
                 legalModal.setAttribute("aria-modal", "true");
+                armBackGuard();
                 const closeBtn = document.getElementById("close-legal");
                 const backdrop = document.getElementById("legal-backdrop");
                 const closeFn = () => {

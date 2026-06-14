@@ -1790,8 +1790,9 @@ input[type="range"]:focus::-moz-range-thumb {
 
 /* OCR Confidence Section */
 .ocr-confidence-section {
-  margin-bottom: var(--space-xl);
-  padding: var(--space-lg);
+  margin-top: var(--space-sm);
+  margin-bottom: var(--space-md);
+  padding: var(--space-sm) var(--space-md);
   background: var(--color-bg-secondary);
   border-radius: var(--radius-md);
   border-inline-start: 4px solid var(--color-primary);

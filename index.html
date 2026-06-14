@@ -180,8 +180,8 @@
     <link rel="icon" type="image/svg+xml" href="img/icon.svg" />
     <link rel="apple-touch-icon" href="img/icon-192.png" />
     <!-- Preload critique (above-the-fold) -->
-    <link rel="preload" href="styles.css?v=37" as="style" />
-    <link rel="preload" href="app.js?v=37" as="script" />
+    <link rel="preload" href="styles.css?v=38" as="style" />
+    <link rel="preload" href="app.js?v=38" as="script" />
     <link
       rel="preload"
       href="fonts/Luciole-Regular.woff2"
@@ -190,11 +190,11 @@
       crossorigin
     />
     <!-- Modules ESM OCR (palier 1) chargés dynamiquement par app.js via import() -->
-    <link rel="modulepreload" href="modules/ocr-engine.js?v=37" />
-    <link rel="modulepreload" href="modules/image-preprocessor.js?v=37" />
+    <link rel="modulepreload" href="modules/ocr-engine.js?v=38" />
+    <link rel="modulepreload" href="modules/image-preprocessor.js?v=38" />
     <!-- Polices locales : Luciole, Atkinson Hyperlegible, OpenDyslexic, Comic Neue -->
-    <link rel="stylesheet" href="fonts/fonts.css?v=37" />
-    <link rel="stylesheet" href="styles.css?v=37" />
+    <link rel="stylesheet" href="fonts/fonts.css?v=38" />
+    <link rel="stylesheet" href="styles.css?v=38" />
   </head>
   <body>
     <!-- Skip Links pour Accessibilité -->
@@ -1970,35 +1970,36 @@
           </button>
         </div>
         <div class="modal-body">
-          <!-- Confidence Score -->
-          <div class="ocr-confidence-section">
-            <div class="confidence-header">
-              <h3>Confiance de la reconnaissance</h3>
-              <span id="ocr-confidence-text" class="confidence-percentage"
-                >0%</span
-              >
-            </div>
-            <div class="confidence-bar-wrapper">
-              <div id="ocr-confidence-bar" class="ocr-confidence-bar"></div>
-            </div>
-            <!-- Métriques pipeline (angle, temps) — diagnostic utilisateur -->
-            <p
-              id="ocr-metrics"
-              class="ocr-metrics"
-              hidden
-              aria-label="Métriques du pré-traitement et de la reconnaissance"
-            ></p>
-          </div>
-
-          <!-- Text Result -->
+          <!-- Texte reconnu = le résultat principal, mis en premier -->
           <div class="ocr-text-section">
-            <h3>Texte reconnu</h3>
+            <h3>✅ Texte reconnu</h3>
             <textarea
               id="ocr-result-text"
               class="ocr-result-text"
               placeholder="Texte reconnu..."
               readonly
             ></textarea>
+
+            <!-- Confiance, compacte, juste sous le texte -->
+            <div class="ocr-confidence-section">
+              <div class="confidence-header">
+                <span
+                  >Confiance :
+                  <strong id="ocr-confidence-text" class="confidence-percentage"
+                    >0%</strong
+                  ></span
+                >
+              </div>
+              <div class="confidence-bar-wrapper">
+                <div id="ocr-confidence-bar" class="ocr-confidence-bar"></div>
+              </div>
+              <p
+                id="ocr-metrics"
+                class="ocr-metrics"
+                hidden
+                aria-label="Métriques du pré-traitement et de la reconnaissance"
+              ></p>
+            </div>
           </div>
 
           <!-- Issues -->
@@ -2651,10 +2652,10 @@
     <!-- Scripts — PDF.js local (Tesseract.js v7 chargé dynamiquement par app.js) -->
     <script src="libs/pdf.min.js" defer></script>
     <!-- Modules OCR classiques (validator, zone selector, presets) -->
-    <script src="ocr-config.js?v=37" defer></script>
-    <script src="ocr-zone-selector.js?v=37" defer></script>
-    <script src="ocr-validator.js?v=37" defer></script>
+    <script src="ocr-config.js?v=38" defer></script>
+    <script src="ocr-zone-selector.js?v=38" defer></script>
+    <script src="ocr-validator.js?v=38" defer></script>
     <!-- Application principale -->
-    <script src="app.js?v=37" defer></script>
+    <script src="app.js?v=38" defer></script>
   </body>
 </html>
