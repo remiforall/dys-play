@@ -10,7 +10,7 @@
 
 // Version applicative — DOIT rester alignée avec CACHE_VERSION de sw.js et les
 // query ?v=N des assets. Affichée dans le menu (≪ Version N ≫) pour le support.
-const APP_VERSION = 34;
+const APP_VERSION = 35;
 
 const CONFIG = {
   DB_NAME: "DysPlayDB",
@@ -664,9 +664,19 @@ class OCREngine {
         words: result.words || [],
         confidence: result.confidence,
       };
-      const confidence = this.validator
-        ? this.validator.getOverallConfidence(result.text, tesseractShim)
-        : result.confidence;
+      // Tesseract v7 ne peuple PAS data.words par défaut → le calcul de
+      // confiance par mots renvoie 0. On utilise en priorité la confiance
+      // globale renvoyée par Tesseract (result.confidence).
+      let confidence =
+        typeof result.confidence === "number"
+          ? Math.round(result.confidence)
+          : 0;
+      if (!confidence && this.validator) {
+        confidence = this.validator.getOverallConfidence(
+          result.text,
+          tesseractShim,
+        );
+      }
 
       state.ocrState.ocrResults = {
         text: result.text,
@@ -742,8 +752,11 @@ class OCREngine {
 function _deviceMaxDimension() {
   const mem = navigator.deviceMemory; // 1,2,4,8 (Go) ou undefined
   const cores = navigator.hardwareConcurrency || 4;
-  if (mem ? mem <= 4 : cores <= 6) return 1100; // très contraint
-  if (mem ? mem <= 6 : cores <= 8) return 1500; // milieu de gamme
+  // Compromis OCR/mémoire : 1100 px (anti-OOM) dégradait trop la lecture des
+  // photos de pages entières → on remonte à 1400 (texte plus net) en gardant
+  // le deskew coupé sur ce tier pour compenser la mémoire.
+  if (mem ? mem <= 4 : cores <= 6) return 1400; // contraint
+  if (mem ? mem <= 6 : cores <= 8) return 1700; // milieu de gamme
   return 2000; // confortable
 }
 
@@ -757,8 +770,8 @@ function _mapPreprocessOptions(opts = {}) {
     minDimension: 800,
     stretchContrast: opts.improveContrast !== false,
     // Le deskew (projections multi-angles + rotation = canvas en plus) est la
-    // 2e étape la plus lourde : on le coupe sur les appareils très contraints.
-    deskew: opts.detectOrientation !== false && deviceMax > 1100,
+    // 2e étape la plus lourde : on le coupe sur les appareils contraints.
+    deskew: opts.detectOrientation !== false && deviceMax >= 1700,
     binarize: opts.binarize !== false,
     sauvolaK: Number(opts.sauvolaK) || 0.34,
     sauvolaWindow: Number(opts.sauvolaWindow) || 25,

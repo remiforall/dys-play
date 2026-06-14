@@ -435,9 +435,9 @@ class ZoneSelector {
     const mem = navigator.deviceMemory;
     const cores = navigator.hardwareConcurrency || 4;
     const MAX_DIM = (mem ? mem <= 4 : cores <= 6)
-      ? 1100
+      ? 1400
       : (mem ? mem <= 6 : cores <= 8)
-        ? 1500
+        ? 1700
         : 2000;
     const scale = Math.min(1, MAX_DIM / Math.max(sw, sh));
     const dw = Math.max(1, Math.round(sw * scale));
