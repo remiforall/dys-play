@@ -3432,9 +3432,10 @@ async function loadSettings() {
   // Vérifier si URL contient resetOnboarding
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.has("resetOnboarding")) {
+    // « Configuration initiale » re-montre l'onboarding SANS effacer les
+    // réglages actuels : ils sont pré-sélectionnés et préservés si
+    // l'utilisateur ne les change pas (évite la perte de police/thème).
     Storage.set("isFirstTime", true);
-    Storage.remove("theme");
-    Storage.remove("font");
     // Nettoie le paramètre pour qu'un rechargement ne relance pas l'onboarding
     if (window.history && window.history.replaceState) {
       window.history.replaceState({}, "", window.location.pathname);
