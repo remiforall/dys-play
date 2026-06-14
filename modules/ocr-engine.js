@@ -326,7 +326,14 @@ export function createOCRService(config) {
 
       // 2. OCR proprement dit
       progress("ocr.loading", 45);
+      // Mesure de l'étape 1 (chargement) : un worker « chaud » (déjà créé,
+      // même langue, quota non atteint) revient en ~0 ms ; un worker « froid »
+      // déclenche le chargement des ~15 Mo (module + WASM + traineddata).
+      const workerWasWarm =
+        worker !== null && currentLang === lang && useCount < WORKER_MAX_USES;
+      const workerT0 = performance.now();
       const w = await getWorker(lang);
+      const workerLoadTimeMs = performance.now() - workerT0;
       progress("ocr.recognizing", 50);
 
       const ocrT0 = performance.now();
@@ -347,6 +354,11 @@ export function createOCRService(config) {
         })),
         preprocessingTimeMs,
         ocrTimeMs,
+        workerLoadTimeMs,
+        workerWasWarm,
+        stepTimings: preprocessed.stepTimings || null,
+        preprocessedWidth: preprocessed.width,
+        preprocessedHeight: preprocessed.height,
         detectedAngle: preprocessed.detectedAngle,
         lang,
       };

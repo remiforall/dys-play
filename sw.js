@@ -3,7 +3,7 @@
  * Mode offline complet, zéro dépendance CDN
  */
 
-const CACHE_VERSION = 21;
+const CACHE_VERSION = 22;
 const STATIC_CACHE = `dys-play-static-v${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `dys-play-dynamic-v${CACHE_VERSION}`;
 
@@ -15,6 +15,7 @@ const PRECACHE_URLS = [
   "./aide.html",
   "./a-propos.html",
   "./theme-init.js",
+  "./perf-harness.js",
   "./styles.css",
   "./app.js",
   "./manifest.json",

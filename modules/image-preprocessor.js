@@ -194,12 +194,24 @@ export async function preprocessForOCR(source, userOptions = {}) {
     }
   };
 
+  // Chronométrage par sous-étape (diagnostic perf). Coût négligeable
+  // (quelques performance.now()), toujours actif, lu seulement par le
+  // harnais de mesure quand il est activé.
+  const stepTimings = {};
+  let _lastMark = t0;
+  const mark = (name) => {
+    const now = performance.now();
+    stepTimings[name] = now - _lastMark;
+    _lastMark = now;
+  };
+
   report("decode", 0);
 
   // 1. Décodage de la source en ImageBitmap
   //    createImageBitmap est asynchrone et natif, gère JPEG, PNG, WebP,
   //    GIF, BMP. Plus efficace qu'un HTMLImageElement + canvas.
   const bitmap = await decodeSource(source);
+  mark("decode");
 
   report("resize", 10);
 
@@ -212,6 +224,7 @@ export async function preprocessForOCR(source, userOptions = {}) {
     options.minDimension,
   );
   bitmap.close?.(); // Libérer la mémoire du bitmap source
+  mark("resize");
 
   report("grayscale", 30);
 
@@ -227,6 +240,7 @@ export async function preprocessForOCR(source, userOptions = {}) {
   if (options.grayscale) {
     toGrayscale(imageData);
   }
+  mark("grayscale");
 
   report("contrast", 45);
 
@@ -239,6 +253,7 @@ export async function preprocessForOCR(source, userOptions = {}) {
 
   // On réécrit l'image modifiée dans le canvas avant deskew/binarisation
   resizedCtx.putImageData(imageData, 0, 0);
+  mark("contrast");
 
   report("deskew", 60);
 
@@ -258,6 +273,7 @@ export async function preprocessForOCR(source, userOptions = {}) {
       workingCtx = rotated.ctx;
     }
   }
+  mark("deskew");
 
   report("binarize", 80);
 
@@ -275,6 +291,7 @@ export async function preprocessForOCR(source, userOptions = {}) {
     sauvolaBinarize(finalData, options.sauvolaWindow, options.sauvolaK);
     workingCtx.putImageData(finalData, 0, 0);
   }
+  mark("binarize");
 
   report("encode", 95);
 
@@ -285,6 +302,7 @@ export async function preprocessForOCR(source, userOptions = {}) {
     options.outputQuality,
   );
 
+  mark("encode");
   report("done", 100);
 
   return {
@@ -293,6 +311,7 @@ export async function preprocessForOCR(source, userOptions = {}) {
     height: workingCanvas.height,
     detectedAngle,
     processingTimeMs: performance.now() - t0,
+    stepTimings,
   };
 }
 

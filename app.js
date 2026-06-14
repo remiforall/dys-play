@@ -647,6 +647,22 @@ class OCREngine {
       state.ocrState.validation = validation;
       state.ocrState.confidence = confidence;
 
+      // Harnais de mesure (inerte sauf si ?perf=1) — diagnostic « où va le
+      // temps sur mobile ». N'enregistre que des métriques, jamais le texte.
+      if (window.DysPlayPerf && window.DysPlayPerf.active) {
+        window.DysPlayPerf.record({
+          scanType: options.scanType || "image",
+          workerWasWarm: result.workerWasWarm,
+          workerLoadTimeMs: result.workerLoadTimeMs,
+          preprocessingTimeMs: result.preprocessingTimeMs,
+          ocrTimeMs: result.ocrTimeMs,
+          stepTimings: result.stepTimings,
+          preprocessedWidth: result.preprocessedWidth,
+          preprocessedHeight: result.preprocessedHeight,
+          confidence: confidence,
+        });
+      }
+
       showLoader(false);
       displayOCRResults(result.text, confidence, validation);
 
@@ -682,7 +698,7 @@ class OCREngine {
     // Conversion dataURL → Blob pour réutiliser le pipeline recognize()
     const resp = await fetch(imageDataUrl);
     const blob = await resp.blob();
-    return this.recognize(blob);
+    return this.recognize(blob, { scanType: "zone" });
   }
 
   cancel() {
