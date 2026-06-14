@@ -10,7 +10,7 @@
 
 // Version applicative — DOIT rester alignée avec CACHE_VERSION de sw.js et les
 // query ?v=N des assets. Affichée dans le menu (≪ Version N ≫) pour le support.
-const APP_VERSION = 28;
+const APP_VERSION = 29;
 
 const CONFIG = {
   DB_NAME: "DysPlayDB",
@@ -694,9 +694,9 @@ class OCREngine {
       }
       console.error("Erreur OCR:", error);
       showToast(
-        (i18n[state.currentLang]?.["msg.error"] || "Erreur") +
-          ": " +
-          (error.message || error),
+        "OCR — " +
+          (error?.name ? error.name + ": " : "") +
+          (error?.message || String(error)),
         "error",
       );
       throw error;
@@ -1907,10 +1907,28 @@ function showToast(message, type = "info") {
   toast.textContent = message;
   container.appendChild(toast);
 
-  setTimeout(() => {
+  const dismiss = () => {
     toast.style.opacity = "0";
     setTimeout(() => toast.remove(), 300);
-  }, 3000);
+  };
+
+  if (type === "error") {
+    // Les erreurs restent affichées (message parfois long, ex. Tesseract) :
+    // texte sélectionnable, tap = copie dans le presse-papiers puis ferme,
+    // filet de sécurité à 30 s. Indispensable sur mobile (pas de console).
+    toast.style.userSelect = "text";
+    toast.style.cursor = "pointer";
+    toast.title = "Toucher pour copier le message puis fermer";
+    toast.addEventListener("click", () => {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(message).catch(() => {});
+      }
+      dismiss();
+    });
+    setTimeout(dismiss, 30000);
+  } else {
+    setTimeout(dismiss, 3000);
+  }
 }
 
 // ============================================
