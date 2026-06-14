@@ -10,7 +10,7 @@
 
 // Version applicative — DOIT rester alignée avec CACHE_VERSION de sw.js et les
 // query ?v=N des assets. Affichée dans le menu (≪ Version N ≫) pour le support.
-const APP_VERSION = 40;
+const APP_VERSION = 41;
 
 const CONFIG = {
   DB_NAME: "DysPlayDB",
@@ -2193,6 +2193,20 @@ window.addEventListener("popstate", () => {
     closeTopmostOverlay();
   } catch (e) {
     /* jamais cassant */
+  }
+});
+
+// Fermeture des modales via la croix (.btn-close) — handler DÉLÉGUÉ car les
+// onclick="..." inline sont BLOQUÉS par la CSP (script-src 'self' sans
+// 'unsafe-inline'). Couvre toutes les modales présentes et futures. Ne touche
+// pas aux drawers (leur .btn-close n'est pas dans un .modal).
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest && e.target.closest(".btn-close");
+  if (!btn) return;
+  const modal = btn.closest(".modal");
+  if (modal) {
+    modal.hidden = true;
+    modal.removeAttribute("aria-modal");
   }
 });
 
