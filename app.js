@@ -10,7 +10,7 @@
 
 // Version applicative — DOIT rester alignée avec CACHE_VERSION de sw.js et les
 // query ?v=N des assets. Affichée dans le menu (≪ Version N ≫) pour le support.
-const APP_VERSION = 45;
+const APP_VERSION = 46;
 
 const CONFIG = {
   DB_NAME: "DysPlayDB",
@@ -65,6 +65,7 @@ const state = {
     lineHeight: 1.7,
     zebraMode: false,
     syllableColor: false,
+    syllableViz: "colors",
     maskOpacity: 0.7,
     voiceRate: 1.0,
     reducedMotion: false,
@@ -1402,6 +1403,7 @@ class RenderEngine {
 
     // Mode zèbre
     this.container.classList.toggle("zebra-mode", zebra);
+    this._applySyllableViz(syllables);
 
     const elapsed = performance.now() - startTime;
     if (elapsed > CONFIG.PERFORMANCE_THRESHOLD) {
@@ -1452,6 +1454,7 @@ class RenderEngine {
 
       this.container.innerHTML = html + navHtml;
       this.container.classList.toggle("zebra-mode", zebra);
+      this._applySyllableViz(syllables);
       this.container.scrollTop = 0;
       this._bindPagination(zebra, syllables);
     };
@@ -1471,6 +1474,18 @@ class RenderEngine {
           updatePage();
         }
       });
+    }
+  }
+
+  // Applique le mode de visualisation syllabique sur le conteneur :
+  // syll-colors (couleurs alternées), syll-arcs (arcs sous chaque syllabe),
+  // syll-both (les deux). Rien si la syllabation est désactivée.
+  _applySyllableViz(syllables) {
+    const c = this.container;
+    c.classList.remove("syll-colors", "syll-arcs", "syll-both");
+    if (syllables) {
+      const viz = (state.settings && state.settings.syllableViz) || "colors";
+      c.classList.add("syll-" + viz);
     }
   }
 
@@ -1594,12 +1609,10 @@ function showReaderToolbar(confidence) {
   setPressed("tool-zebra", !!state.settings.zebraMode);
   setPressed("tool-ruler", !!state.isFocusMode);
 
-  // Sous-options de la règle : visibilité + état synchronisés
-  const opts = document.getElementById("reader-aid-options");
-  if (opts) opts.hidden = !state.isFocusMode;
+  // Sous-options des aides : visibilité + état synchronisés
   const opacity = document.getElementById("tool-opacity");
   if (opacity) opacity.value = state.settings.maskOpacity;
-  _syncAidModeButtons();
+  _updateAidOptionsPanel();
 
   const chip = document.getElementById("tool-confidence");
   if (chip) {
@@ -1623,6 +1636,30 @@ function _syncAidModeButtons() {
   document.querySelectorAll(".aid-mode").forEach((b) => {
     b.setAttribute("aria-pressed", b.dataset.mode === cur ? "true" : "false");
   });
+}
+
+// Met en évidence le mode d'affichage syllabique actif (couleurs/arcs/les deux).
+function _syncSyllVizButtons() {
+  const cur = state.settings.syllableViz || "colors";
+  document.querySelectorAll(".syll-viz").forEach((b) => {
+    b.setAttribute("aria-pressed", b.dataset.viz === cur ? "true" : "false");
+  });
+}
+
+// Affiche le panneau de sous-options si une aide concernée est active, et
+// n'expose que les groupes pertinents (règle / syllabes).
+function _updateAidOptionsPanel() {
+  const panel = document.getElementById("reader-aid-options");
+  if (!panel) return;
+  const ruler = !!state.isFocusMode;
+  const syll = !!state.settings.syllableColor;
+  panel.hidden = !(ruler || syll);
+  const gRuler = panel.querySelector(".aid-group-ruler");
+  if (gRuler) gRuler.hidden = !ruler;
+  const gSyll = panel.querySelector(".aid-group-syll");
+  if (gSyll) gSyll.hidden = !syll;
+  _syncAidModeButtons();
+  _syncSyllVizButtons();
 }
 
 /**
@@ -3176,6 +3213,16 @@ function initEventListeners() {
       document
         .getElementById("tool-syllables")
         .setAttribute("aria-pressed", String(state.settings.syllableColor));
+      _updateAidOptionsPanel();
+    });
+    // Mode d'affichage des syllabes : couleurs / arcs / les deux
+    document.querySelectorAll(".syll-viz").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        state.settings.syllableViz = btn.dataset.viz;
+        Storage.set("syllableViz", btn.dataset.viz);
+        _syncSyllVizButtons();
+        rerenderCurrent();
+      });
     });
     safeAddEventListener("tool-zebra", "click", () => {
       state.settings.zebraMode = !state.settings.zebraMode;
@@ -3196,9 +3243,7 @@ function initEventListeners() {
         .setAttribute("aria-pressed", String(on));
       // Déplie les sous-options de la règle ICI (mode + opacité), au lieu d'un
       // autre bloc.
-      const opts = document.getElementById("reader-aid-options");
-      if (opts) opts.hidden = !on;
-      if (on) _syncAidModeButtons();
+      _updateAidOptionsPanel();
     });
     // Boutons de mode de la règle (dans la barre de lecture)
     document.querySelectorAll(".aid-mode").forEach((btn) => {
@@ -3851,6 +3896,7 @@ async function loadSettings() {
     lineHeight: Storage.get("lineHeight") || 1.7,
     zebraMode: Storage.get("zebraMode") || false,
     syllableColor: Storage.get("syllableColor") || false,
+    syllableViz: Storage.get("syllableViz") || "colors",
     maskOpacity: Storage.get("maskOpacity") || 0.7,
     voiceRate: Storage.get("voiceRate") || 1.0,
     reducedMotion: Storage.get("reducedMotion") || false,
@@ -3879,6 +3925,8 @@ async function loadSettings() {
   ];
   if (!validFonts.includes(state.settings.font))
     state.settings.font = "system-ui";
+  if (!["colors", "arcs", "both"].includes(state.settings.syllableViz))
+    state.settings.syllableViz = "colors";
   state.settings.fontSize = Math.max(
     CONFIG.MIN_FONT_SIZE,
     Math.min(CONFIG.MAX_FONT_SIZE, Number(state.settings.fontSize) || 20),

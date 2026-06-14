@@ -180,8 +180,8 @@
     <link rel="icon" type="image/svg+xml" href="img/icon.svg" />
     <link rel="apple-touch-icon" href="img/icon-192.png" />
     <!-- Preload critique (above-the-fold) -->
-    <link rel="preload" href="styles.css?v=45" as="style" />
-    <link rel="preload" href="app.js?v=45" as="script" />
+    <link rel="preload" href="styles.css?v=46" as="style" />
+    <link rel="preload" href="app.js?v=46" as="script" />
     <link
       rel="preload"
       href="fonts/Luciole-Regular.woff2"
@@ -190,11 +190,11 @@
       crossorigin
     />
     <!-- Modules ESM OCR (palier 1) chargés dynamiquement par app.js via import() -->
-    <link rel="modulepreload" href="modules/ocr-engine.js?v=45" />
-    <link rel="modulepreload" href="modules/image-preprocessor.js?v=45" />
+    <link rel="modulepreload" href="modules/ocr-engine.js?v=46" />
+    <link rel="modulepreload" href="modules/image-preprocessor.js?v=46" />
     <!-- Polices locales : Luciole, Atkinson Hyperlegible, OpenDyslexic, Comic Neue -->
-    <link rel="stylesheet" href="fonts/fonts.css?v=45" />
-    <link rel="stylesheet" href="styles.css?v=45" />
+    <link rel="stylesheet" href="fonts/fonts.css?v=46" />
+    <link rel="stylesheet" href="styles.css?v=46" />
   </head>
   <body>
     <!-- Skip Links pour Accessibilité -->
@@ -1069,44 +1069,79 @@
             </button>
           </div>
 
-          <!-- Sous-options de la règle (s'ouvrent ici, sous le toggle, pour ne
+          <!-- Sous-options des aides (s'ouvrent ici, sous les toggles, pour ne
                pas avoir à aller les régler dans un autre bloc) -->
           <div id="reader-aid-options" class="reader-aid-options" hidden>
+            <!-- Sous-options de la règle de lecture -->
+            <div class="aid-group-ruler" hidden>
+              <div
+                class="aid-opt-group"
+                role="group"
+                aria-label="Mode de la règle"
+              >
+                <span class="aid-opt-label">Règle :</span>
+                <button class="aid-mode" type="button" data-mode="line">
+                  Ligne
+                </button>
+                <button
+                  class="aid-mode"
+                  type="button"
+                  data-mode="window"
+                  aria-pressed="true"
+                >
+                  Fenêtre
+                </button>
+                <button class="aid-mode" type="button" data-mode="top">
+                  Masque
+                </button>
+                <button class="aid-mode" type="button" data-mode="spotlight">
+                  Spot
+                </button>
+                <label for="tool-opacity" class="aid-opt-label">Opacité</label>
+                <input
+                  type="range"
+                  id="tool-opacity"
+                  min="0.3"
+                  max="0.9"
+                  step="0.1"
+                  value="0.7"
+                  aria-label="Opacité du masque"
+                />
+              </div>
+            </div>
+            <!-- Sous-options de la syllabation (couleurs / arcs) -->
             <div
-              class="aid-opt-group"
+              class="aid-group-syll aid-opt-group"
               role="group"
-              aria-label="Mode de la règle"
+              aria-label="Affichage des syllabes"
+              hidden
             >
-              <span class="aid-opt-label">Mode :</span>
-              <button class="aid-mode" type="button" data-mode="line">
-                Ligne
+              <span class="aid-opt-label">Syllabes :</span>
+              <button
+                class="syll-viz"
+                type="button"
+                data-viz="colors"
+                aria-pressed="true"
+                title="Couleurs alternées — soutenue mais variable selon le lecteur (Pinna 2018)"
+              >
+                Couleurs
               </button>
               <button
-                class="aid-mode"
+                class="syll-viz"
                 type="button"
-                data-mode="window"
-                aria-pressed="true"
+                data-viz="arcs"
+                title="Arcs sous chaque syllabe — segmentation syllabique étayée ; l'arc est une convention orthophonique"
               >
-                Fenêtre
+                Arcs
               </button>
-              <button class="aid-mode" type="button" data-mode="top">
-                Masque
+              <button
+                class="syll-viz"
+                type="button"
+                data-viz="both"
+                title="Couleurs et arcs combinés"
+              >
+                Les deux
               </button>
-              <button class="aid-mode" type="button" data-mode="spotlight">
-                Spot
-              </button>
-            </div>
-            <div class="aid-opt-group">
-              <label for="tool-opacity">Opacité</label>
-              <input
-                type="range"
-                id="tool-opacity"
-                min="0.3"
-                max="0.9"
-                step="0.1"
-                value="0.7"
-                aria-label="Opacité du masque"
-              />
             </div>
           </div>
         </div>
@@ -2779,10 +2814,10 @@
     <!-- Scripts — PDF.js local (Tesseract.js v7 chargé dynamiquement par app.js) -->
     <script src="libs/pdf.min.js" defer></script>
     <!-- Modules OCR classiques (validator, zone selector, presets) -->
-    <script src="ocr-config.js?v=45" defer></script>
-    <script src="ocr-zone-selector.js?v=45" defer></script>
-    <script src="ocr-validator.js?v=45" defer></script>
+    <script src="ocr-config.js?v=46" defer></script>
+    <script src="ocr-zone-selector.js?v=46" defer></script>
+    <script src="ocr-validator.js?v=46" defer></script>
     <!-- Application principale -->
-    <script src="app.js?v=45" defer></script>
+    <script src="app.js?v=46" defer></script>
   </body>
 </html>

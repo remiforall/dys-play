@@ -844,7 +844,8 @@ html[data-ruler-mode="line"] .ruler-guide {
   font-weight: 600;
   color: var(--color-text-secondary);
 }
-.aid-mode {
+.aid-mode,
+.syll-viz {
   min-height: 40px;
   padding: var(--space-xs) var(--space-sm);
   background: var(--color-bg);
@@ -854,7 +855,8 @@ html[data-ruler-mode="line"] .ruler-guide {
   font-size: 0.85rem;
   cursor: pointer;
 }
-.aid-mode[aria-pressed="true"] {
+.aid-mode[aria-pressed="true"],
+.syll-viz[aria-pressed="true"] {
   background: var(--color-primary);
   color: #fff;
   border-color: var(--color-primary);
@@ -879,15 +881,45 @@ html[data-ruler-mode="line"] .ruler-guide {
   border-radius: var(--radius-sm);
 }
 
-/* Coloration syllabique */
-.syllable-s1 {
+/* Coloration syllabique (mode « Couleurs » ou « Les deux ») */
+.syll-colors .syllable-s1,
+.syll-both .syllable-s1 {
   color: #d946ef;
   font-weight: 800;
 }
 
-.syllable-s2 {
+.syll-colors .syllable-s2,
+.syll-both .syllable-s2 {
   color: #0ea5e9;
   font-weight: 800;
+}
+
+/* Arcs syllabiques (mode « Arcs » ou « Les deux ») — un arc coloré sous chaque
+   syllabe. white-space:nowrap sur le mot évite qu'il se coupe entre syllabes. */
+.syll-arcs .word-span,
+.syll-both .word-span {
+  white-space: nowrap;
+}
+
+.syll-arcs .syllable-s1,
+.syll-arcs .syllable-s2,
+.syll-both .syllable-s1,
+.syll-both .syllable-s2 {
+  display: inline-block;
+  border-bottom: 2.5px solid;
+  border-radius: 0 0 45% 45% / 0 0 100% 100%;
+  padding-bottom: 1px;
+  margin-bottom: 0.18em;
+}
+
+.syll-arcs .syllable-s1,
+.syll-both .syllable-s1 {
+  border-bottom-color: #d946ef;
+}
+
+.syll-arcs .syllable-s2,
+.syll-both .syllable-s2 {
+  border-bottom-color: #0ea5e9;
 }
 
 /* Highlight mot lu par TTS */
