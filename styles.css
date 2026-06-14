@@ -922,6 +922,11 @@ html[data-ruler-mode="line"] .ruler-guide {
   border-bottom-color: #0ea5e9;
 }
 
+/* Lettres muettes grisées (détection approximative) */
+.silent-letter {
+  opacity: 0.4;
+}
+
 /* Highlight mot lu par TTS */
 .speaking-word {
   background-color: #fde047;

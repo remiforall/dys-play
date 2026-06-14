@@ -10,7 +10,7 @@
 
 // Version applicative — DOIT rester alignée avec CACHE_VERSION de sw.js et les
 // query ?v=N des assets. Affichée dans le menu (≪ Version N ≫) pour le support.
-const APP_VERSION = 46;
+const APP_VERSION = 47;
 
 const CONFIG = {
   DB_NAME: "DysPlayDB",
@@ -66,6 +66,7 @@ const state = {
     zebraMode: false,
     syllableColor: false,
     syllableViz: "colors",
+    silentLetters: false,
     maskOpacity: 0.7,
     voiceRate: 1.0,
     reducedMotion: false,
@@ -1419,9 +1420,7 @@ class RenderEngine {
         const renderedWords = words
           .map((word, wIndex) => {
             if (/\S/.test(word)) {
-              const content = syllables
-                ? this.syllabify(word)
-                : escapeHtml(word);
+              const content = this._renderWordContent(word, syllables);
               return `<span id="w-${pIndex}-${wIndex}" class="word-span">${content}</span>`;
             }
             return escapeHtml(word);
@@ -1489,24 +1488,101 @@ class RenderEngine {
     }
   }
 
-  syllabify(word) {
-    if (state.currentLang === "ar") return word;
-    if (word.length <= 3) return word;
+  // Rendu HTML d'un mot avec, selon les réglages, des spans de syllabes
+  // (syllable-s1/s2, colorées ou en arcs via CSS) et/ou des lettres muettes
+  // grisées (silent-letter). Les deux dimensions sont fusionnées en regroupant
+  // les caractères consécutifs partageant le même couple (syllabe, muette).
+  _renderWordContent(word, syllables) {
+    const silent = !!(state.settings && state.settings.silentLetters);
+    if ((!syllables && !silent) || state.currentLang === "ar") {
+      return escapeHtml(word);
+    }
 
-    // Pattern V-C-V simplifié pour le français
-    const vowels = "aeiouyàâéèêëîïôûù";
-    const pattern = `[^${vowels}]*[${vowels}]+(?:[^${vowels}](?![${vowels}]))?`;
+    const n = word.length;
+    // Classe de syllabe par index de caractère (null = hors syllabe détectée)
+    const sylClass = new Array(n).fill(null);
+    if (syllables && n > 3) {
+      const vowels = "aeiouyàâéèêëîïôûù";
+      const pattern = `[^${vowels}]*[${vowels}]+(?:[^${vowels}](?![${vowels}]))?`;
+      const re = new RegExp(pattern, "gi");
+      let m;
+      let s = 0;
+      while ((m = re.exec(word)) !== null) {
+        if (m[0].length === 0) {
+          re.lastIndex++;
+          continue;
+        }
+        const cls = s % 2 === 0 ? "syllable-s1" : "syllable-s2";
+        for (let k = 0; k < m[0].length; k++) sylClass[m.index + k] = cls;
+        s++;
+      }
+    }
 
-    const syllables = word.match(new RegExp(pattern, "gi"));
+    const silentSet = silent ? this._silentIndices(word) : null;
 
-    if (!syllables) return word;
+    let html = "";
+    let i = 0;
+    while (i < n) {
+      const cls = sylClass[i];
+      const sil = silentSet ? silentSet.has(i) : false;
+      let j = i + 1;
+      while (
+        j < n &&
+        sylClass[j] === cls &&
+        (silentSet ? silentSet.has(j) : false) === sil
+      ) {
+        j++;
+      }
+      const chunk = escapeHtml(word.slice(i, j));
+      const classes = [];
+      if (cls) classes.push(cls);
+      if (sil) classes.push("silent-letter");
+      html += classes.length
+        ? `<span class="${classes.join(" ")}">${chunk}</span>`
+        : chunk;
+      i = j;
+    }
+    return html;
+  }
 
-    return syllables
-      .map((syl, i) => {
-        const className = i % 2 === 0 ? "syllable-s1" : "syllable-s2";
-        return `<span class="${className}">${escapeHtml(syl)}</span>`;
-      })
-      .join("");
+  // Heuristique APPROXIMATIVE des lettres muettes du français (sans dictionnaire
+  // phonétique). Conservatrice : on ne grise que les cas à forte probabilité.
+  //  - h muet (hors digraphes ch/ph/th/gh/sh/zh)
+  //  - e muet final (et le e de « -es » final)
+  //  - consonne finale muette : toutes sauf c, r, f, l, q, k (règle « CaReFuL »)
+  // Faux positifs assumés (fils, but, bus, mars…) → étiqueté « approximatif ».
+  _silentIndices(word) {
+    const set = new Set();
+    const n = word.length;
+    if (n < 3 || /[0-9]/.test(word)) return set;
+    const lo = word.toLowerCase();
+    // Exceptions fréquentes : consonne finale prononcée (la règle CaReFuL
+    // grise à tort). On préfère ne rien griser sur ces mots courants.
+    if (RenderEngine.SILENT_EXCEPTIONS.has(lo)) return set;
+    const vowels = "aeiouyàâäéèêëîïôöûùü";
+
+    // h muet hors digraphes
+    for (let i = 0; i < n; i++) {
+      if (lo[i] === "h") {
+        const prev = i > 0 ? lo[i - 1] : "";
+        if (!"cpstgz".includes(prev)) set.add(i);
+      }
+    }
+
+    // « -es » final : e muet (le s sera géré par la règle consonne finale)
+    if (n >= 4 && lo[n - 1] === "s" && lo[n - 2] === "e") {
+      set.add(n - 2);
+    }
+    // e muet final
+    if (lo[n - 1] === "e") set.add(n - 1);
+
+    // consonne finale muette (hors CaReFuL)
+    const fin = lo[n - 1];
+    if (!vowels.includes(fin) && !"crflqk".includes(fin) && fin !== "h") {
+      set.add(n - 1);
+    }
+
+    return set;
   }
 
   highlightWord(charIndex) {
@@ -1547,6 +1623,34 @@ class RenderEngine {
         `;
   }
 }
+
+// Mots fréquents dont la consonne finale est prononcée : on ne les grise pas
+// (cf. _silentIndices, règle CaReFuL). Liste volontairement courte.
+RenderEngine.SILENT_EXCEPTIONS = new Set([
+  "fils",
+  "bus",
+  "mars",
+  "plus",
+  "sens",
+  "ours",
+  "virus",
+  "autobus",
+  "os",
+  "but",
+  "net",
+  "brut",
+  "tennis",
+  "cactus",
+  "as",
+  "fis",
+  "gens",
+  "moeurs",
+  "mœurs",
+  "oasis",
+  "tonus",
+  "lys",
+  "tous",
+]);
 
 const renderEngine = new RenderEngine();
 
@@ -1606,6 +1710,7 @@ function showReaderToolbar(confidence) {
     if (el) el.setAttribute("aria-pressed", on ? "true" : "false");
   };
   setPressed("tool-syllables", !!state.settings.syllableColor);
+  setPressed("tool-silent", !!state.settings.silentLetters);
   setPressed("tool-zebra", !!state.settings.zebraMode);
   setPressed("tool-ruler", !!state.isFocusMode);
 
@@ -3215,6 +3320,14 @@ function initEventListeners() {
         .setAttribute("aria-pressed", String(state.settings.syllableColor));
       _updateAidOptionsPanel();
     });
+    safeAddEventListener("tool-silent", "click", () => {
+      state.settings.silentLetters = !state.settings.silentLetters;
+      Storage.set("silentLetters", state.settings.silentLetters);
+      rerenderCurrent();
+      document
+        .getElementById("tool-silent")
+        .setAttribute("aria-pressed", String(state.settings.silentLetters));
+    });
     // Mode d'affichage des syllabes : couleurs / arcs / les deux
     document.querySelectorAll(".syll-viz").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -3897,6 +4010,7 @@ async function loadSettings() {
     zebraMode: Storage.get("zebraMode") || false,
     syllableColor: Storage.get("syllableColor") || false,
     syllableViz: Storage.get("syllableViz") || "colors",
+    silentLetters: Storage.get("silentLetters") || false,
     maskOpacity: Storage.get("maskOpacity") || 0.7,
     voiceRate: Storage.get("voiceRate") || 1.0,
     reducedMotion: Storage.get("reducedMotion") || false,
