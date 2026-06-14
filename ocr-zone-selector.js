@@ -417,21 +417,32 @@ class ZoneSelector {
   }
 
   extractZoneImage() {
+    // Repli défensif : si aucun rectangle valide n'est posé, prendre l'image
+    // entière (évite un crash si this.rect est absent/dégénéré).
+    if (!this.rect || !this.rect.width || !this.rect.height) {
+      const natW = this.image.naturalWidth || this.image.width;
+      const natH = this.image.naturalHeight || this.image.height;
+      this.rect = { x: 0, y: 0, width: natW, height: natH };
+    }
+
+    const sw = this.rect.width;
+    const sh = this.rect.height;
+
+    // Plafonner la sortie : une photo de smartphone fait 12-50 Mpx. Un canvas
+    // de cette taille dépasse les limites des navigateurs mobiles bas de gamme
+    // (toDataURL renvoie vide ou lève une exception → OCR sur du vide, aucun
+    // texte). Le pré-traitement OCR redimensionne de toute façon à 2000 px,
+    // donc extraire au-delà ne sert à rien. On plafonne le plus grand côté.
+    const MAX_DIM = 2400;
+    const scale = Math.min(1, MAX_DIM / Math.max(sw, sh));
+    const dw = Math.max(1, Math.round(sw * scale));
+    const dh = Math.max(1, Math.round(sh * scale));
+
     const canvas = document.createElement("canvas");
-    canvas.width = this.rect.width;
-    canvas.height = this.rect.height;
+    canvas.width = dw;
+    canvas.height = dh;
     const ctx = canvas.getContext("2d");
-    ctx.drawImage(
-      this.image,
-      this.rect.x,
-      this.rect.y,
-      this.rect.width,
-      this.rect.height,
-      0,
-      0,
-      this.rect.width,
-      this.rect.height,
-    );
+    ctx.drawImage(this.image, this.rect.x, this.rect.y, sw, sh, 0, 0, dw, dh);
     return canvas.toDataURL("image/png");
   }
 

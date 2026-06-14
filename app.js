@@ -2193,16 +2193,26 @@ async function processAcquiredFile(file) {
       const analyzeBtn = document.getElementById("analyze-zone-btn");
       if (analyzeBtn) {
         analyzeBtn.onclick = async () => {
-          closeZoneSelectorModal();
-          if (state.ocrState.zoneSelector) {
-            const zoneDataUrl = state.ocrState.zoneSelector.extractZoneImage();
-            const blob = await (await fetch(zoneDataUrl)).blob();
-            const zoneFile = new File([blob], "zone.png", {
-              type: "image/png",
-            });
-            await handleFile(zoneFile);
-          } else {
-            await handleFile(file);
+          // try/catch obligatoire : sans lui, une erreur dans l'extraction de
+          // zone (canvas trop grand, etc.) ferme la modale puis échoue en
+          // silence — l'utilisateur revient au dashboard sans rien voir.
+          try {
+            closeZoneSelectorModal();
+            let target = file;
+            if (state.ocrState.zoneSelector) {
+              const zoneDataUrl =
+                state.ocrState.zoneSelector.extractZoneImage();
+              const blob = await (await fetch(zoneDataUrl)).blob();
+              target = new File([blob], "zone.png", { type: "image/png" });
+            }
+            await handleFile(target);
+          } catch (err) {
+            console.error("Erreur analyse de zone:", err);
+            showLoader(false);
+            showToast(
+              "La zone n'a pas pu être analysée. Réessaie, ou utilise « Image entière ».",
+              "error",
+            );
           }
         };
       }
