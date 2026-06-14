@@ -10,7 +10,7 @@
 
 // Version applicative — DOIT rester alignée avec CACHE_VERSION de sw.js et les
 // query ?v=N des assets. Affichée dans le menu (≪ Version N ≫) pour le support.
-const APP_VERSION = 31;
+const APP_VERSION = 32;
 
 const CONFIG = {
   DB_NAME: "DysPlayDB",
@@ -587,7 +587,10 @@ class OCREngine {
       const abs = (p) => new URL(p, document.baseURI).href;
       this.service = createOCRService({
         workerPath: abs("libs/tesseract/worker.min.js"),
-        corePath: abs("libs/tesseract/"),
+        // corePath pointe sur LE fichier cœur bundlé (pas le dossier) : sinon
+        // Tesseract v7 auto-détecte une variante (ex. relaxedsimd-lstm) qu'on
+        // n'héberge pas → 404 importScripts. On force notre cœur SIMD local.
+        corePath: abs("libs/tesseract/tesseract-core-simd.wasm.js"),
         langPath: abs("libs/tesseract/langs"),
         defaultLang: "fra",
         preprocessOptions: _mapPreprocessOptions(
