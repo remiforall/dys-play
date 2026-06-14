@@ -178,8 +178,17 @@ async function loadTesseract(scriptPath) {
   if (_tesseractModule) return _tesseractModule;
 
   // Import dynamique ES natif. Fonctionne sans bundler.
+  // IMPORTANT : import() NE résout PAS un specifier "nu" (ex.
+  // "libs/tesseract/tesseract.esm.min.js" sans ./ ni /) — il le traite comme
+  // un nom de package → TypeError "failed to resolve module specifier".
+  // On force une URL absolue relative au document (new URL est idempotent
+  // si scriptPath est déjà absolu).
+  const url =
+    typeof document !== "undefined"
+      ? new URL(scriptPath, document.baseURI).href
+      : scriptPath;
   // Le chemin doit être servi avec le bon MIME type (application/javascript).
-  _tesseractModule = await import(/* @vite-ignore */ scriptPath);
+  _tesseractModule = await import(/* @vite-ignore */ url);
   return _tesseractModule;
 }
 

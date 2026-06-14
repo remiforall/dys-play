@@ -10,7 +10,7 @@
 
 // Version applicative — DOIT rester alignée avec CACHE_VERSION de sw.js et les
 // query ?v=N des assets. Affichée dans le menu (≪ Version N ≫) pour le support.
-const APP_VERSION = 29;
+const APP_VERSION = 30;
 
 const CONFIG = {
   DB_NAME: "DysPlayDB",
@@ -582,10 +582,13 @@ class OCREngine {
     }
     if (!this.service) {
       const { createOCRService } = await import("./modules/ocr-engine.js");
+      // URLs absolues (relatives au document) : un chemin "nu" casse l'import()
+      // ESM de Tesseract et peut désorienter createWorker selon le navigateur.
+      const abs = (p) => new URL(p, document.baseURI).href;
       this.service = createOCRService({
-        workerPath: "libs/tesseract/worker.min.js",
-        corePath: "libs/tesseract/",
-        langPath: "libs/tesseract/langs",
+        workerPath: abs("libs/tesseract/worker.min.js"),
+        corePath: abs("libs/tesseract/"),
+        langPath: abs("libs/tesseract/langs"),
         defaultLang: "fra",
         preprocessOptions: _mapPreprocessOptions(
           CONFIG.OCR.PREPROCESSOR_OPTIONS,
