@@ -430,9 +430,15 @@ class ZoneSelector {
     const sh = this.rect.height;
 
     // Plafonner la sortie : une photo de smartphone fait 12-50 Mpx. Un canvas
-    // de cette taille dépasse les limites des navigateurs mobiles bas de gamme.
-    // Le pré-traitement OCR redimensionne de toute façon à 2000 px.
-    const MAX_DIM = 2400;
+    // de cette taille dépasse la RAM des navigateurs mobiles bas de gamme
+    // (crash). On adapte le plafond à l'appareil (mémoire/cœurs).
+    const mem = navigator.deviceMemory;
+    const cores = navigator.hardwareConcurrency || 4;
+    const MAX_DIM = (mem ? mem <= 4 : cores <= 6)
+      ? 1100
+      : (mem ? mem <= 6 : cores <= 8)
+        ? 1500
+        : 2000;
     const scale = Math.min(1, MAX_DIM / Math.max(sw, sh));
     const dw = Math.max(1, Math.round(sw * scale));
     const dh = Math.max(1, Math.round(sh * scale));

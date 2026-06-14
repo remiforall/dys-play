@@ -10,7 +10,7 @@
 
 // Version applicative — DOIT rester alignée avec CACHE_VERSION de sw.js et les
 // query ?v=N des assets. Affichée dans le menu (≪ Version N ≫) pour le support.
-const APP_VERSION = 33;
+const APP_VERSION = 34;
 
 const CONFIG = {
   DB_NAME: "DysPlayDB",
@@ -735,14 +735,30 @@ class OCREngine {
   }
 }
 
+// Résolution max d'image adaptée à l'appareil. Le pré-traitement (Sauvola +
+// deskew + plusieurs ImageData pleine résolution) peut faire exploser la RAM
+// d'un onglet sur mobile bas de gamme → crash navigateur. On downscale plus
+// agressivement quand l'appareil est contraint.
+function _deviceMaxDimension() {
+  const mem = navigator.deviceMemory; // 1,2,4,8 (Go) ou undefined
+  const cores = navigator.hardwareConcurrency || 4;
+  if (mem ? mem <= 4 : cores <= 6) return 1100; // très contraint
+  if (mem ? mem <= 6 : cores <= 8) return 1500; // milieu de gamme
+  return 2000; // confortable
+}
+
 // Mapping CONFIG.OCR.PREPROCESSOR_OPTIONS → options
 // modules/image-preprocessor.js (pipeline Sauvola + deskew).
 function _mapPreprocessOptions(opts = {}) {
+  const deviceMax = _deviceMaxDimension();
   return {
-    maxDimension: Number(opts.maxDimension) || 2000,
+    // On ne dépasse jamais la capacité de l'appareil (garde-fou anti-OOM)
+    maxDimension: Math.min(Number(opts.maxDimension) || 2000, deviceMax),
     minDimension: 800,
     stretchContrast: opts.improveContrast !== false,
-    deskew: opts.detectOrientation !== false,
+    // Le deskew (projections multi-angles + rotation = canvas en plus) est la
+    // 2e étape la plus lourde : on le coupe sur les appareils très contraints.
+    deskew: opts.detectOrientation !== false && deviceMax > 1100,
     binarize: opts.binarize !== false,
     sauvolaK: Number(opts.sauvolaK) || 0.34,
     sauvolaWindow: Number(opts.sauvolaWindow) || 25,
@@ -1552,12 +1568,12 @@ function displayOCRResults(text, confidence, validation = null) {
 
   // Afficher problèmes si present
   const issuesContainer = document.getElementById("ocr-issues");
-  if (validation && validation.issues.length > 0) {
+  if (validation && validation.issues && validation.issues.length > 0) {
     issuesContainer.innerHTML =
       "<h4>⚠️ Mots détectés comme suspects:</h4>" +
       validation.issues
         .map((issue) => {
-          const suggestions = issue.suggestions
+          const suggestions = (issue.suggestions || [])
             .map((s) => escapeHtml(s.word))
             .join(", ");
           return `
