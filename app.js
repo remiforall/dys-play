@@ -10,7 +10,7 @@
 
 // Version applicative — DOIT rester alignée avec CACHE_VERSION de sw.js et les
 // query ?v=N des assets. Affichée dans le menu (≪ Version N ≫) pour le support.
-const APP_VERSION = 38;
+const APP_VERSION = 39;
 
 const CONFIG = {
   DB_NAME: "DysPlayDB",
@@ -120,6 +120,15 @@ const i18n = {
     "onboarding.buttonSkip": "Plus tard",
     "onboarding.buttonApply": "Appliquer →",
     "onboarding.quickSetup": "⚙️ Configuration rapide",
+    "onboarding.page1Subtitle":
+      "Conçu pour les personnes dyslexiques, dysorthographiques et TDA/H. Choisis ta langue préférée.",
+    "onboarding.page2Title": "Personnalisation",
+    "onboarding.page2Subtitle": "Choisis ta police et ton thème",
+    "onboarding.page3Title": "Paramètres avancés",
+    "onboarding.page3Subtitle": "Ajuste selon tes préférences",
+    "onboarding.next": "Suivant →",
+    "onboarding.prev": "← Retour",
+    "onboarding.complete": "C'est parti ! 🚀",
 
     // Main Interface
     "app.title": "Dys-Play",
@@ -202,6 +211,15 @@ const i18n = {
     "onboarding.buttonSkip": "Later",
     "onboarding.buttonApply": "Apply →",
     "onboarding.quickSetup": "⚙️ Quick Setup",
+    "onboarding.page1Subtitle":
+      "Designed for people with dyslexia, dysorthographia and ADHD. Choose your preferred language.",
+    "onboarding.page2Title": "Personalization",
+    "onboarding.page2Subtitle": "Choose your font and theme",
+    "onboarding.page3Title": "Advanced settings",
+    "onboarding.page3Subtitle": "Adjust to your preferences",
+    "onboarding.next": "Next →",
+    "onboarding.prev": "← Back",
+    "onboarding.complete": "Let's go! 🚀",
 
     // Main Interface
     "app.title": "Dys-Play",
@@ -275,6 +293,15 @@ const i18n = {
     "onboarding.buttonSkip": "لاحقا",
     "onboarding.buttonApply": "تطبيق →",
     "onboarding.quickSetup": "⚙️ إعداد سريع",
+    "onboarding.page1Subtitle":
+      "مصمّم للأشخاص ذوي عسر القراءة وعسر الكتابة وفرط الحركة وتشتّت الانتباه. اختر لغتك المفضّلة.",
+    "onboarding.page2Title": "التخصيص",
+    "onboarding.page2Subtitle": "اختر الخطّ والمظهر",
+    "onboarding.page3Title": "إعدادات متقدّمة",
+    "onboarding.page3Subtitle": "اضبط حسب تفضيلاتك",
+    "onboarding.next": "التالي",
+    "onboarding.prev": "رجوع",
+    "onboarding.complete": "هيّا بنا! 🚀",
 
     // Main Interface
     "app.title": "Dys-Play",
@@ -3351,6 +3378,16 @@ function initEventListeners() {
         btn.dataset.selected = "true";
         btn.style.borderColor = "var(--color-primary)";
         btn.style.borderWidth = "2px";
+
+        // Appliquer le thème EN DIRECT à tout l'onboarding (aperçu) : la page 3
+        // de réglages bascule dans le thème choisi. Réversible : revenir en
+        // arrière et choisir un autre thème ré-applique aussitôt.
+        const theme = btn.dataset.theme;
+        if (theme) {
+          document.documentElement.dataset.theme = theme;
+          document.body.dataset.theme = theme;
+          state.settings.theme = theme;
+        }
       });
     });
 
@@ -3862,17 +3899,22 @@ function applyLanguage(lang) {
 }
 
 function updateOnboardingText(lang) {
+  // IDs RÉELS des 3 pages d'onboarding → clés i18n. (L'ancienne table ciblait
+  // des IDs inexistants → la langue ne se traduisait pas entre les étapes.)
   const elements = {
-    "onboarding-title": "onboarding.title",
-    "onboarding-subtitle": "onboarding.subtitle",
-    "onboarding-language-label": "onboarding.language",
-    "onboarding-font-label": "onboarding.font",
-    "onboarding-theme-label": "onboarding.theme",
-    "onboarding-quick-setup": "onboarding.quickSetup",
-    "skip-onboarding-btn": "onboarding.buttonSkip",
-    "complete-onboarding-btn": "onboarding.buttonApply",
-    "theme-light-label": "onboarding.themeLight",
-    "theme-dark-label": "onboarding.themeDark",
+    "onboarding-page-1-title": "onboarding.title",
+    "onboarding-page-1-subtitle": "onboarding.page1Subtitle",
+    "onboarding-page-2-title": "onboarding.page2Title",
+    "onboarding-page-2-subtitle": "onboarding.page2Subtitle",
+    "onboarding-page-2-font-label": "onboarding.font",
+    "onboarding-page-2-theme-label": "onboarding.theme",
+    "onboarding-page-3-title": "onboarding.page3Title",
+    "onboarding-page-3-subtitle": "onboarding.page3Subtitle",
+    "onboarding-page-1-next": "onboarding.next",
+    "onboarding-page-2-next": "onboarding.next",
+    "onboarding-page-2-prev": "onboarding.prev",
+    "onboarding-page-3-prev": "onboarding.prev",
+    "onboarding-page-3-complete": "onboarding.complete",
   };
 
   for (const [id, key] of Object.entries(elements)) {
