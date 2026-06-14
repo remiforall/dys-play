@@ -272,6 +272,9 @@ export function createOCRService(config) {
         workerPath: config.workerPath,
         corePath: config.corePath,
         langPath: config.langPath,
+        // On héberge les .traineddata NON compressés (fra/eng/ara.traineddata).
+        // Sans gzip:false, Tesseract v7 demande fra.traineddata.gz → 404.
+        gzip: false,
         // Pas de logger verbeux par défaut : l'appelant a son propre
         // onProgress qu'on alimente manuellement.
         logger: () => {},

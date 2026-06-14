@@ -10,7 +10,7 @@
 
 // Version applicative — DOIT rester alignée avec CACHE_VERSION de sw.js et les
 // query ?v=N des assets. Affichée dans le menu (≪ Version N ≫) pour le support.
-const APP_VERSION = 32;
+const APP_VERSION = 33;
 
 const CONFIG = {
   DB_NAME: "DysPlayDB",
