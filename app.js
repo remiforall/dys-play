@@ -10,7 +10,7 @@
 
 // Version applicative — DOIT rester alignée avec CACHE_VERSION de sw.js et les
 // query ?v=N des assets. Affichée dans le menu (≪ Version N ≫) pour le support.
-const APP_VERSION = 43;
+const APP_VERSION = 44;
 
 const CONFIG = {
   DB_NAME: "DysPlayDB",
@@ -1074,6 +1074,8 @@ class FocusMaskEngine {
     this.guideElement = document.getElementById("ruler-guide");
     this.readerElement = document.getElementById("reader-area");
     this.isActive = false;
+    this.lastTop = null; // position verticale de la règle (px, contenu lecteur)
+    this.lastX = null; // position horizontale (px) pour le mode spot
   }
 
   toggle() {
@@ -1090,16 +1092,20 @@ class FocusMaskEngine {
 
   enable() {
     state.isFocusMode = true;
+    this.isActive = true;
     this.maskElement.hidden = false;
     this.guideElement.hidden = false;
     document.documentElement.style.setProperty(
       "--mask-opacity",
       state.settings.maskOpacity,
     );
-    // En mode "line", le masque sombre est invisible
-    if (state.settings.rulerMode === "line") {
-      this.maskElement.style.opacity = "0";
+    // Position par défaut au 1er tiers du lecteur tant qu'on n'a pas tapé.
+    if (this.lastTop == null) {
+      const rect = this.readerElement.getBoundingClientRect();
+      this.lastTop = Math.round(rect.height * 0.33);
+      this.lastX = rect.width / 2;
     }
+    this.render();
   }
 
   disable() {
@@ -1111,38 +1117,40 @@ class FocusMaskEngine {
     this.maskElement.style.webkitMaskImage = "";
   }
 
-  setPosition(y, x) {
+  // Place la règle là où l'utilisateur a tapé (coord écran). Le lecteur ne
+  // scrolle pas en interne (overflow:hidden), donc on convertit simplement la
+  // position écran en position dans le contenu du lecteur.
+  setPosition(clientY, clientX) {
     if (!this.isActive) return;
-
     const rect = this.readerElement.getBoundingClientRect();
-    const scrollTop = this.readerElement.scrollTop;
-    const mode = state.settings.rulerMode || "window";
-
-    // Position relative dans le conteneur
-    let relativeY = y - rect.top + scrollTop;
     const height = CONFIG.MASK_HEIGHT;
-    const mid = height / 2;
+    let topPos = clientY - rect.top - height / 2;
+    const maxTop = Math.max(0, this.readerElement.scrollHeight - height);
+    topPos = Math.max(0, Math.min(topPos, maxTop));
+    this.lastTop = topPos;
+    this.lastX = clientX !== undefined ? clientX - rect.left : rect.width / 2;
+    this.render();
+  }
 
-    // Limiter aux bords
-    const maxScroll = this.readerElement.scrollHeight - rect.height;
-    relativeY = Math.max(mid, Math.min(relativeY + mid, maxScroll + mid));
-    const topPos = relativeY - mid;
-
-    // Position X relative (pour spotlight)
-    let relativeX = rect.width / 2;
-    if (x !== undefined) {
-      relativeX = x - rect.left;
-    }
-
-    // Appliquer les variables CSS pour la ruler-guide
+  // (Re)dessine le masque à la dernière position connue. Appelé au tap, au
+  // changement de mode et au changement d'opacité.
+  render() {
+    if (!this.isActive) return;
+    const height = CONFIG.MASK_HEIGHT;
+    const topPos = this.lastTop || 0;
+    const mode = state.settings.rulerMode || "window";
     document.documentElement.style.setProperty("--mask-top", `${topPos}px`);
     document.documentElement.style.setProperty(
       "--mask-bottom",
       `${topPos + height}px`,
     );
-
-    // Appliquer le mode de masque
-    this._applyMaskMode(mode, topPos, height, relativeX, relativeY);
+    this._applyMaskMode(
+      mode,
+      topPos,
+      height,
+      this.lastX != null ? this.lastX : 0,
+      topPos + height / 2,
+    );
   }
 
   _applyMaskMode(mode, topPos, height, relativeX, relativeY) {
@@ -1191,6 +1199,8 @@ class FocusMaskEngine {
     state.settings.maskOpacity = opacity;
     document.documentElement.style.setProperty("--mask-opacity", opacity);
     Storage.set("maskOpacity", opacity);
+    // Re-rendre pour que l'opacité du masque suive le curseur en direct.
+    this.render();
   }
 
   syncWithTTS(wordElement) {
@@ -3245,7 +3255,7 @@ function initEventListeners() {
         Storage.set("rulerMode", e.target.value);
         document.documentElement.dataset.rulerMode = e.target.value;
         if (state.isFocusMode) {
-          focusMask.enable();
+          focusMask.render(); // re-dessine le masque dans le nouveau mode
         }
       });
     });
@@ -3414,25 +3424,29 @@ function initEventListeners() {
       }
     });
 
-    // Focus mask mouse/touch tracking
+    // Règle de lecture : on PLACE la règle au TAP (le suivi souris/touch était
+    // inadapté au mobile — pas de mousemove, et le touchmove bloquait le scroll).
     const readerArea = document.getElementById("reader-area");
-
-    readerArea.addEventListener("mousemove", (e) => {
-      if (state.isFocusMode) {
+    let _tapStart = null;
+    readerArea.addEventListener("pointerdown", (e) => {
+      _tapStart = { x: e.clientX, y: e.clientY };
+    });
+    readerArea.addEventListener("pointerup", (e) => {
+      const start = _tapStart;
+      _tapStart = null;
+      if (!state.isFocusMode || !start) return;
+      const moved = Math.hypot(e.clientX - start.x, e.clientY - start.y);
+      // Vrai tap (pas un scroll/glissement) → on place la règle ici.
+      if (moved < 12) {
         focusMask.setPosition(e.clientY, e.clientX);
       }
     });
-
-    readerArea.addEventListener(
-      "touchmove",
-      (e) => {
-        if (state.isFocusMode && e.touches.length > 0) {
-          e.preventDefault();
-          focusMask.setPosition(e.touches[0].clientY, e.touches[0].clientX);
-        }
-      },
-      { passive: false },
-    );
+    // Confort desktop : la règle suit aussi la souris au survol (hors clic).
+    readerArea.addEventListener("mousemove", (e) => {
+      if (state.isFocusMode && e.buttons === 0) {
+        focusMask.setPosition(e.clientY, e.clientX);
+      }
+    });
 
     // Keyboard navigation (Echap pour fermer)
     document.addEventListener("keydown", (e) => {
