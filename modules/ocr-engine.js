@@ -188,7 +188,11 @@ async function loadTesseract(scriptPath) {
       ? new URL(scriptPath, document.baseURI).href
       : scriptPath;
   // Le chemin doit être servi avec le bon MIME type (application/javascript).
-  _tesseractModule = await import(/* @vite-ignore */ url);
+  const mod = await import(/* @vite-ignore */ url);
+  // tesseract.esm.min.js n'expose QUE `export { ... as default }` : l'API
+  // (createWorker, PSM, OEM…) est sur .default, pas sur le namespace du module.
+  // Sans ce déballage : "Tesseract.createWorker is not a function".
+  _tesseractModule = mod.default || mod;
   return _tesseractModule;
 }
 
