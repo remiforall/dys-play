@@ -2142,6 +2142,19 @@ input[type="range"]:focus::-moz-range-thumb {
   flex: 1;
 }
 
+/* Correctif contraste thème sombre : ces éléments ont un style inline
+   « background: var(--color-bg) » SANS color → texte invisible en sombre.
+   La couleur n'étant pas en inline, cette règle la fournit (tous les thèmes). */
+.onboarding-lang-btn,
+.onboarding-preset-btn,
+#onboarding-page-2-font {
+  color: var(--color-text);
+}
+#onboarding-page-2-font option {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
 @media (min-width: 768px) {
   .onboarding-content {
     padding: var(--space-xl) 2rem;

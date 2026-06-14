@@ -3,7 +3,7 @@
  * Mode offline complet, zéro dépendance CDN
  */
 
-const CACHE_VERSION = 39;
+const CACHE_VERSION = 40;
 const STATIC_CACHE = `dys-play-static-v${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `dys-play-dynamic-v${CACHE_VERSION}`;
 
