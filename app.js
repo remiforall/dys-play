@@ -10,7 +10,7 @@
 
 // Version applicative — DOIT rester alignée avec CACHE_VERSION de sw.js et les
 // query ?v=N des assets. Affichée dans le menu (≪ Version N ≫) pour le support.
-const APP_VERSION = 26;
+const APP_VERSION = 27;
 
 const CONFIG = {
   DB_NAME: "DysPlayDB",
@@ -557,6 +557,18 @@ function escapeHtml(str) {
 // 6. MOTEUR OCR (Tesseract.js) - AMÉLIORÉ
 // ============================================
 
+// Convertit une data: URL en Blob SANS fetch() — la CSP connect-src 'self'
+// blob: n'autorise pas le schéma data:, donc fetch("data:...") est bloqué.
+function dataUrlToBlob(dataUrl) {
+  const comma = dataUrl.indexOf(",");
+  const header = dataUrl.slice(0, comma);
+  const mime = (header.match(/data:([^;]+)/) || [])[1] || "image/png";
+  const binary = atob(dataUrl.slice(comma + 1));
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new Blob([bytes], { type: mime });
+}
+
 class OCREngine {
   constructor() {
     this.service = null; // OCRService (modules/ocr-engine.js) — lazy
@@ -683,9 +695,8 @@ class OCREngine {
   }
 
   async recognizeZone(imageDataUrl) {
-    // Conversion dataURL → Blob pour réutiliser le pipeline recognize()
-    const resp = await fetch(imageDataUrl);
-    const blob = await resp.blob();
+    // dataURL → Blob sans fetch (la CSP connect-src interdit data:)
+    const blob = dataUrlToBlob(imageDataUrl);
     return this.recognize(blob);
   }
 
@@ -2204,9 +2215,9 @@ async function processAcquiredFile(file) {
             closeZoneSelectorModal();
             let target = file;
             if (state.ocrState.zoneSelector) {
-              const zoneDataUrl =
-                state.ocrState.zoneSelector.extractZoneImage();
-              const blob = await (await fetch(zoneDataUrl)).blob();
+              // toBlob direct : pas de fetch(data:) (bloqué par la CSP
+              // connect-src 'self' blob: qui n'autorise pas le schéma data:)
+              const blob = await state.ocrState.zoneSelector.extractZoneBlob();
               target = new File([blob], "zone.png", { type: "image/png" });
             }
             await handleFile(target);

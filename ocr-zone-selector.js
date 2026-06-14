@@ -416,7 +416,8 @@ class ZoneSelector {
     };
   }
 
-  extractZoneImage() {
+  // Construit le canvas de la zone sélectionnée (plafonné).
+  _buildZoneCanvas() {
     // Repli défensif : si aucun rectangle valide n'est posé, prendre l'image
     // entière (évite un crash si this.rect est absent/dégénéré).
     if (!this.rect || !this.rect.width || !this.rect.height) {
@@ -429,10 +430,8 @@ class ZoneSelector {
     const sh = this.rect.height;
 
     // Plafonner la sortie : une photo de smartphone fait 12-50 Mpx. Un canvas
-    // de cette taille dépasse les limites des navigateurs mobiles bas de gamme
-    // (toDataURL renvoie vide ou lève une exception → OCR sur du vide, aucun
-    // texte). Le pré-traitement OCR redimensionne de toute façon à 2000 px,
-    // donc extraire au-delà ne sert à rien. On plafonne le plus grand côté.
+    // de cette taille dépasse les limites des navigateurs mobiles bas de gamme.
+    // Le pré-traitement OCR redimensionne de toute façon à 2000 px.
     const MAX_DIM = 2400;
     const scale = Math.min(1, MAX_DIM / Math.max(sw, sh));
     const dw = Math.max(1, Math.round(sw * scale));
@@ -443,7 +442,28 @@ class ZoneSelector {
     canvas.height = dh;
     const ctx = canvas.getContext("2d");
     ctx.drawImage(this.image, this.rect.x, this.rect.y, sw, sh, 0, 0, dw, dh);
-    return canvas.toDataURL("image/png");
+    return canvas;
+  }
+
+  // Blob PNG de la zone. À PRIVILÉGIER sur extractZoneImage() : pas de
+  // data: URL, donc pas bloqué par la CSP connect-src (qui interdit data:).
+  extractZoneBlob() {
+    return new Promise((resolve, reject) => {
+      try {
+        this._buildZoneCanvas().toBlob((blob) => {
+          if (blob) resolve(blob);
+          else reject(new Error("canvas.toBlob a renvoyé null"));
+        }, "image/png");
+      } catch (err) {
+        reject(err);
+      }
+    });
+  }
+
+  // Conservé pour compat : renvoie une data: URL (NE PAS passer à fetch() —
+  // la CSP connect-src 'self' blob: bloque le schéma data:).
+  extractZoneImage() {
+    return this._buildZoneCanvas().toDataURL("image/png");
   }
 
   reset() {
