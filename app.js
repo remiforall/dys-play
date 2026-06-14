@@ -10,7 +10,7 @@
 
 // Version applicative — DOIT rester alignée avec CACHE_VERSION de sw.js et les
 // query ?v=N des assets. Affichée dans le menu (≪ Version N ≫) pour le support.
-const APP_VERSION = 44;
+const APP_VERSION = 45;
 
 const CONFIG = {
   DB_NAME: "DysPlayDB",
@@ -1594,6 +1594,13 @@ function showReaderToolbar(confidence) {
   setPressed("tool-zebra", !!state.settings.zebraMode);
   setPressed("tool-ruler", !!state.isFocusMode);
 
+  // Sous-options de la règle : visibilité + état synchronisés
+  const opts = document.getElementById("reader-aid-options");
+  if (opts) opts.hidden = !state.isFocusMode;
+  const opacity = document.getElementById("tool-opacity");
+  if (opacity) opacity.value = state.settings.maskOpacity;
+  _syncAidModeButtons();
+
   const chip = document.getElementById("tool-confidence");
   if (chip) {
     if (typeof confidence === "number" && confidence > 0) {
@@ -1608,6 +1615,14 @@ function showReaderToolbar(confidence) {
 function hideReaderToolbar() {
   const bar = document.getElementById("reader-toolbar");
   if (bar) bar.hidden = true;
+}
+
+// Met en évidence le mode de règle actif parmi les boutons de la barre.
+function _syncAidModeButtons() {
+  const cur = state.settings.rulerMode || "window";
+  document.querySelectorAll(".aid-mode").forEach((b) => {
+    b.setAttribute("aria-pressed", b.dataset.mode === cur ? "true" : "false");
+  });
 }
 
 /**
@@ -3175,9 +3190,37 @@ function initEventListeners() {
     safeAddEventListener("tool-ruler", "click", () => {
       // Réutilise la logique existante du mode focus (règle de lecture)
       document.getElementById("focus-toggle")?.click();
+      const on = !!state.isFocusMode;
       document
         .getElementById("tool-ruler")
-        .setAttribute("aria-pressed", String(!!state.isFocusMode));
+        .setAttribute("aria-pressed", String(on));
+      // Déplie les sous-options de la règle ICI (mode + opacité), au lieu d'un
+      // autre bloc.
+      const opts = document.getElementById("reader-aid-options");
+      if (opts) opts.hidden = !on;
+      if (on) _syncAidModeButtons();
+    });
+    // Boutons de mode de la règle (dans la barre de lecture)
+    document.querySelectorAll(".aid-mode").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const mode = btn.dataset.mode;
+        state.settings.rulerMode = mode;
+        Storage.set("rulerMode", mode);
+        document.documentElement.dataset.rulerMode = mode;
+        const radio = document.querySelector(
+          `input[name="ruler-mode"][value="${mode}"]`,
+        );
+        if (radio) radio.checked = true; // sync panneau Aide Visuelle
+        if (state.isFocusMode) focusMask.render();
+        _syncAidModeButtons();
+      });
+    });
+    // Opacité de la règle (dans la barre)
+    safeAddEventListener("tool-opacity", "input", (e) => {
+      const v = parseFloat(e.target.value);
+      focusMask.setOpacity(v);
+      const slider = document.getElementById("mask-opacity");
+      if (slider) slider.value = v; // sync panneau Aide Visuelle
     });
     safeAddEventListener("tool-save", "click", () =>
       libraryManager.saveCurrentDocument(),
@@ -3254,6 +3297,7 @@ function initEventListeners() {
         state.settings.rulerMode = e.target.value;
         Storage.set("rulerMode", e.target.value);
         document.documentElement.dataset.rulerMode = e.target.value;
+        _syncAidModeButtons(); // sync boutons de mode de la barre de lecture
         if (state.isFocusMode) {
           focusMask.render(); // re-dessine le masque dans le nouveau mode
         }
