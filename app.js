@@ -10,7 +10,7 @@
 
 // Version applicative — DOIT rester alignée avec CACHE_VERSION de sw.js et les
 // query ?v=N des assets. Affichée dans le menu (≪ Version N ≫) pour le support.
-const APP_VERSION = 41;
+const APP_VERSION = 42;
 
 const CONFIG = {
   DB_NAME: "DysPlayDB",
@@ -716,9 +716,13 @@ class OCREngine {
       };
       state.ocrState.validation = validation;
       state.ocrState.confidence = confidence;
+      // Source du texte pour export/partage (la modale brute n'est plus
+      // affichée : on atterrit directement sur la lecture adaptée).
+      state.ocrState.recognizedText = result.text;
 
       showLoader(false);
-      displayOCRResults(result.text, confidence, validation);
+      // Plus de modale de texte brut : handleFile rend le texte ADAPTÉ dans le
+      // lecteur puis affiche la barre d'outils (showReaderToolbar).
 
       return {
         text: result.text,
@@ -1552,6 +1556,50 @@ function updateLoaderProgress(progress) {
   }
 }
 
+// ============================================
+// BARRE D'OUTILS DE LECTURE (post scan/import/saisie)
+// ============================================
+
+// Re-rend le texte courant avec les réglages actuels (aides de lecture).
+function rerenderCurrent() {
+  if (!state.textContent) return;
+  renderEngine.render(state.textContent, {
+    zebra: state.settings.zebraMode,
+    syllables: state.settings.syllableColor,
+  });
+}
+
+// Affiche la barre d'outils de lecture + synchronise toggles et confiance.
+// confidence (number) optionnel : affiché en pastille « OCR N% » si fourni.
+function showReaderToolbar(confidence) {
+  const bar = document.getElementById("reader-toolbar");
+  if (!bar) return;
+  bar.hidden = false;
+
+  const setPressed = (id, on) => {
+    const el = document.getElementById(id);
+    if (el) el.setAttribute("aria-pressed", on ? "true" : "false");
+  };
+  setPressed("tool-syllables", !!state.settings.syllableColor);
+  setPressed("tool-zebra", !!state.settings.zebraMode);
+  setPressed("tool-ruler", !!state.isFocusMode);
+
+  const chip = document.getElementById("tool-confidence");
+  if (chip) {
+    if (typeof confidence === "number" && confidence > 0) {
+      chip.textContent = "OCR " + Math.round(confidence) + " %";
+      chip.hidden = false;
+    } else {
+      chip.hidden = true;
+    }
+  }
+}
+
+function hideReaderToolbar() {
+  const bar = document.getElementById("reader-toolbar");
+  if (bar) bar.hidden = true;
+}
+
 /**
  * Afficher résultats OCR avec score de confiance
  */
@@ -1641,9 +1689,11 @@ function displayOCRResults(text, confidence, validation = null) {
  */
 function exportToPDF() {
   const text =
+    state.textContent ||
     state.ocrState.recognizedText ||
-    document.getElementById("ocr-result-text").value;
-  if (!text) {
+    document.getElementById("ocr-result-text")?.value ||
+    "";
+  if (!text.trim()) {
     showToast("Aucun texte à exporter", "warning");
     return;
   }
@@ -1706,9 +1756,11 @@ function exportToPDF() {
  */
 function shareResults() {
   const text =
+    state.textContent ||
     state.ocrState.recognizedText ||
-    document.getElementById("ocr-result-text").value;
-  if (!text) {
+    document.getElementById("ocr-result-text")?.value ||
+    "";
+  if (!text.trim()) {
     showToast("Aucun texte à partager", "warning");
     return;
   }
@@ -2262,6 +2314,7 @@ class LibraryManager {
           syllables: state.settings.syllableColor,
         });
         updatePlayButton();
+        showReaderToolbar();
         drawers.close();
       }
     } catch (error) {
@@ -2455,6 +2508,7 @@ async function pasteTextFromClipboard() {
       syllables: state.settings.syllableColor,
     });
     updatePlayButton();
+    showReaderToolbar();
     libraryManager.saveCurrentDocument({ silent: true });
     showToast(
       i18n[state.currentLang]?.["msg.text_imported"] || "Texte importé",
@@ -3082,7 +3136,66 @@ function initEventListeners() {
         });
         updatePlayButton();
         input.value = "";
+        showReaderToolbar();
         libraryManager.saveCurrentDocument({ silent: true });
+      }
+    });
+
+    // --- Barre d'outils de lecture (aides + actions) ---
+    safeAddEventListener("tool-syllables", "click", () => {
+      state.settings.syllableColor = !state.settings.syllableColor;
+      Storage.set("syllableColor", state.settings.syllableColor);
+      const cb = document.getElementById("syllable-color");
+      if (cb) cb.checked = state.settings.syllableColor;
+      rerenderCurrent();
+      document
+        .getElementById("tool-syllables")
+        .setAttribute("aria-pressed", String(state.settings.syllableColor));
+    });
+    safeAddEventListener("tool-zebra", "click", () => {
+      state.settings.zebraMode = !state.settings.zebraMode;
+      Storage.set("zebraMode", state.settings.zebraMode);
+      const cb = document.getElementById("zebra-mode");
+      if (cb) cb.checked = state.settings.zebraMode;
+      rerenderCurrent();
+      document
+        .getElementById("tool-zebra")
+        .setAttribute("aria-pressed", String(state.settings.zebraMode));
+    });
+    safeAddEventListener("tool-ruler", "click", () => {
+      // Réutilise la logique existante du mode focus (règle de lecture)
+      document.getElementById("focus-toggle")?.click();
+      document
+        .getElementById("tool-ruler")
+        .setAttribute("aria-pressed", String(!!state.isFocusMode));
+    });
+    safeAddEventListener("tool-save", "click", () =>
+      libraryManager.saveCurrentDocument(),
+    );
+    safeAddEventListener("tool-pdf", "click", exportToPDF);
+    safeAddEventListener("tool-share", "click", shareResults);
+    safeAddEventListener("tool-edit", "click", () => {
+      const input = document.getElementById("text-input");
+      if (input) {
+        input.value = state.textContent || "";
+        input.focus();
+        input.scrollIntoView({ behavior: "smooth", block: "center" });
+        showToast(
+          "Corrige le texte puis touche « Lire avec mes réglages ».",
+          "info",
+        );
+      }
+    });
+    safeAddEventListener("tool-close", "click", () => {
+      state.textContent = "";
+      hideReaderToolbar();
+      // Vide le contenu de lecture SANS supprimer #text-content (conteneur
+      // mémorisé par renderEngine) : on garde l'état vide d'invite.
+      const tc = document.getElementById("text-content");
+      if (tc) {
+        tc.classList.remove("zebra-mode");
+        tc.innerHTML =
+          '<div class="empty-state"><p>Importer, scanner ou saisir du texte pour commencer</p></div>';
       }
     });
 
@@ -3584,6 +3697,7 @@ async function handleFile(file, useZoneSelection = false) {
 
   try {
     let text = "";
+    let ocrConfidence = null;
 
     if (file.type === "text/plain" || file.name.endsWith(".txt")) {
       // Fichier texte brut
@@ -3603,6 +3717,8 @@ async function handleFile(file, useZoneSelection = false) {
         enableValidation: CONFIG.OCR.ENABLE_VALIDATION,
       });
       text = result.text;
+      ocrConfidence =
+        typeof result.confidence === "number" ? result.confidence : null;
     } else {
       showToast("Type de fichier non supporté", "warning");
       return;
@@ -3615,6 +3731,9 @@ async function handleFile(file, useZoneSelection = false) {
         syllables: state.settings.syllableColor,
       });
       updatePlayButton();
+      // On atterrit sur la lecture adaptée + barre d'outils (au lieu d'une
+      // modale de texte brut). Pastille de confiance pour l'OCR image.
+      showReaderToolbar(ocrConfidence);
       // Sauvegarder automatiquement en bibliothèque (silencieux — import fichier)
       libraryManager.saveCurrentDocument({ silent: true });
     }

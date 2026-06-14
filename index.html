@@ -180,8 +180,8 @@
     <link rel="icon" type="image/svg+xml" href="img/icon.svg" />
     <link rel="apple-touch-icon" href="img/icon-192.png" />
     <!-- Preload critique (above-the-fold) -->
-    <link rel="preload" href="styles.css?v=41" as="style" />
-    <link rel="preload" href="app.js?v=41" as="script" />
+    <link rel="preload" href="styles.css?v=42" as="style" />
+    <link rel="preload" href="app.js?v=42" as="script" />
     <link
       rel="preload"
       href="fonts/Luciole-Regular.woff2"
@@ -190,11 +190,11 @@
       crossorigin
     />
     <!-- Modules ESM OCR (palier 1) chargés dynamiquement par app.js via import() -->
-    <link rel="modulepreload" href="modules/ocr-engine.js?v=41" />
-    <link rel="modulepreload" href="modules/image-preprocessor.js?v=41" />
+    <link rel="modulepreload" href="modules/ocr-engine.js?v=42" />
+    <link rel="modulepreload" href="modules/image-preprocessor.js?v=42" />
     <!-- Polices locales : Luciole, Atkinson Hyperlegible, OpenDyslexic, Comic Neue -->
-    <link rel="stylesheet" href="fonts/fonts.css?v=41" />
-    <link rel="stylesheet" href="styles.css?v=41" />
+    <link rel="stylesheet" href="fonts/fonts.css?v=42" />
+    <link rel="stylesheet" href="styles.css?v=42" />
   </head>
   <body>
     <!-- Skip Links pour Accessibilité -->
@@ -984,6 +984,89 @@
         role="article"
         aria-label="Zone de lecture"
       >
+        <!-- Barre d'outils de lecture (sticky) : aides + actions. Apparaît
+             quand un texte est affiché (après scan, import ou saisie). -->
+        <div id="reader-toolbar" class="reader-toolbar" hidden>
+          <div
+            class="reader-toolbar-group"
+            role="group"
+            aria-label="Aides à la lecture"
+          >
+            <button
+              id="tool-syllables"
+              class="reader-tool"
+              type="button"
+              aria-pressed="false"
+            >
+              <span aria-hidden="true">🎨</span> Syllabes
+            </button>
+            <button
+              id="tool-zebra"
+              class="reader-tool"
+              type="button"
+              aria-pressed="false"
+            >
+              <span aria-hidden="true">🦓</span> Zèbre
+            </button>
+            <button
+              id="tool-ruler"
+              class="reader-tool"
+              type="button"
+              aria-pressed="false"
+            >
+              <span aria-hidden="true">📏</span> Règle
+            </button>
+          </div>
+          <div class="reader-toolbar-group" role="group" aria-label="Actions">
+            <span id="tool-confidence" class="reader-confidence" hidden></span>
+            <button
+              id="tool-save"
+              class="reader-tool"
+              type="button"
+              title="Sauvegarder en bibliothèque"
+            >
+              <span aria-hidden="true">💾</span
+              ><span class="sr-only">Sauvegarder</span>
+            </button>
+            <button
+              id="tool-pdf"
+              class="reader-tool"
+              type="button"
+              title="Exporter en image"
+            >
+              <span aria-hidden="true">📄</span
+              ><span class="sr-only">Exporter</span>
+            </button>
+            <button
+              id="tool-share"
+              class="reader-tool"
+              type="button"
+              title="Partager le texte"
+            >
+              <span aria-hidden="true">🔗</span
+              ><span class="sr-only">Partager</span>
+            </button>
+            <button
+              id="tool-edit"
+              class="reader-tool"
+              type="button"
+              title="Corriger le texte"
+            >
+              <span aria-hidden="true">✏️</span
+              ><span class="sr-only">Corriger</span>
+            </button>
+            <button
+              id="tool-close"
+              class="reader-tool reader-tool-close"
+              type="button"
+              title="Fermer la lecture"
+            >
+              <span aria-hidden="true">✕</span
+              ><span class="sr-only">Fermer</span>
+            </button>
+          </div>
+        </div>
+
         <div id="reader-area" class="reader-area" aria-live="polite">
           <div id="focus-mask" class="focus-mask" hidden></div>
           <div id="ruler-guide" class="ruler-guide" hidden></div>
@@ -2652,10 +2735,10 @@
     <!-- Scripts — PDF.js local (Tesseract.js v7 chargé dynamiquement par app.js) -->
     <script src="libs/pdf.min.js" defer></script>
     <!-- Modules OCR classiques (validator, zone selector, presets) -->
-    <script src="ocr-config.js?v=41" defer></script>
-    <script src="ocr-zone-selector.js?v=41" defer></script>
-    <script src="ocr-validator.js?v=41" defer></script>
+    <script src="ocr-config.js?v=42" defer></script>
+    <script src="ocr-zone-selector.js?v=42" defer></script>
+    <script src="ocr-validator.js?v=42" defer></script>
     <!-- Application principale -->
-    <script src="app.js?v=41" defer></script>
+    <script src="app.js?v=42" defer></script>
   </body>
 </html>

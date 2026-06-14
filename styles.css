@@ -765,6 +765,61 @@ html[data-ruler-mode="line"] .ruler-guide {
   mix-blend-mode: screen;
 }
 
+/* Barre d'outils de lecture (sticky) — aides + actions après un scan/import */
+.reader-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  margin-bottom: var(--space-sm);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+.reader-toolbar-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+}
+.reader-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  min-height: 44px;
+  padding: var(--space-xs) var(--space-sm);
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.reader-tool:hover,
+.reader-tool:focus-visible {
+  border-color: var(--color-primary);
+}
+.reader-tool[aria-pressed="true"] {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+.reader-tool-close {
+  color: var(--color-danger);
+}
+.reader-confidence {
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0 var(--space-xs);
+  color: var(--color-text-secondary);
+}
+
 .text-content {
   font-family: var(--font-family);
   font-size: var(--font-size);
