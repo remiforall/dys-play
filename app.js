@@ -10,7 +10,7 @@
 
 // Version applicative — DOIT rester alignée avec CACHE_VERSION de sw.js et les
 // query ?v=N des assets. Affichée dans le menu (≪ Version N ≫) pour le support.
-const APP_VERSION = 36;
+const APP_VERSION = 37;
 
 const CONFIG = {
   DB_NAME: "DysPlayDB",
@@ -1718,15 +1718,24 @@ function shareResults() {
 function initZoneSelector(imageElement) {
   if (!imageElement) return;
 
-  const container = imageElement.parentElement;
+  // Nettoyer l'ancien sélecteur (retire son listener resize)
+  if (state.ocrState.zoneSelector?.destroy) {
+    state.ocrState.zoneSelector.destroy();
+  }
 
-  // Créer le sélecteur de zone
+  const container = imageElement.parentElement;
   state.ocrState.zoneSelector = new ZoneSelector(imageElement, container);
 
-  // Bouton "Image entière" (reset la sélection)
-  document.getElementById("preset-full")?.addEventListener("click", () => {
-    state.ocrState.zoneSelector.reset();
-  });
+  // Presets : onclick (remplace) pour ne pas empiler les handlers à chaque image
+  const wire = (id, preset) => {
+    const btn = document.getElementById(id);
+    if (btn) {
+      btn.onclick = () => state.ocrState.zoneSelector?.applyPreset(preset);
+    }
+  };
+  wire("preset-full", "full");
+  wire("preset-top", "top");
+  wire("preset-bottom", "bottom");
 }
 
 /**

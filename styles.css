@@ -1717,18 +1717,44 @@ input[type="range"]:focus::-moz-range-thumb {
 
 /* Zone Selector Canvas */
 .zone-selector-container {
+  /* Occupe la hauteur restante de la modale et contient l'image entière sans
+     scroll : le JS dimensionne le canvas pour qu'il tienne en largeur ET
+     hauteur. position:relative pour les poignées clavier en absolu. */
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
+  align-items: center;
   justify-content: center;
-  margin: var(--space-lg) 0;
+  overflow: hidden;
+  margin: var(--space-sm) 0 0 0;
 }
 
 .zone-canvas {
-  max-width: 100%;
-  max-height: 500px;
+  display: block;
   border: 2px solid var(--color-border);
   border-radius: var(--radius-md);
-  cursor: crosshair;
   background: var(--color-bg-secondary);
+}
+
+/* Poignées de sélection opérables au clavier (focus visible AAA) */
+.zone-a11y-handle:focus-visible {
+  pointer-events: auto;
+  outline: 3px solid var(--color-focus, #2563eb);
+  outline-offset: 2px;
+  background: rgba(37, 99, 235, 0.25);
+}
+
+/* Modale de zone : flex-column pour garder « Analyser » visible et laisser
+   l'image occuper la hauteur restante sans scroll (fit-to-viewport). */
+#zone-selector-modal .modal-content {
+  max-height: 92vh;
+  max-height: 92dvh;
+}
+#zone-selector-modal .modal-body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .zone-controls {

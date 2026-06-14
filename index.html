@@ -180,8 +180,8 @@
     <link rel="icon" type="image/svg+xml" href="img/icon.svg" />
     <link rel="apple-touch-icon" href="img/icon-192.png" />
     <!-- Preload critique (above-the-fold) -->
-    <link rel="preload" href="styles.css?v=36" as="style" />
-    <link rel="preload" href="app.js?v=36" as="script" />
+    <link rel="preload" href="styles.css?v=37" as="style" />
+    <link rel="preload" href="app.js?v=37" as="script" />
     <link
       rel="preload"
       href="fonts/Luciole-Regular.woff2"
@@ -190,11 +190,11 @@
       crossorigin
     />
     <!-- Modules ESM OCR (palier 1) chargés dynamiquement par app.js via import() -->
-    <link rel="modulepreload" href="modules/ocr-engine.js?v=36" />
-    <link rel="modulepreload" href="modules/image-preprocessor.js?v=36" />
+    <link rel="modulepreload" href="modules/ocr-engine.js?v=37" />
+    <link rel="modulepreload" href="modules/image-preprocessor.js?v=37" />
     <!-- Polices locales : Luciole, Atkinson Hyperlegible, OpenDyslexic, Comic Neue -->
-    <link rel="stylesheet" href="fonts/fonts.css?v=36" />
-    <link rel="stylesheet" href="styles.css?v=36" />
+    <link rel="stylesheet" href="fonts/fonts.css?v=37" />
+    <link rel="stylesheet" href="styles.css?v=37" />
   </head>
   <body>
     <!-- Skip Links pour Accessibilité -->
@@ -1769,20 +1769,21 @@
         <div class="modal-body">
           <p
             style="
-              margin: 0 0 var(--space-md) 0;
+              margin: 0 0 var(--space-sm) 0;
               font-size: 0.9rem;
               color: var(--color-text-secondary);
             "
           >
-            Choisissez la zone à analyser ou dessinez un rectangle sur l'image.
+            Choisis une zone rapide, ou déplace/redimensionne le rectangle bleu
+            directement sur l'image.
           </p>
 
           <div id="zone-controls" class="zone-controls">
-            <div class="preset-buttons">
+            <div class="preset-buttons" role="group" aria-label="Zones rapides">
               <button
                 id="preset-full"
                 class="btn btn-secondary btn-small"
-                title="Analyser l'image entière"
+                title="Analyser toute l'image"
               >
                 <svg
                   class="icon-small"
@@ -1790,18 +1791,49 @@
                   fill="none"
                   stroke="currentColor"
                   stroke-width="2"
+                  aria-hidden="true"
                 >
                   <rect x="3" y="3" width="18" height="18"></rect>
                 </svg>
-                Image entière
+                Toute l'image
+              </button>
+              <button
+                id="preset-top"
+                class="btn btn-secondary btn-small"
+                title="Analyser le haut de l'image"
+              >
+                <svg
+                  class="icon-small"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  aria-hidden="true"
+                >
+                  <rect x="3" y="3" width="18" height="9"></rect>
+                </svg>
+                Haut
+              </button>
+              <button
+                id="preset-bottom"
+                class="btn btn-secondary btn-small"
+                title="Analyser le bas de l'image"
+              >
+                <svg
+                  class="icon-small"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  aria-hidden="true"
+                >
+                  <rect x="3" y="12" width="18" height="9"></rect>
+                </svg>
+                Bas
               </button>
             </div>
           </div>
-          <div
-            id="zone-selector-content"
-            class="zone-selector-container"
-            style="max-height: 50vh; overflow: auto"
-          ></div>
+          <div id="zone-selector-content" class="zone-selector-container"></div>
         </div>
         <div
           class="modal-footer"
@@ -2619,10 +2651,10 @@
     <!-- Scripts — PDF.js local (Tesseract.js v7 chargé dynamiquement par app.js) -->
     <script src="libs/pdf.min.js" defer></script>
     <!-- Modules OCR classiques (validator, zone selector, presets) -->
-    <script src="ocr-config.js?v=36" defer></script>
-    <script src="ocr-zone-selector.js?v=36" defer></script>
-    <script src="ocr-validator.js?v=36" defer></script>
+    <script src="ocr-config.js?v=37" defer></script>
+    <script src="ocr-zone-selector.js?v=37" defer></script>
+    <script src="ocr-validator.js?v=37" defer></script>
     <!-- Application principale -->
-    <script src="app.js?v=36" defer></script>
+    <script src="app.js?v=37" defer></script>
   </body>
 </html>
