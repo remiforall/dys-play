@@ -10,7 +10,7 @@
 
 // Version applicative — DOIT rester alignée avec CACHE_VERSION de sw.js et les
 // query ?v=N des assets. Affichée dans le menu (≪ Version N ≫) pour le support.
-const APP_VERSION = 47;
+const APP_VERSION = 48;
 
 const CONFIG = {
   DB_NAME: "DysPlayDB",
@@ -67,6 +67,7 @@ const state = {
     syllableColor: false,
     syllableViz: "colors",
     silentLetters: false,
+    graphemeColor: false,
     maskOpacity: 0.7,
     voiceRate: 1.0,
     reducedMotion: false,
@@ -1488,13 +1489,16 @@ class RenderEngine {
     }
   }
 
-  // Rendu HTML d'un mot avec, selon les réglages, des spans de syllabes
-  // (syllable-s1/s2, colorées ou en arcs via CSS) et/ou des lettres muettes
-  // grisées (silent-letter). Les deux dimensions sont fusionnées en regroupant
-  // les caractères consécutifs partageant le même couple (syllabe, muette).
+  // Rendu HTML d'un mot avec, selon les réglages, trois dimensions cumulables :
+  //  - syllabes (syllable-s1/s2, colorées ou en arcs via CSS)
+  //  - lettres muettes grisées (silent-letter)
+  //  - graphèmes (grapheme-g1/g2, fond pastel alterné — découpage graphémique)
+  // Elles sont fusionnées en regroupant les caractères consécutifs partageant
+  // le même triplet (syllabe, graphème, muette).
   _renderWordContent(word, syllables) {
     const silent = !!(state.settings && state.settings.silentLetters);
-    if ((!syllables && !silent) || state.currentLang === "ar") {
+    const graphemes = !!(state.settings && state.settings.graphemeColor);
+    if ((!syllables && !silent && !graphemes) || state.currentLang === "ar") {
       return escapeHtml(word);
     }
 
@@ -1518,17 +1522,29 @@ class RenderEngine {
       }
     }
 
+    // Classe de graphème par index (fond alterné g1/g2 par segment)
+    const graphClass = new Array(n).fill(null);
+    if (graphemes) {
+      const segs = this._graphemeSegments(word);
+      segs.forEach(([start, end], gi) => {
+        const cls = gi % 2 === 0 ? "grapheme-g1" : "grapheme-g2";
+        for (let k = start; k < end; k++) graphClass[k] = cls;
+      });
+    }
+
     const silentSet = silent ? this._silentIndices(word) : null;
 
     let html = "";
     let i = 0;
     while (i < n) {
       const cls = sylClass[i];
+      const gcl = graphClass[i];
       const sil = silentSet ? silentSet.has(i) : false;
       let j = i + 1;
       while (
         j < n &&
         sylClass[j] === cls &&
+        graphClass[j] === gcl &&
         (silentSet ? silentSet.has(j) : false) === sil
       ) {
         j++;
@@ -1536,6 +1552,7 @@ class RenderEngine {
       const chunk = escapeHtml(word.slice(i, j));
       const classes = [];
       if (cls) classes.push(cls);
+      if (gcl) classes.push(gcl);
       if (sil) classes.push("silent-letter");
       html += classes.length
         ? `<span class="${classes.join(" ")}">${chunk}</span>`
@@ -1543,6 +1560,42 @@ class RenderEngine {
       i = j;
     }
     return html;
+  }
+
+  // Découpe APPROXIMATIVE d'un mot en graphèmes français (digraphes, trigraphes,
+  // nasales, consonnes doublées) par appariement glouton du plus long d'abord.
+  // Heuristique « expérimental » : pas de visée phonétique exacte.
+  _graphemeSegments(word) {
+    const lo = word.toLowerCase();
+    const n = word.length;
+    const vowels = "aeiouyàâäéèêëîïôöûùü";
+    const nasals = RenderEngine.NASAL_GRAPHEMES;
+    const G = RenderEngine.GRAPHEMES; // déjà trié plus long d'abord
+    const segs = [];
+    let i = 0;
+    while (i < n) {
+      let matched = null;
+      for (const g of G) {
+        if (lo.startsWith(g, i)) {
+          if (nasals.has(g)) {
+            // Pas nasal si suivi d'une voyelle ou de la même consonne (n/m)
+            const after = lo[i + g.length];
+            const lastC = g[g.length - 1];
+            if (after && (vowels.includes(after) || after === lastC)) continue;
+          }
+          matched = g;
+          break;
+        }
+      }
+      if (matched) {
+        segs.push([i, i + matched.length]);
+        i += matched.length;
+      } else {
+        segs.push([i, i + 1]);
+        i++;
+      }
+    }
+    return segs;
   }
 
   // Heuristique APPROXIMATIVE des lettres muettes du français (sans dictionnaire
@@ -1652,6 +1705,79 @@ RenderEngine.SILENT_EXCEPTIONS = new Set([
   "tous",
 ]);
 
+// Graphèmes français pour le découpage graphémique (mode expérimental), triés
+// du plus long au plus court pour l'appariement glouton.
+RenderEngine.NASAL_GRAPHEMES = new Set([
+  "ain",
+  "ein",
+  "aim",
+  "oin",
+  "an",
+  "am",
+  "en",
+  "em",
+  "on",
+  "om",
+  "in",
+  "im",
+  "un",
+  "um",
+  "yn",
+  "ym",
+]);
+RenderEngine.GRAPHEMES = [
+  // trigraphes
+  "eau",
+  "ain",
+  "ein",
+  "aim",
+  "oin",
+  "ien",
+  "ion",
+  "oeu",
+  // digraphes voyelles
+  "œu",
+  "ou",
+  "au",
+  "eu",
+  "ai",
+  "ei",
+  "oi",
+  "ui",
+  // nasales (digraphes)
+  "an",
+  "am",
+  "en",
+  "em",
+  "on",
+  "om",
+  "in",
+  "im",
+  "un",
+  "um",
+  "yn",
+  "ym",
+  // digraphes consonnes
+  "ch",
+  "ph",
+  "th",
+  "gn",
+  "qu",
+  "gu",
+  // consonnes doublées
+  "ll",
+  "ss",
+  "tt",
+  "nn",
+  "mm",
+  "pp",
+  "rr",
+  "ff",
+  "cc",
+  "dd",
+  "bb",
+].sort((a, b) => b.length - a.length);
+
 const renderEngine = new RenderEngine();
 
 // ============================================
@@ -1711,6 +1837,7 @@ function showReaderToolbar(confidence) {
   };
   setPressed("tool-syllables", !!state.settings.syllableColor);
   setPressed("tool-silent", !!state.settings.silentLetters);
+  setPressed("tool-graphemes", !!state.settings.graphemeColor);
   setPressed("tool-zebra", !!state.settings.zebraMode);
   setPressed("tool-ruler", !!state.isFocusMode);
 
@@ -3328,6 +3455,14 @@ function initEventListeners() {
         .getElementById("tool-silent")
         .setAttribute("aria-pressed", String(state.settings.silentLetters));
     });
+    safeAddEventListener("tool-graphemes", "click", () => {
+      state.settings.graphemeColor = !state.settings.graphemeColor;
+      Storage.set("graphemeColor", state.settings.graphemeColor);
+      rerenderCurrent();
+      document
+        .getElementById("tool-graphemes")
+        .setAttribute("aria-pressed", String(state.settings.graphemeColor));
+    });
     // Mode d'affichage des syllabes : couleurs / arcs / les deux
     document.querySelectorAll(".syll-viz").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -4011,6 +4146,7 @@ async function loadSettings() {
     syllableColor: Storage.get("syllableColor") || false,
     syllableViz: Storage.get("syllableViz") || "colors",
     silentLetters: Storage.get("silentLetters") || false,
+    graphemeColor: Storage.get("graphemeColor") || false,
     maskOpacity: Storage.get("maskOpacity") || 0.7,
     voiceRate: Storage.get("voiceRate") || 1.0,
     reducedMotion: Storage.get("reducedMotion") || false,

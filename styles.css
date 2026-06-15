@@ -927,6 +927,17 @@ html[data-ruler-mode="line"] .ruler-guide {
   opacity: 0.4;
 }
 
+/* Découpage graphémique (expérimental) — fonds pastel alternés, alpha faible
+   pour ne pas dégrader le contraste du texte sur les différents thèmes. */
+.grapheme-g1 {
+  background-color: rgba(245, 158, 11, 0.22);
+  border-radius: 3px;
+}
+.grapheme-g2 {
+  background-color: rgba(13, 148, 136, 0.22);
+  border-radius: 3px;
+}
+
 /* Highlight mot lu par TTS */
 .speaking-word {
   background-color: #fde047;
