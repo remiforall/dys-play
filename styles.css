@@ -865,6 +865,13 @@ html[data-ruler-mode="line"] .ruler-guide {
   flex: 1;
   min-width: 100px;
 }
+.aid-hint {
+  flex-basis: 100%;
+  margin: 4px 0 0;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--color-text-secondary);
+}
 
 .text-content {
   font-family: var(--font-family);
@@ -881,16 +888,29 @@ html[data-ruler-mode="line"] .ruler-guide {
   border-radius: var(--radius-sm);
 }
 
+/* Couleurs des aides syllabiques — paire CVD-safe bleu/orange (type Okabe-Ito :
+   distinguable sous protanopie/deutéranopie/tritanopie + écart de luminance pour
+   l'achromatopsie). Déclinée clair/sombre pour garder le contraste par thème. */
+:root {
+  --syll-1: #1d4ed8;
+  --syll-2: #ea580c;
+}
+[data-theme="dark"],
+[data-theme="dark-blue"] {
+  --syll-1: #3b82f6;
+  --syll-2: #fdba74;
+}
+
 /* Coloration syllabique (mode « Couleurs » ou « Les deux ») */
 .syll-colors .syllable-s1,
 .syll-both .syllable-s1 {
-  color: #d946ef;
+  color: var(--syll-1);
   font-weight: 800;
 }
 
 .syll-colors .syllable-s2,
 .syll-both .syllable-s2 {
-  color: #0ea5e9;
+  color: var(--syll-2);
   font-weight: 800;
 }
 
@@ -914,12 +934,12 @@ html[data-ruler-mode="line"] .ruler-guide {
 
 .syll-arcs .syllable-s1,
 .syll-both .syllable-s1 {
-  border-bottom-color: #d946ef;
+  border-bottom-color: var(--syll-1);
 }
 
 .syll-arcs .syllable-s2,
 .syll-both .syllable-s2 {
-  border-bottom-color: #0ea5e9;
+  border-bottom-color: var(--syll-2);
 }
 
 /* Lettres muettes grisées (détection approximative) */
@@ -928,14 +948,19 @@ html[data-ruler-mode="line"] .ruler-guide {
 }
 
 /* Découpage graphémique (expérimental) — fonds pastel alternés, alpha faible
-   pour ne pas dégrader le contraste du texte sur les différents thèmes. */
+   pour ne pas dégrader le contraste du texte. Double codage daltonisme : en plus
+   de la teinte (orange/bleu, paire CVD-safe), un soulignement de STYLE alterné
+   (plein vs pointillé) → la segmentation reste visible même sans perception des
+   couleurs. */
 .grapheme-g1 {
-  background-color: rgba(245, 158, 11, 0.22);
-  border-radius: 3px;
+  background-color: rgba(234, 88, 12, 0.2);
+  border-bottom: 2px solid rgba(234, 88, 12, 0.6);
+  border-radius: 3px 3px 0 0;
 }
 .grapheme-g2 {
-  background-color: rgba(13, 148, 136, 0.22);
-  border-radius: 3px;
+  background-color: rgba(29, 78, 216, 0.16);
+  border-bottom: 2px dotted rgba(29, 78, 216, 0.7);
+  border-radius: 3px 3px 0 0;
 }
 
 /* Highlight mot lu par TTS */
