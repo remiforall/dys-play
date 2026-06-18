@@ -12,9 +12,9 @@
       name="description"
       content="Déclaration d'accessibilité de Dys-Play conformément à l'article 47 de la loi n° 2005-102 du 11 février 2005 et au RGAA 4.1.2."
     />
-    <link rel="icon" type="image/svg+xml" href="img/favicon.svg" />
-    <link rel="stylesheet" href="fonts/fonts.css?v=45" />
-    <link rel="stylesheet" href="styles.css?v=45" />
+    <link rel="icon" type="image/svg+xml" href="img/icon.svg" />
+    <link rel="stylesheet" href="fonts/fonts.css?v=51" />
+    <link rel="stylesheet" href="styles.css?v=51" />
     <style>
       main.a11y-page {
         max-width: 64rem;
@@ -118,6 +118,113 @@
         le taux atteint.
       </p>
 
+      <h2>Mesures d'accessibilité mises en œuvre</h2>
+
+      <p>
+        Bien qu'aucun audit externe n'ait encore été réalisé, l'accessibilité
+        est au cœur de la conception de Dys-Play. Les mesures suivantes sont
+        d'ores et déjà en place.
+      </p>
+
+      <h3>Structure et navigation</h3>
+      <ul>
+        <li>
+          Code HTML sémantique, langue de page déclarée, lien d'évitement vers
+          le contenu principal.
+        </li>
+        <li>
+          Navigation entièrement opérable au clavier, ordre de tabulation
+          logique, focus visible sur l'ensemble des thèmes.
+        </li>
+        <li>
+          Éléments natifs privilégiés (boutons, libellés, champs) ; ARIA utilisé
+          en complément et non en remplacement.
+        </li>
+        <li>
+          Zoom jusqu'à 500 % sans perte de contenu ni de fonctionnalité ; cibles
+          tactiles agrandies pour les publics dys et à motricité réduite.
+        </li>
+      </ul>
+
+      <h3>Personnalisation de l'affichage</h3>
+      <ul>
+        <li>
+          Cinq thèmes (clair, crème, sépia, sombre, sombre bleuté) aux
+          contrastes vérifiés.
+        </li>
+        <li>
+          Réglage de la taille du texte et de l'espacement des lettres, des mots
+          et des lignes (l'espacement procure des gains de vitesse de lecture
+          documentés — laboratoire d'Aix-Marseille).
+        </li>
+        <li>
+          Sept polices au choix, dont Luciole (recommandée, origine académique
+          française) et Atkinson Hyperlegible ; OpenDyslexic est proposée à
+          titre expérimental, sans preuve d'efficacité mesurable établie.
+        </li>
+        <li>
+          Réglage de confort visuel personnalisé (filtre coloré), proposé comme
+          aide ergonomique et non comme traitement.
+        </li>
+      </ul>
+
+      <h3>Aides à la lecture</h3>
+      <ul>
+        <li>Règle de lecture à quatre modes (efficacité étayée — CHI 2023).</li>
+        <li>
+          Mise en évidence des syllabes (couleurs ou arcs), découpage en
+          graphèmes, repérage des lettres muettes, lignes alternées. Certaines
+          de ces aides sont expérimentales ou approximatives et signalées comme
+          telles dans l'interface.
+        </li>
+        <li>Synthèse vocale avec réglage de la vitesse de lecture.</li>
+      </ul>
+
+      <h3>Vision des couleurs (daltonisme)</h3>
+      <ul>
+        <li>
+          Les couleurs des aides syllabiques utilisent une paire bleu/orange
+          distinguable par les principales formes de daltonisme (protanopie,
+          deutéranopie, tritanopie), avec un écart de luminance suffisant pour
+          rester perceptible en l'absence de distinction des teintes.
+        </li>
+        <li>
+          Le découpage en graphèmes est doublement codé : en plus de la couleur,
+          un soulignement de style différent (plein ou pointillé) rend la
+          segmentation perceptible sans recourir à la teinte.
+        </li>
+        <li>
+          Une alternative reposant uniquement sur la forme (arcs syllabiques,
+          lettres muettes grisées) est disponible, et l'interface y oriente les
+          personnes concernées.
+        </li>
+        <li>
+          Les signaux d'état (succès, erreur, alerte) ne reposent jamais sur la
+          couleur seule : ils sont toujours accompagnés d'un texte explicite et,
+          le cas échéant, d'une icône.
+        </li>
+      </ul>
+
+      <h3>Préférences système respectées</h3>
+      <ul>
+        <li>
+          Réduction des animations lorsque le système le demande
+          (<code>prefers-reduced-motion</code>).
+        </li>
+        <li>
+          Renforcement des contrastes lorsque le système le demande
+          (<code>prefers-contrast</code>).
+        </li>
+      </ul>
+
+      <h3>Confidentialité au service de l'autonomie</h3>
+      <p>
+        L'intégralité des traitements (reconnaissance de texte, synthèse vocale,
+        stockage des réglages) s'exécute localement dans le navigateur, sans
+        compte ni connexion requise : l'outil reste utilisable hors ligne et
+        n'expose aucune donnée personnelle.
+      </p>
+
       <h2>Contenus non accessibles connus à ce jour</h2>
 
       <p>
@@ -160,7 +267,10 @@
 
       <h2>Établissement de cette déclaration d'accessibilité</h2>
 
-      <p>Cette déclaration a été établie le <strong>18 avril 2026</strong>.</p>
+      <p>
+        Cette déclaration a été établie le <strong>18 avril 2026</strong> et
+        mise à jour le <strong>18 juin 2026</strong>.
+      </p>
 
       <h3>Technologies utilisées</h3>
 
@@ -358,9 +468,9 @@
 
       <p>
         <em
-          >Cette déclaration a été rédigée le 18 avril 2026 selon le modèle
-          officiel fourni par la Direction interministérielle du numérique
-          (DINUM) à l'adresse
+          >Cette déclaration a été rédigée le 18 avril 2026 (mise à jour le 18
+          juin 2026) selon le modèle officiel fourni par la Direction
+          interministérielle du numérique (DINUM) à l'adresse
           <a
             href="https://accessibilite.numerique.gouv.fr/obligations/declaration-accessibilite/"
             >accessibilite.numerique.gouv.fr</a
