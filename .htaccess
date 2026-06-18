@@ -1,4 +1,16 @@
 RewriteEngine On
+
+# --- Robots nuisibles : scrapers SEO commerciaux + crawlers agressifs ---
+# UA honnêtes uniquement. Ne touche NI aux moteurs (Google/Bing/Qwant) NI aux
+# IA autorisées dans robots.txt (GPTBot, ClaudeBot, Perplexity, Google-Extended).
+RewriteCond %{HTTP_USER_AGENT} (AhrefsBot|SemrushBot|MJ12bot|DotBot|BLEXBot|DataForSeoBot|Barkrowler|Bytespider) [NC]
+RewriteRule .* - [F,L]
+
+# --- Sondes de failles : site 100% statique, aucun PHP ni WordPress ---
+RewriteRule \.php$ - [F,L]
+RewriteRule (^|/)(wp-login|wp-admin|xmlrpc|wp-content|wp-includes) - [F,L]
+
+# Forcer HTTPS
 RewriteCond %{HTTPS} off
 RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
