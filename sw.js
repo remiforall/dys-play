@@ -3,7 +3,7 @@
  * Mode offline complet, zéro dépendance CDN
  */
 
-const CACHE_VERSION = 48;
+const CACHE_VERSION = 49;
 const STATIC_CACHE = `dys-play-static-v${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `dys-play-dynamic-v${CACHE_VERSION}`;
 
@@ -21,6 +21,8 @@ const PRECACHE_URLS = [
   "./img/icon.svg",
   "./img/icon-192.png",
   "./img/icon-512.png",
+  "./img/icon-maskable-192.png",
+  "./img/icon-maskable-512.png",
   // Polices locales
   "./fonts/fonts.css",
   "./fonts/Luciole-Regular.woff2",
