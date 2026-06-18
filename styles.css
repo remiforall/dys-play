@@ -1083,6 +1083,9 @@ html[data-ruler-mode="line"] .ruler-guide {
 
 .drawer-right {
   right: 0;
+  /* Fermé = sort par la DROITE (sinon il hérite du translateX(-100%) de .drawer
+     et traverse l'écran vers la gauche avant de disparaître). */
+  transform: translateX(100%);
 }
 
 .drawer.open {
@@ -1837,7 +1840,8 @@ input[type="range"]:focus::-moz-range-thumb {
 .import-option[data-recommended="true"]::after {
   content: "Conseillé";
   position: absolute;
-  inset-inline-end: var(--space-md);
+  top: var(--space-sm);
+  inset-inline-end: var(--space-sm);
   padding: 2px 8px;
   font-size: 0.7rem;
   font-weight: 700;
