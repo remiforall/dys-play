@@ -1,0 +1,82 @@
+name: Déploiement Dys-Play sur Infomaniak
+
+# CI souveraine : runner Forgejo « concordia ». Forgejo est la source de vérité et
+# la seule à déployer. GitHub reste une copie publique en lecture (push-mirror
+# Forgejo → GitHub, toutes les 8 h) qui héberge aussi les signalements de bugs :
+# l'application pointe vers github.com/remiforall/dys-play/issues, et les modèles
+# d'issues de .github/ISSUE_TEMPLATE/ doivent donc être conservés.
+# Migré depuis .github/workflows/deploy.yml le 2026-08-03.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  # Un seul déploiement à la fois : deux mirror lftp concurrents sur la même
+  # racine web laisseraient le site dans un état incohérent.
+  group: deploy-dysplay
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Déployer sur dys-play.net
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Installer lftp (absent de l'image node:20-bookworm)
+        run: apt-get update -qq && apt-get install -y -qq lftp
+
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+
+      - name: Vérifier la syntaxe JS (convention projet, zéro build)
+        run: |
+          set -e
+          for f in $(find . -name '*.js' -not -path './libs/*' -not -path './.git/*'); do
+            node --check "$f"
+          done
+          echo "Syntaxe JS validée"
+
+      - name: Normaliser les permissions
+        # Apache tourne sous un utilisateur différent du compte SFTP : sans ça,
+        # des fichiers déposés en 600 renvoient un 403 en production.
+        run: |
+          find . -type f -not -path "./.git/*" -exec chmod 644 {} \;
+          find . -type d -not -path "./.git/*" -exec chmod 755 {} \;
+
+      - name: Déploiement SFTP (lftp mirror)
+        env:
+          HOST: ${{ secrets.INFOMANIAK_HOST }}
+          FTPUSER: ${{ secrets.INFOMANIAK_USER }}
+          # --env-password : le mot de passe ne transite ni par argv ni par les logs.
+          LFTP_PASSWORD: ${{ secrets.INFOMANIAK_PASSWORD }}
+          REMOTE: ${{ secrets.INFOMANIAK_REMOTE_PATH }}
+        run: |
+          lftp -c "
+            set sftp:auto-confirm yes;
+            set net:max-retries 5;
+            set net:timeout 60;
+            set cmd:interactive false;
+            set mirror:parallel-transfer-count 3;
+            open -u \"$FTPUSER\" --env-password sftp://\"$HOST\";
+            mirror --reverse --delete --verbose \
+              --allow-chown \
+              --allow-suid \
+              --exclude ^\.git/ \
+              --exclude ^\.github/ \
+              --exclude ^\.forgejo/ \
+              --exclude ^\.gitignore$ \
+              --exclude ^README\.md$ \
+              --exclude ^libs/README\.md$ \
+              --exclude ^fonts/README\.md$ \
+              --exclude ^\.user\.ini$ \
+              --exclude ^\.infomaniak \
+              ./ \"$REMOTE\";
+            quit;
+          "
+          echo "Déploiement terminé"
